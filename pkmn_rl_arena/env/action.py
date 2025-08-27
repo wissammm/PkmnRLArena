@@ -3,7 +3,6 @@ from .battle_state import TurnType
 
 from typing import Dict, List
 
-
 class ActionManager:
     """
     Manages action validation and execution.
@@ -13,7 +12,8 @@ class ActionManager:
         self.battle_core = battle_core
         self.action_space_size = 10  # Actions 0-9
 
-    def is_valid_action(self, action: int) -> bool:
+    @staticmethod
+    def is_valid_action(action: int) -> bool:
         """Check if action is valid (simplified version)"""
         return 0 <= action <= 9
 
