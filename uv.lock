@@ -520,31 +520,6 @@ wheels = [
 ]
 
 [[package]]
-name = "rl-new-pokemon-ai"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "maturin" },
-    { name = "numpy" },
-    { name = "onnx" },
-    { name = "onnxruntime" },
-    { name = "pandas" },
-    { name = "rich" },
-    { name = "torch" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "maturin" },
-    { name = "numpy" },
-    { name = "onnx" },
-    { name = "onnxruntime" },
-    { name = "pandas" },
-    { name = "rich" },
-    { name = "torch" },
-]
-
-[[package]]
 name = "setuptools"
 version = "80.9.0"
 source = { registry = "https://pypi.org/simple" }

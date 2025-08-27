@@ -12,7 +12,8 @@ dependencies = [
     "onnx",
     "onnxruntime",
     "rich",
-    "maturin"
+    "maturin",
+    "picologging>=0.9.3",
 ]
 
 [tool.setuptools]
