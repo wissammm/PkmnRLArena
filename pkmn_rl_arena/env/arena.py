@@ -1,23 +1,32 @@
 from .action import ActionManager
 from .battle_core import BattleCore
 from .battle_state import BattleState
-from .observation import ObservationFactory, Observation
+from .observation import ObservationFactory
 from .pkmn_team_factory import PkmnTeamFactory
 from .save_state import SaveStateManager
+from pkmn_rl_arena import POKEMON_CSV_PATH, MOVES_CSV_PATH, ROM_PATH, BIOS_PATH, MAP_PATH
 
-from pkmn_rl_arena.utils.logging import logger
+from pkmn_rl_arena.logging import logger
 
-from typing import Optional, List, Dict
-from pathlib import Path
+from enum import Enum
+from typing import Any, Dict, Optional
 import functools
 
-from pettingzoo import AECEnv
-from rl_new_pokemon_ai import PATHS
 from gymnasium.spaces import Discrete
-import numpy.typing as npt
-
+import numpy as np
+from pettingzoo import AECEnv
 from rich.console import Console
 from rich.table import Table
+from time import sleep
+
+
+class RenderMode(Enum):
+    """Enumeration for different turn types"""
+
+    DISABLED = 1  # No rendering, just raw dogging gpu
+    EPISODE_TERMINAL = 2  # Basic rendering enabed, returns a simple table for each episode with final team status and who won
+    TURN_TERMINAL = 3  # Basic rendering enabed, returns a simple table for each turn with team status
+    RUSTBOY = 4  # show a picture of each turn rendered in rustboy advance
 
 
 class Arena(AECEnv):
@@ -35,35 +44,57 @@ class Arena(AECEnv):
         "name": "pkmn_daycare_v0.1",
     }
 
-    def __init__(self, battle_core: BattleCore, max_steps_per_episode: int = 1000):
+    def __init__(
+        self,
+        battle_core: BattleCore,
+        max_steps_per_episode: int = 1000,
+        render_mode: RenderMode = RenderMode.DISABLED,
+    ):
         # Initialize core components
         self.core = battle_core
         self.observation_factory = ObservationFactory(self.core)
         self.action_manager = ActionManager(self.core)
         self.battle_state = BattleState()
+        self.team_factory = PkmnTeamFactory(POKEMON_CSV_PATH, MOVES_CSV_PATH)
+
         self.save_state_manager = SaveStateManager(self.core)
-        self.team_factory = PkmnTeamFactory(PATHS["PKMN_CSV"], PATHS["MOVES_CSV"])
 
         # Environment configuration
-        self.possible_agents = ["player", "enemy"]
+        self.agents = ["player", "enemy"]
         self.action_space_size = 10
-        self.observation: Dict[str, npt.NDArray[int] | None] = {
-            "agent": None,
-            "ennemy": None,
-        }
-
+        self.observations = {agent: np.array([], dtype=int) for agent in self.agents}
         self.terminations = {agent: False for agent in self.agents}
-        self.rewards = {"player": 0.0, "enemy": 0.0}
+        self.rewards = {agent: 0.0 for agent in self.agents}
         self.episode_steps = 0
         self.max_steps_per_episode = max_steps_per_episode  # Configurable
+        self.infos = {}
 
         # render console
         self.console = Console()
 
+        
+        sleep(2)
+        self.save_state_manager.save_state(
+            "boot_state"
+        )  # creating 1st save state directly might be not optimal. maybe add a wait to run until 1st stop
+        logger.info(f"Created save_state : {self.save_state_manager.list_save_states()}")
+
+    def load_save_state(self, options: Dict[str, str] | None = None):
+        if options is None:
+            raise ValueError(
+                "Called load_save_state without any option. No save state will be loaded."
+            )
+        loaded = self.save_state_manager.load_state(options.get("save_state"))
+
+        if not loaded:
+            raise RuntimeError(f"Failed to load save state: {save_state}")
+
+        return
+
     def reset(
         self,
         seed: int | None = None,
-        options: Dict[str, str] | None = None,
+        options: Dict[str, Any] | None = {"save_state": "boot_state"},
     ):
         """
         Reset needs to initialize the following attributes
@@ -85,54 +116,38 @@ class Arena(AECEnv):
         # TODO Implement seed args
 
         logger.info("Resetting env")
-
-        # Load save state if provided
         if options is None:
-            raise ValueError(
-                'options argument is empty, cannot load save_state from options["save_state"], exiting'
-            )
-        elif options.get("save_state", None) is None:
-            raise ValueError(
-                f'"save_state" key was not found in options argument. cannot load save state.\nKeys in option : {options.keys()}.\n\nexiting'
-            )
-
-        save_state = Path(options["save_state"])
-        if not self.save_state_manager.has_state(save_state):
-            raise ValueError(f"Save state not found at path : {save_state} exiting.")
-
-        loaded = self.save_state_manager.load_state(save_state)
-        if not loaded:
-            raise RuntimeError(f"Failed to load save state: {save_state}")
+            logger.debug("No options given")
+        # Load save state if provided
+        if not self.load_save_state(options):
+            self.core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
 
         # Reset managers
-        self.rewards = {"player": 0.0, "enemy": 0.0}
-        self._cumulative_rewards = {"player": 0.0, "enemy": 0.0}
-        self.episode_steps = 0
+        self.rewards = {agent: 0.0 for agent in self.agents}
+        self._cumulative_rewards = {agent: 0.0 for agent in self.agents}
         self.terminations = {agent: False for agent in self.agents}
+        self.episode_steps = 0
 
         # reset battle
         self.battle_state = BattleState()
 
         # create new teams
-        teams = {
-            "player": self.team_factory.create_random_team(self.core),
-            "ennemy": self.team_factory.create_random_team(self.core),
-        }
+        teams = {agent: self.team_factory.create_random_team() for agent in self.agents}
         self.core.write_team_data(teams)
 
         # Advance to first turn to  get initial observations
         self.core.advance_to_next_turn()
-        observations = self.observation_manager.get_observations()
+        self.observations = self.observation_factory.from_game()
 
         # clean rendering
         self.console.clear()
 
         # Get dummy infos. Necessary for proper parallel_to_aec conversion
-        infos = {a: {} for a in self.agents}
+        self.infos = {a: {} for a in self.agents}
 
-        return observations, infos
+        return  # observations, infos
 
-    def step(self, actions: Dict[str, int]):
+    def step(self, actions: Optional[Dict[str, int]]):
         """
         step(action) takes in an action for the current agent (specified by
         agent_selection) and needs to update
@@ -153,6 +168,17 @@ class Arena(AECEnv):
             done: Whether the episode is finished
             info: Additional information
         """
+        # If a user passes in actions with no agents, then just return empty observations, etc.
+        if not actions:
+            self.agents = []
+            return {}, {}, {}, {}, {}
+
+        # if previous step terminated the episode then calling ded step
+        if (
+            self.truncations[self.agent_selection]
+            or self.terminations[self.agent_selection]
+        ):
+            return self._was_dead_step(actions)
 
         # Get dummy infos (not used in this example)
         # Validate actions
@@ -162,37 +188,41 @@ class Arena(AECEnv):
 
         # Write actions
         self.action_manager.write_actions(self.battle_state.current_turn, actions)
-        self.core.clear_stop_condition(self.battle_state.current_turn)
         self.battle_state.current_turn = self.core.advance_to_next_turn()
+
+        # Get observations
+        observation = self.observation_factory.from_game()
+        self.observations = observation_factory.from_game()
 
         # Check termination conditions
         # TODO : DEFINE TRUCATIONS & TERMINATIONS
         # TODO : EXTRACT BATTLECORE TESTS
-        if (
-            self.battle_state.is_battle_done()
-            or self.max_steps_per_episode < self.episode_steps
-        ):
-            terminations = {agent: True for agent in self.agents}
-
-        # Get observations
-        self.observation = self.observation_manager.get_observations()
+        if self.battle_state.is_battle_done():
+            self.terminations = {agent: True for agent in self.agents}
+            winner = observation.who_won()
+            self.rewards[winner] = 1.0  # placeholder
+        elif self.max_steps_per_episode < self.episode_steps:
+            self.truncations = {agent: True for agent in self.agents}
 
         # Calculate rewards (placeholder)
-        self.rewards = {"player": 0.0, "enemy": 0.0}
-        self._cumulative_rewards += self.rewards
+        for agent in actions.items():
+            self.rewards[agent] = 0.0
+            self._cumulative_rewards[agent] += self.rewards[agent]
 
         self.episode_steps += 1
 
         # Prepare info
-        infos = {
-            "current_turn": self.battle_state.get_current_turn(),
-            "battle_done": self.battle_state.is_battle_done(),
-            "ste_rewards": self.rewards,
-            "episode_steps": self.episode_steps,
-            "max_allowed_steps": self.max_steps_per_episode,
-        }
+        # self.infos = {
+        #     "current_turn": self.battle_state.get_current_turn(),
+        #     "battle_done": self.battle_state.is_battle_done(),
+        #     "ste_rewards": self.rewards,
+        #     "episode_steps": self.episode_steps,
+        #     "max_allowed_steps": self.max_steps_per_episode,
+        # }
 
-        return observations, rewards, terminations, truncations, infos
+        self.infos = {}
+
+        return  # self.observations, self.rewards, self.terminations, self.truncations, self.infos
 
     def render(self):
         """
