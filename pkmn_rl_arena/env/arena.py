@@ -40,9 +40,7 @@ class Arena(AECEnv):
         self.core = battle_core
         self.observation_factory = ObservationFactory(self.core)
         self.action_manager = ActionManager(self.core)
-        # self.turn_manager = TurnManager(self.core, self.action_manager)
         self.battle_state = BattleState()
-        # self.episode_manager = EpisodeManager()
         self.save_state_manager = SaveStateManager(self.core)
         self.team_factory = PkmnTeamFactory(PATHS["PKMN_CSV"], PATHS["MOVES_CSV"])
 
