@@ -1,5 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass
+from typing import List
 
 class TurnType(Enum):
     """Enumeration for different turn types"""
@@ -21,3 +22,22 @@ class BattleState:
     current_turn: TurnType = TurnType.NOT_STARTED
     waiting_for_action: bool = False
     episode_steps: int = 0
+
+    def is_battle_done(self) -> bool:
+        """Check if battle is finished"""
+        return self.current_turn == TurnType.DONE
+
+    def get_current_turn(self) -> TurnType:
+        """Get current turn type"""
+        return self.current_turn
+
+    def get_required_agents(self) -> List[str]:
+        """Get list of agents required for current turn"""
+        if self.current_turn == TurnType.GENERAL:
+            return ["player", "enemy"]
+        elif self.current_turn == TurnType.PLAYER:
+            return ["player"]
+        elif self.current_turn == TurnType.ENEMY:
+            return ["enemy"]
+        else:
+            return []

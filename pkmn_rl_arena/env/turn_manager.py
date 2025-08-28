@@ -40,21 +40,3 @@ class TurnManager:
 
         return True
 
-    def _get_required_agents(self) -> List[str]:
-        """Get list of agents required for current turn"""
-        if self.state.current_turn == TurnType.GENERAL:
-            return ["player", "enemy"]
-        elif self.state.current_turn == TurnType.PLAYER:
-            return ["player"]
-        elif self.state.current_turn == TurnType.ENEMY:
-            return ["enemy"]
-        else:
-            return []
-
-    def is_battle_done(self) -> bool:
-        """Check if battle is finished"""
-        return self.state.current_turn == TurnType.DONE
-
-    def get_current_turn(self) -> TurnType:
-        """Get current turn type"""
-        return self.state.current_turn
