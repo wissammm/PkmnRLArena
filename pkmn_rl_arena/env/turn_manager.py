@@ -40,15 +40,6 @@ class TurnManager:
 
         return True
 
-    def advance_to_next_turn(self) -> TurnType:
-        """Advance to the next turn"""
-        stop_id = self.battle_core.run_to_next_stop()
-        self.state.current_turn = self.battle_core.get_turn_type(stop_id)
-        self.state.waiting_for_action = True
-        self.state.current_step += 1
-
-        return self.state.current_turn
-
     def _get_required_agents(self) -> List[str]:
         """Get list of agents required for current turn"""
         if self.state.current_turn == TurnType.GENERAL:

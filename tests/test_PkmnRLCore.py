@@ -28,7 +28,7 @@ class TestPokemonRLCore(unittest.TestCase):
 
     def test_advance_to_next_turn(self):
         # self.core.reset()
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.CREATE_TEAM)
 
     def test_create_team(self):
@@ -36,7 +36,7 @@ class TestPokemonRLCore(unittest.TestCase):
         player_team = team_factory.create_random_team()
         enemy_team = team_factory.create_random_team()
 
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.CREATE_TEAM)
 
         self.core.battle_core.write_team_data("player", player_team)
@@ -75,8 +75,7 @@ class TestPokemonRLCore(unittest.TestCase):
                 f"Player team item mismatch at pokemon {i}",
             )
 
-        self.core.battle_core.clear_stop_condition(turn)
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.GENERAL)
 
         player_team_dump_data = self.core.battle_core.read_team_data("player")
@@ -239,15 +238,14 @@ class TestPokemonRLCore(unittest.TestCase):
         ]
 
         # This test case Squirtle have 100% chance to death
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.CREATE_TEAM)
 
         self.core.battle_core.write_team_data("player", player_team)
         self.core.battle_core.write_team_data("enemy", enemy_team)
 
-        self.core.battle_core.clear_stop_condition(turn)
         # Advance to the first turn
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.GENERAL)
 
         # Perform a move (e.g., player uses the first move)
@@ -256,9 +254,8 @@ class TestPokemonRLCore(unittest.TestCase):
         actions = {"player": player_action, "enemy": enemy_action}
 
         self.core.action_manager.write_actions(turn, actions)
-        self.core.battle_core.clear_stop_condition(turn)
 
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         enemy_team_dump_data = self.core.battle_core.read_team_data("enemy")
         enemydf = pkmn_rl_arena.data.pokemon_data.to_pandas_team_dump_data(
             enemy_team_dump_data
@@ -374,15 +371,14 @@ class TestPokemonRLCore(unittest.TestCase):
         ]
 
         # This test case Squirtle have 100% chance to death
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.CREATE_TEAM)
 
         self.core.battle_core.write_team_data("player", player_team)
         self.core.battle_core.write_team_data("enemy", enemy_team)
 
-        self.core.battle_core.clear_stop_condition(turn)
         # Advance to the first turn
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.GENERAL)
 
         player_action = 0
@@ -390,8 +386,7 @@ class TestPokemonRLCore(unittest.TestCase):
         actions = {"player": player_action, "enemy": enemy_action}
 
         self.core.action_manager.write_actions(turn, actions)
-        self.core.battle_core.clear_stop_condition(turn)
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
 
         player_team_dump_data = self.core.battle_core.read_team_data("player")
         enemy_team_dump_data = self.core.battle_core.read_team_data("enemy")
@@ -519,15 +514,14 @@ class TestPokemonRLCore(unittest.TestCase):
         ]
 
         # This test case Squirtle have 100% chance to death
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.CREATE_TEAM)
 
         self.core.battle_core.write_team_data("player", player_team)
         self.core.battle_core.write_team_data("enemy", enemy_team)
 
-        self.core.battle_core.clear_stop_condition(turn)
         # Advance to the first turn
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.GENERAL)
 
         # Perform a move (e.g., player uses the first move)
@@ -536,15 +530,13 @@ class TestPokemonRLCore(unittest.TestCase):
         actions = {"player": player_action, "enemy": enemy_action}
 
         self.core.action_manager.write_actions(turn, actions)
-        self.core.battle_core.clear_stop_condition(turn)
 
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.ENEMY)
         enemy_action = 5  # Switch with the [1] mon
         actions = {"enemy": enemy_action}
         self.core.action_manager.write_actions(turn, actions)
-        self.core.battle_core.clear_stop_condition(turn)
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.GENERAL)
         player_team_dump_data = self.core.battle_core.read_team_data("player")
         enemy_team_dump_data = self.core.battle_core.read_team_data("enemy")
@@ -669,15 +661,14 @@ class TestPokemonRLCore(unittest.TestCase):
         ]
 
         # This test case Pikachu has 100% chance to faint
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.CREATE_TEAM)
 
         self.core.battle_core.write_team_data("player", player_team)
         self.core.battle_core.write_team_data("enemy", enemy_team)
 
-        self.core.battle_core.clear_stop_condition(turn)
         # Advance to the first turn
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.GENERAL)
 
         # Both use first move (Pikachu will faint)
@@ -686,15 +677,13 @@ class TestPokemonRLCore(unittest.TestCase):
         actions = {"player": player_action, "enemy": enemy_action}
 
         self.core.action_manager.write_actions(turn, actions)
-        self.core.battle_core.clear_stop_condition(turn)
 
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.PLAYER)
         player_action = 5  # Switch with the [1] mon (Bulbasaur)
         actions = {"player": player_action}
         self.core.action_manager.write_actions(turn, actions)
-        self.core.battle_core.clear_stop_condition(turn)
-        turn = self.core.turn_manager.advance_to_next_turn()
+        turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.GENERAL)
         player_team_dump_data = self.core.battle_core.read_team_data("player")
         enemy_team_dump_data = self.core.battle_core.read_team_data("enemy")

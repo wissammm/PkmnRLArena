@@ -122,6 +122,12 @@ class BattleCore:
 
         return stop_id
 
+    def advance_to_next_turn(self) -> TurnType:
+        """Advance to the next turn and return current TurnType"""
+        turntype = self.stop_ids[self.run_to_next_stop()]
+        self._clear_stop_condition(turntype)
+        return turntype
+
     def get_turn_type(self, stop_id: int) -> TurnType:
         """Convert stop ID to turn type"""
         return self.stop_ids.get(stop_id, TurnType.DONE)
@@ -144,19 +150,21 @@ class BattleCore:
         else:
             raise ValueError(f"Unknown agent: {agent}")
 
-    def clear_stop_condition(self, turn_type: TurnType):
+    def _clear_stop_condition(self, turn_type: TurnType):
         """Clear stop condition to continue execution"""
-        if turn_type == TurnType.CREATE_TEAM:
-            self.gba.write_u16(self.addrs["stopHandleTurnCreateTeam"], 0)
-        elif turn_type == TurnType.GENERAL:
-            print("Turn = general ")
-            self.gba.write_u16(self.addrs["stopHandleTurn"], 0)
-        elif turn_type == TurnType.PLAYER:
-            self.gba.write_u16(self.addrs["stopHandleTurnPlayer"], 0)
-        elif turn_type == TurnType.ENEMY:
-            self.gba.write_u16(self.addrs["stopHandleTurnEnemy"], 0)
-        elif turn_type == TurnType.DONE:
-            self.gba.write_u16(self.addrs["stopHandleTurnEnd"], 0)
+        match turn_type:
+            case TurnType.CREATE_TEAM:
+                self.gba.write_u16(self.addrs["stopHandleTurnCreateTeam"], 0)
+            case TurnType.GENERAL:
+                self.gba.write_u16(self.addrs["stopHandleTurn"], 0)
+            case TurnType.PLAYER:
+                self.gba.write_u16(self.addrs["stopHandleTurnPlayer"], 0)
+            case TurnType.ENEMY:
+                self.gba.write_u16(self.addrs["stopHandleTurnEnemy"], 0)
+            case TurnType.DONE:
+                self.gba.write_u16(self.addrs["stopHandleTurnEnd"], 0)
+            case _ :
+                raise ValueError(f"Unknown turntype : {turn_type}")
 
     def write_team_data(self, agent: str, data: List[int]):
         """Write team data for specified agent"""
