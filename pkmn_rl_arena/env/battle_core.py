@@ -1,5 +1,5 @@
 import rustboyadvance_py
-from pkmn_rl_arena import SAVE_PATH,ROM_PATH,BIOS_PATH
+from pkmn_rl_arena import SAVE_PATH, ROM_PATH, BIOS_PATH, logger
 import pkmn_rl_arena.data.parser
 import pkmn_rl_arena.data.pokemon_data
 
@@ -7,6 +7,7 @@ from .battle_state import TurnType
 
 import os
 from typing import List
+
 
 class BattleCore:
     """
@@ -134,21 +135,23 @@ class BattleCore:
 
     def read_team_data(self, agent: str) -> List[int]:
         """Read team data for specified agent"""
-        if agent == "player":
-            return self.gba.read_u32_list(self.addrs["monDataPlayer"], 35 * 6)
-        elif agent == "enemy":
-            return self.gba.read_u32_list(self.addrs["monDataEnemy"], 35 * 6)
-        else:
-            raise ValueError(f"Unknown agent: {agent}")
+        match agent:
+            case "player":
+                return self.gba.read_u32_list(self.addrs["monDataPlayer"], 35 * 6)
+            case "enemy":
+                return self.gba.read_u32_list(self.addrs["monDataEnemy"], 35 * 6)
+            case _:
+                raise ValueError(f"Unknown agent: {agent}")
 
     def write_action(self, agent: str, action: int):
         """Write action for specified agent"""
-        if agent == "player":
-            self.gba.write_u16(self.addrs["actionDonePlayer"], action)
-        elif agent == "enemy":
-            self.gba.write_u16(self.addrs["actionDoneEnemy"], action)
-        else:
-            raise ValueError(f"Unknown agent: {agent}")
+        match agent:
+            case "player":
+                self.gba.write_u16(self.addrs["actionDonePlayer"], action)
+            case "enemy":
+                self.gba.write_u16(self.addrs["actionDoneEnemy"], action)
+            case _:
+                raise ValueError(f"Unknown agent: {agent}")
 
     def _clear_stop_condition(self, turn_type: TurnType):
         """Clear stop condition to continue execution"""
@@ -168,12 +171,13 @@ class BattleCore:
 
     def write_team_data(self, agent: str, data: List[int]):
         """Write team data for specified agent"""
-        if agent == "player":
-            self.gba.write_u32_list(self.addrs["playerTeam"], data)
-        elif agent == "enemy":
-            self.gba.write_u32_list(self.addrs["enemyTeam"], data)
-        else:
-            raise ValueError(f"Unknown agent: {agent}")
+        match agent :
+            case "player":
+                self.gba.write_u32_list(self.addrs["playerTeam"], data)
+            case "enemy":
+                self.gba.write_u32_list(self.addrs["enemyTeam"], data)
+            case _ :
+                raise ValueError(f"Unknown agent: {agent}")
 
     def save_savestate(self, name: str) -> str:
         """Save the current state of the emulator"""
