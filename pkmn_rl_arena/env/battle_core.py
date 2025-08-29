@@ -6,7 +6,7 @@ import pkmn_rl_arena.data.pokemon_data
 from .battle_state import TurnType
 
 import os
-from typing import List
+from typing import Dict, List
 
 
 class BattleCore:
@@ -166,18 +166,19 @@ class BattleCore:
                 self.gba.write_u16(self.addrs["stopHandleTurnEnemy"], 0)
             case TurnType.DONE:
                 self.gba.write_u16(self.addrs["stopHandleTurnEnd"], 0)
-            case _ :
+            case _:
                 raise ValueError(f"Unknown turntype : {turn_type}")
 
-    def write_team_data(self, agent: str, data: List[int]):
+    def write_team_data(self, teams_data: Dict[str, List[int]]):
         """Write team data for specified agent"""
-        match agent :
-            case "player":
-                self.gba.write_u32_list(self.addrs["playerTeam"], data)
-            case "enemy":
-                self.gba.write_u32_list(self.addrs["enemyTeam"], data)
-            case _ :
-                raise ValueError(f"Unknown agent: {agent}")
+        authorized_agents = ["player", "enemy"]
+        for agent, team in teams_data.items():
+            if agent not in authorized_agents :
+                raise ValueError(
+                    f'Error: write_team_data : Invalid agent, expected either {authorized_agents}, got "{agent}".'
+                )
+            self.gba.write_u32_list(self.addrs[f"{agent}Team"], team)
+        return
 
     def save_savestate(self, name: str) -> str:
         """Save the current state of the emulator"""
