@@ -23,12 +23,18 @@ class ActionManager:
             agent == "player" and turn_type in [TurnType.PLAYER, TurnType.GENERAL]
         ) or (agent == "enemy" and turn_type in [TurnType.ENEMY, TurnType.GENERAL])
 
-    def write_actions(self, turn_type: TurnType, actions: Dict[str, int]):
+    def write_actions(self, turn_type: TurnType, actions: Dict[str, int])-> Dict[str,bool]:
         """Write actions based on turn type"""
+        action_written = {"player": False, "enemy" : False}
         for agent , action in actions.items():
             if not self.check_agent_match_turntype(agent, turn_type):
                 raise ValueError(f"Error : write_actions : invalid agent, expected \"player\" or \"enemy\", got {agent}")
+            if not self.is_valid_action(action):
+                continue
             self.battle_core.write_action(agent, actions[agent])
+            action_written[agent] = True
+
+        return action_written
 
 
     def get_legal_actions(self, agent: str) -> List[int]:
