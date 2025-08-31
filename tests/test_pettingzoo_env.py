@@ -50,6 +50,14 @@ class TestArena(unittest.TestCase):
         self.arena.step(action)
         self.arena.reset()
 
+    def test_load_save_state():
+        pass
+    def test_create_team(self):
+        pass
+    def test_switch_pokemon(self):
+        pass
+    def test_switch_pokemon_when_one_fainted_player(self):
+        pass
     # def test_render(self):
     #     self.arena.reset(seed=42)
     #     self.arena.render()

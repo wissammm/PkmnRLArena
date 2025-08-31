@@ -13,6 +13,7 @@ AgentObs = npt.NDArray[int]
 
 NB_PARAM_OBS = 69
 
+
 @dataclass
 class Observation:
     """
@@ -22,18 +23,18 @@ class Observation:
     The functions here are placeholders to fill.
 
     str : either "player" or "ennemy"
-    Agent : 
+    Agent :
     """
 
-    _o: Dict[str, AgentObs]
+    o: Dict[str, AgentObs]
 
     @property
     def agent(self, a: str):
-        if a not in self._o.keys():
+        if a not in self.o.keys():
             raise ValueError(
-                f"Invalid agent name, must be in {self._o.keys()}, got {a}."
+                f"Invalid agent name, must be in {self.o.keys()}, got {a}."
             )
-        self._o[a]
+        self.o[a]
 
     def get_agent_data(self, agent: str) -> AgentObs:
         """Get the full observation array for an agent"""

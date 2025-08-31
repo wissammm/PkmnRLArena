@@ -81,17 +81,22 @@ class Arena(AECEnv):
 
     def load_save_state(self, options: Dict[str, str] | None = None):
         """In charge of trying to load a save state.
+        Args:
+            options: Dict[str,str] : if dict
             
         """
         if options is None:
-            raise ValueError(
-                "Called load_save_state without any option. No save state will be loaded."
-            )
+            logger.debug("Called load_save_state options = None, creating a new battle core.")
+            self.core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+            return
+        elif options.get("save_state") is None :
+            logger.debug("No save state name given in options[\"save_state\"], creating a new battle core.")
+            self.core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+            return
+             
         loaded = self.save_state_manager.load_state(options.get("save_state"))
-
         if not loaded:
             raise RuntimeError("Failed to load save state.")
-
         return
 
     def reset(
@@ -121,10 +126,9 @@ class Arena(AECEnv):
         logger.info("Resetting env")
         if options is None:
             logger.debug("No options given")
-        # Load save state if provided
-        if not self.load_save_state(options):
-            logger.warn("No save state option given, Creating a new core.")
-            self.core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+        
+        # Load save state if provided otherwise creates a new battlecore
+        self.load_save_state(options)
 
         # Reset managers
         self.rewards = {agent: 0.0 for agent in self.agents}
@@ -141,7 +145,7 @@ class Arena(AECEnv):
 
         # Advance to first turn to  get initial observations
         self.core.advance_to_next_turn()
-        self.observations = self.observation_factory.from_game()
+        self.observations = self.observation_factory.from_game().o
 
         # clean rendering
         self.console.clear()
