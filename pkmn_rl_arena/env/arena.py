@@ -80,6 +80,9 @@ class Arena(AECEnv):
         logger.info(f"Created save_state : {self.save_state_manager.list_save_states()}")
 
     def load_save_state(self, options: Dict[str, str] | None = None):
+        """In charge of trying to load a save state.
+            
+        """
         if options is None:
             raise ValueError(
                 "Called load_save_state without any option. No save state will be loaded."
@@ -87,7 +90,7 @@ class Arena(AECEnv):
         loaded = self.save_state_manager.load_state(options.get("save_state"))
 
         if not loaded:
-            raise RuntimeError(f"Failed to load save state: {save_state}")
+            raise RuntimeError("Failed to load save state.")
 
         return
 
@@ -120,6 +123,7 @@ class Arena(AECEnv):
             logger.debug("No options given")
         # Load save state if provided
         if not self.load_save_state(options):
+            logger.warn("No save state option given, Creating a new core.")
             self.core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
 
         # Reset managers
