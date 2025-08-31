@@ -188,10 +188,17 @@ class BattleCore:
         return save_path
 
     def load_savestate(self, name: str) -> bool:
-        """Load a saved state"""
+        """Load a saved state
+        Args :
+            name : str = Save state name.
+                         The name must not be prefixed by SAVE_PATH
+        """
         save_path = os.path.join(SAVE_PATH, f"{name}.savestate")
         if os.path.exists(save_path):
+            logger.info(f"Attempting to load save state : {save_path}")
             self.gba.load_savestate(save_path, BIOS_PATH, ROM_PATH)
+            self.setup_addresses()
+            self.setup_stops()
             return True
         else:
             print(f"Save state {save_path} does not exist.")
