@@ -15,6 +15,7 @@ dependencies = [
     "maturin",
     "pettingzoo>=1.25.0",
     "gymnasium>=1.2.0",
+    "picologging>=0.9.3",
 ]
 
 [tool.setuptools]

@@ -7,10 +7,6 @@ from typing import List
 import random
 
 class PkmnTeamFactory:
-    # "id" 0 is test
-    pkmn = pd.read_csv(POKEMON_CSV_PATH)["id" != 0]
-    moves = pd.read_csv(MOVES_CSV_PATH)
-
     def __init__(
         self,
         pkmn_path = POKEMON_CSV_PATH,
@@ -18,11 +14,12 @@ class PkmnTeamFactory:
         seed: int | None = None,
     ):
         # "id" 0 is test
-        self.pkmn = pd.read_csv(POKEMON_CSV_PATH)[self.pkmn["id"] != 0]
+        self.pkmn = pd.read_csv(POKEMON_CSV_PATH)
+        self.pkmn = self.pkmn[self.pkmn["id"] != 0]
         self.moves = pd.read_csv(POKEMON_CSV_PATH)
         self.seed = seed
 
-    def create_random_team(self, battle_core: BattleCore) -> List[int]:
+    def create_random_team(self) -> List[int]:
         """
         Create a random team from the provided CSV files.
 

@@ -3,7 +3,7 @@ from .action import ActionManager
 from .battle_core import BattleCore
 from .battle_state import TurnType
 from .episode import EpisodeManager
-from .observation import ObservationManager
+from .observation import ObservationFactory
 from .save_state import SaveStateManager
 from .turn_manager import TurnManager
 
@@ -47,7 +47,7 @@ class PokemonRLCore:
     ):
         # Initialize core components
         self.battle_core = BattleCore(rom_path, bios_path, map_path, max_steps)
-        self.observation_manager = ObservationManager(self.battle_core)
+        self.observation_factory = ObservationFactory(self.battle_core)
         self.action_manager = ActionManager(self.battle_core)
         self.turn_manager = TurnManager(self.battle_core, self.action_manager)
         self.episode_manager = EpisodeManager()
@@ -97,7 +97,7 @@ class PokemonRLCore:
         self.turn_manager.advance_to_next_turn()
 
         # Get initial observations
-        return self.observation_manager.get_observations()
+        return self.observation_factory.from_game()
 
     def step(
         self, actions: Dict[str, int]
@@ -127,7 +127,7 @@ class PokemonRLCore:
             self.turn_manager.advance_to_next_turn()
 
         # Get new observations
-        observations = self.observation_manager.get_observations()
+        observations = self.observation_factory.from_game()
 
         # Calculate rewards (placeholder)
         rewards = {"player": 0.0, "enemy": 0.0}
