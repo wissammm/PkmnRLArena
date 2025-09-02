@@ -20,3 +20,8 @@ dependencies = [
 
 [tool.setuptools]
 package-dir = {"" = "pkmn_rl_arena"}
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1",
+]
