@@ -137,9 +137,9 @@ class BattleCore:
         """Read team data for specified agent"""
         match agent:
             case "player":
-                return self.gba.read_u32_list(self.addrs["monDataPlayer"], 35 * 6)
+                return self.gba.read_u32_list(self.addrs["monDataPlayer"], 28 * 6)
             case "enemy":
-                return self.gba.read_u32_list(self.addrs["monDataEnemy"], 35 * 6)
+                return self.gba.read_u32_list(self.addrs["monDataEnemy"], 28 * 6)
             case _:
                 raise ValueError(f"Unknown agent: {agent}")
 
