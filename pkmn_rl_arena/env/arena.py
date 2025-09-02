@@ -4,7 +4,13 @@ from .battle_state import BattleState
 from .observation import ObservationFactory
 from .pkmn_team_factory import PkmnTeamFactory
 from .save_state import SaveStateManager
-from pkmn_rl_arena import POKEMON_CSV_PATH, MOVES_CSV_PATH, ROM_PATH, BIOS_PATH, MAP_PATH
+from pkmn_rl_arena import (
+    POKEMON_CSV_PATH,
+    MOVES_CSV_PATH,
+    ROM_PATH,
+    BIOS_PATH,
+    MAP_PATH,
+)
 
 from pkmn_rl_arena.logging import logger
 
@@ -29,7 +35,7 @@ class RenderMode(Enum):
     RUSTBOY = 4  # show a picture of each turn rendered in rustboy advance
 
 
-class Arena(AECEnv):
+class BattleArena(AECEnv):
     """
     This class describes the pokemon battle environment for MARL
     It handles :
@@ -61,6 +67,7 @@ class Arena(AECEnv):
 
         # Environment configuration
         self.agents = ["player", "enemy"]
+        self.reset_options = {"required": ["save_state", "pkmn_teams"], "optional": []}
         self.action_space_size = 10
         self.observations = {agent: np.array([], dtype=int) for agent in self.agents}
         self.terminations = {agent: False for agent in self.agents}
@@ -72,37 +79,52 @@ class Arena(AECEnv):
         # render console
         self.console = Console()
 
-        
         sleep(2)
         self.save_state_manager.save_state(
             "boot_state"
         )  # creating 1st save state directly might be not optimal. maybe add a wait to run until 1st stop
-        logger.info(f"Created save_state : {self.save_state_manager.list_save_states()}")
+        logger.info(
+            f"Created save_state : {self.save_state_manager.list_save_states()}"
+        )
 
     def load_save_state(self, options: Dict[str, str] | None = None):
         """In charge of trying to load a save state.
         Args:
             options: Dict[str,str] : if dict
-            
+
         """
-        if options is None:
-            logger.debug("Called load_save_state options = None, creating a new battle core.")
+        if options.get("save_state") is None:
+            logger.debug(
+                'No save state name given in options["save_state"], creating a new battle core.'
+            )
             self.core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
             return
-        elif options.get("save_state") is None :
-            logger.debug("No save state name given in options[\"save_state\"], creating a new battle core.")
-            self.core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
-            return
-             
+
         loaded = self.save_state_manager.load_state(options.get("save_state"))
         if not loaded:
             raise RuntimeError("Failed to load save state.")
         return
 
+    def check_options_valid(self, options: Dict[str, Any] | None):
+        if options is None:
+            raise ValueError(
+                f"No options given, for env reset, required options : {self.reset_options}"
+            )
+
+        for option in options.keys():
+            if not (
+                option in self.reset_options["required"]
+                or option in self.reset_options["optional"]
+            ):
+                raise ValueError(
+                    f"Invalid reset option found : {option}.\n Expected options : {self.reset_options['required']} and {self.reset_options['optional']}"
+                )
+        return
+
     def reset(
         self,
         seed: int | None = None,
-        options: Dict[str, Any] | None = {"save_state": "boot_state"},
+        options: Dict[str, Any] | None = {"save_state": "boot_state", "teams": None},
     ):
         """
         Reset needs to initialize the following attributes
@@ -123,13 +145,20 @@ class Arena(AECEnv):
         """
         # TODO Implement seed args
 
-        logger.info("Resetting env")
-        if options is None:
-            logger.debug("No options given")
-        
+        logger.info(f"Resetting env with options {options}")
+        self.check_options_valid(options)
+
         # Load save state if provided otherwise creates a new battlecore
         self.load_save_state(options)
 
+        # create new teams
+        if options.get("teams") is None:
+            teams = {
+                agent: self.team_factory.create_random_team() for agent in self.agents
+            }
+        else:
+            teams = options["teams"]
+        self.core.write_team_data(teams)
         # Reset managers
         self.rewards = {agent: 0.0 for agent in self.agents}
         self._cumulative_rewards = {agent: 0.0 for agent in self.agents}
@@ -138,10 +167,6 @@ class Arena(AECEnv):
 
         # reset battle
         self.battle_state = BattleState()
-
-        # create new teams
-        teams = {agent: self.team_factory.create_random_team() for agent in self.agents}
-        self.core.write_team_data(teams)
 
         # Advance to first turn to  get initial observations
         self.core.advance_to_next_turn()
