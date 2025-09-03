@@ -38,24 +38,22 @@ make modern DINFO=1 DOBSERVED_DATA=1 DSKIP_TEXT=1 DSKIP_GRAPHICS=1 NO_DEBUG_PRIN
 
 ## Project structure
 ```
-rl_new_pokemon_ai/
+pkmn_rl_arena/
 ├──  agbcc                              # Library allowing to compile gba game with cc compiler
-├──  data                               # data for training # TO BE MOVED
 ├──  example                            # TO DEFINE / TO ORDER
 ├── rustboyadvance-ng-for-rl/           # Rust GBA emulator with Python bindings
 ├── pokeemerald_ai_rl/                  # Custom Pokémon Emerald ROM modified for RL training & build scripts
 ├── data/                               # Data files (CSV, etc.)
-├── src/                                # Main Python source code
-│   ├── data/
-│   │   ├── parser.py
-│   │   └── pokemon_data.py
-│   ├── env/
-│   │   ├── core.py
-│   │   └── benchmark.py
-│   ├── export/
-│   │   └── onnx_graph.py
-│   ├── quantize/
-│   │   └── quantize.py
+├── pkmn_rl_arena/                      # Main Python source code
+│     ├── data/ 
+│     ├── env/                          # All usefull files to train the model
+│     ├── export/                       # To export an onnx in c 
+│     │   ├── exporters/
+│     │   │   └── layers/
+│     │   └── templates/
+│     └── quantize/                     # Quantize the model for the GBA
+│         ├── __init__.py
+│         └── quantize.py
 ├── README.md
 ├── pyproject.toml
 ├── uv.lock
@@ -64,10 +62,9 @@ rl_new_pokemon_ai/
 ```
 - **rustboyadvance-ng-for-rl/**: Rust-based GBA emulator with Python bindings (PyO3)
 - **pokeemerald_ai_rl/**: Custom Pokémon Emerald ROM and build instructions
-- **src/**: Main Python code (environment, data, quantization, export)
+- **pkmn_rl_arena/**: Main Python code (environment, data, quantization, export)
 - **data/**: Data files (CSV, etc.)
-- **tests/**: Unit and integration tests (#TO DO)
-- **README.md**: Project documentation
+- **tests/**: Unit and integration tests 
 
 ##  Installation 
 Requirements :
@@ -126,5 +123,5 @@ maturin develop --features elf_support --release -j6
 ```
 
 ## License
-This project is licensed under the MIT License.  
+This project is licensed under the MIT License. NOT FOR "pret/pokeemerald" SCIENTIFIC USE ONLY
 See the [LICENSE](LICENSE) file for details.
