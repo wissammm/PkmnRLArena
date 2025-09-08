@@ -67,5 +67,13 @@
         "text.h": "c",
         "battle_anim.h": "c"
     },
-    "terminal.integrated.shell.linux": "/bin/bash"
+    "terminal.integrated.shell.linux": "/bin/bash",
+    "files.watcherExclude": {
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/.hg/store/**": true,
+        "**/.git/**": true,
+        "**/node_modules/**": true,
+        "**/.vscode/**": true
+    }
 }
