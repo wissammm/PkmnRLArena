@@ -1,7 +1,9 @@
-from .action import ActionManager
+from torch.ao.quantization.backend_config.backend_config import OBSERVATION_TYPE_DICT_KEY
+from pkmn_rl_arena.env.pkmn_team_factory import DataSize
+from .action import ActionManager, ACTION_SPACE_SIZE
 from .battle_core import BattleCore
-from .battle_state import BattleState
-from .observation import ObservationFactory
+from .battle_state import BattleState, TurnType
+from .observation import ObservationFactory, OBS_SPACE_SIZE
 from .pkmn_team_factory import PkmnTeamFactory
 from .save_state import SaveStateManager
 from pkmn_rl_arena import (
@@ -20,14 +22,14 @@ import functools
 
 from gymnasium.spaces import Discrete
 import numpy as np
+from numpy import typing as npt
 from pettingzoo import AECEnv
 from rich.console import Console
 from rich.table import Table
-from time import sleep
 
 
 class RenderMode(Enum):
-    """Enumeration for different turn types"""
+    """Enumeration for different rendering mode"""
 
     DISABLED = 1  # No rendering, just raw dogging gpu
     EPISODE_TERMINAL = 2  # Basic rendering enabed, returns a simple table for each episode with final team status and who won
@@ -50,6 +52,11 @@ class BattleArena(AECEnv):
         "name": "pkmn_daycare_v0.1",
     }
 
+    ##########################################################################
+    #
+    # CONSTRUCTOR
+    #
+    ##########################################################################
     def __init__(
         self,
         battle_core: BattleCore,
@@ -66,10 +73,14 @@ class BattleArena(AECEnv):
         self.save_state_manager = SaveStateManager(self.core)
 
         # Environment configuration
-        self.agents = ["player", "enemy"]
-        self.reset_options = {"required": ["save_state", "pkmn_teams"], "optional": []}
+        self.possible_agents = ["player", "enemy"]
+        self.agents = self.possible_agents
+        self.reset_options = {"required": ["save_state", "teams"], "optional": []}
         self.action_space_size = 10
-        self.observations = {agent: np.array([], dtype=int) for agent in self.agents}
+        self.observations = {
+            agent: {"observation": np.array([], dtype=int), "action_mask": []}
+            for agent in self.agents
+        }
         self.terminations = {agent: False for agent in self.agents}
         self.rewards = {agent: 0.0 for agent in self.agents}
         self.episode_steps = 0
@@ -79,15 +90,33 @@ class BattleArena(AECEnv):
         # render console
         self.console = Console()
 
-        sleep(2)
-        self.save_state_manager.save_state(
-            "boot_state"
-        )  # creating 1st save state directly might be not optimal. maybe add a wait to run until 1st stop
+        self.battle_state.current_turn = self.core.advance_to_next_turn()
+        if not self.battle_state.current_turn == TurnType.CREATE_TEAM:
+            raise RuntimeError(
+                "Upon creating BattleCore and calling advance_to_next_turn(), turntype should be advance to next turn"
+            )
+        self.save_state_manager.save_state("turn_type_create_team")
         logger.info(
             f"Created save_state : {self.save_state_manager.list_save_states()}"
         )
 
-    def load_save_state(self, options: Dict[str, str] | None = None):
+    ##########################################################################
+    #
+    # RESET & OPTIONS FCTN
+    #
+    ##########################################################################
+    def check_options_valid(self, options: Dict[str, Any]):
+        for option in options.keys():
+            if not (
+                option in self.reset_options["required"]
+                or option in self.reset_options["optional"]
+            ):
+                raise ValueError(
+                    f"Invalid reset option found : {option}.\n Expected options : {self.reset_options['required']} and {self.reset_options['optional']}"
+                )
+        return
+
+    def load_save_state(self, options: Dict[str, str]):
         """In charge of trying to load a save state.
         Args:
             options: Dict[str,str] : if dict
@@ -98,6 +127,7 @@ class BattleArena(AECEnv):
                 'No save state name given in options["save_state"], creating a new battle core.'
             )
             self.core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+            self.battle_state.current_turn = self.core.advance_to_next_turn()
             return
 
         loaded = self.save_state_manager.load_state(options.get("save_state"))
@@ -105,21 +135,34 @@ class BattleArena(AECEnv):
             raise RuntimeError("Failed to load save state.")
         return
 
-    def check_options_valid(self, options: Dict[str, Any] | None):
-        if options is None:
-            raise ValueError(
-                f"No options given, for env reset, required options : {self.reset_options}"
-            )
+    def create_teams(self, options: Dict[str, Any]) -> Dict[str, list[int]]:
+        if options.get("teams") is None:
+            return {
+                agent: self.team_factory.create_random_team() for agent in self.agents
+            }
 
-        for option in options.keys():
-            if not (
-                option in self.reset_options["required"]
-                or option in self.reset_options["optional"]
-            ):
+        teams = options["teams"]
+        for agent, team in teams.items():
+            logger.info(f"Creating {agent} team.")
+            if team is None:
+                teams[agent] = self.team_factory.create_random_team()
+                continue
+
+            if len(team) % DataSize.PKMN != 0:
                 raise ValueError(
-                    f"Invalid reset option found : {option}.\n Expected options : {self.reset_options['required']} and {self.reset_options['optional']}"
+                    f"Pkmn team creation : Incorrect param count."
+                    f"\nA pkmn takes {DataSize.PKMN} params to be created, but received  {len(team)} params."
+                    f"\nWhich accounts for : {int(len(team) / DataSize.PKMN)} pkmns and {len(team) / DataSize.PKMN} leftover params."
                 )
-        return
+
+            while len(team) / DataSize.PKMN < DataSize.PARTY_SIZE:
+                team.extend([0, 0, 0, 0, 0, 0, 0, 0])  # Empty pkmn slot
+            if not self.team_factory.is_team_valid(np.array(team)):
+                raise ValueError("Invalid reset param : \"team\".")
+
+            teams[agent] = team
+
+        return teams
 
     def reset(
         self,
@@ -145,32 +188,46 @@ class BattleArena(AECEnv):
         """
         # TODO Implement seed args
 
-        logger.info(f"Resetting env with options {options}")
+        logger.debug(f"Resetting env with options {options}")
+        if options is None:
+            raise ValueError(
+                f"No options given, for env reset, required options : {self.reset_options}"
+            )
         self.check_options_valid(options)
 
-        # Load save state if provided otherwise creates a new battlecore
-        self.load_save_state(options)
-
-        # create new teams
-        if options.get("teams") is None:
-            teams = {
-                agent: self.team_factory.create_random_team() for agent in self.agents
-            }
-        else:
-            teams = options["teams"]
-        self.core.write_team_data(teams)
         # Reset managers
+        self.agents = self.possible_agents
         self.rewards = {agent: 0.0 for agent in self.agents}
         self._cumulative_rewards = {agent: 0.0 for agent in self.agents}
         self.terminations = {agent: False for agent in self.agents}
         self.episode_steps = 0
 
-        # reset battle
+        ##### reset battle
+        # Load save state if provided otherwise creates a new battlecore
+        self.load_save_state(options)
+        # create new teams
+        teams = self.create_teams(options)
+        self.core.write_team_data(teams)
+
         self.battle_state = BattleState()
 
         # Advance to first turn to  get initial observations
-        self.core.advance_to_next_turn()
-        self.observations = self.observation_factory.from_game().o
+        self.battle_state.current_turn = self.core.advance_to_next_turn()
+        assert self.battle_state.current_turn == TurnType.GENERAL, (
+            f"Expected turntype.GENERAL, got {self.battle_state.current_turn}"
+        )
+        observations = self.observation_factory.from_game().o
+        observations = self.observation_factory.from_game()
+        self.observations = {
+            "player": {
+                "observation": observations.o["player"],
+                "action_mask": self.action_manager.get_action_mask("player"),
+            },
+            "enemy": {
+                "observation": observations.o["enemy"],
+                "action_mask": self.action_manager.get_action_mask("enemy"),
+            },
+        }
 
         # clean rendering
         self.console.clear()
@@ -178,8 +235,13 @@ class BattleArena(AECEnv):
         # Get dummy infos. Necessary for proper parallel_to_aec conversion
         self.infos = {a: {} for a in self.agents}
 
-        return  # observations, infos
+        return  # observations, infosj
 
+    ##########################################################################
+    #
+    # STEP
+    #
+    ##########################################################################
     def step(self, actions: Optional[Dict[str, int]]):
         """
         step(action) takes in an action for the current agent (specified by
@@ -225,11 +287,17 @@ class BattleArena(AECEnv):
 
         # Get observations
         observation = self.observation_factory.from_game()
-        self.observations = observation_factory.from_game()
+        self.observations = {
+            "player": {
+                "observation": observation.o["player"],
+                "action_mask": self.action_manager.get_action_mask("player"),
+            },
+            "enemy": {
+                "observation": observation.o["enemy"],
+                "action_mask": self.action_manager.get_action_mask("enemy"),
+            },
+        }
 
-        # Check termination conditions
-        # TODO : DEFINE TRUCATIONS & TERMINATIONS
-        # TODO : EXTRACT BATTLECORE TESTS
         if self.battle_state.is_battle_done():
             self.terminations = {agent: True for agent in self.agents}
             winner = observation.who_won()
@@ -244,18 +312,15 @@ class BattleArena(AECEnv):
 
         self.episode_steps += 1
 
-        # Prepare info
-        # self.infos = {
-        #     "current_turn": self.battle_state.get_current_turn(),
-        #     "battle_done": self.battle_state.is_battle_done(),
-        #     "ste_rewards": self.rewards,
-        #     "episode_steps": self.episode_steps,
-        #     "max_allowed_steps": self.max_steps_per_episode,
-        # }
-
         self.infos = {}
 
         return  # self.observations, self.rewards, self.terminations, self.truncations, self.infos
+
+    ##########################################################################
+    #
+    # RENDER
+    #
+    ##########################################################################
 
     def render(self):
         """
@@ -272,76 +337,7 @@ class BattleArena(AECEnv):
         # 3. No redering for faster computation
 
         # Create a table with two columns: Player and Enemy
-        table = Table(
-            title="Battle State", show_header=True, header_style="bold magenta"
-        )
-        table.add_column("Player", justify="center", style="cyan", no_wrap=True)
-        table.add_column("Enemy", justify="center", style="red", no_wrap=True)
-
-        # Get the current Pokémon for both player and enemy
-        player_current = observations["player"][observations["player"]["isActive"] == 1]
-        enemy_current = observations["enemy"][observations["enemy"]["isActive"] == 1]
-
-        # Player's current Pokémon details
-        player_current_details = ""
-        if not player_current.empty:
-            player_mon = player_current.iloc[0]
-            player_name = get_pokemon_name(player_mon["id"])
-            player_moves = player_mon["moves"]
-            player_pp = [
-                player_mon["move1_pp"],
-                player_mon["move2_pp"],
-                player_mon["move3_pp"],
-                player_mon["move4_pp"],
-            ]
-            # Add HP information for the active Pokémon
-            player_current_details = f"[bold]{player_name}[/bold] - HP: {player_mon['current_hp']}/{player_mon['max_hp']}\n"
-            for move, pp in zip(player_moves, player_pp):
-                player_current_details += f"Move {move}: PP {pp}\n"
-
-        # Enemy's current Pokémon details
-        enemy_current_details = ""
-        if not enemy_current.empty:
-            enemy_mon = enemy_current.iloc[0]
-            enemy_name = get_pokemon_name(enemy_mon["id"])
-            enemy_moves = enemy_mon["moves"]
-            enemy_pp = [
-                enemy_mon["move1_pp"],
-                enemy_mon["move2_pp"],
-                enemy_mon["move3_pp"],
-                enemy_mon["move4_pp"],
-            ]
-            # Add HP information for the active Pokémon
-            enemy_current_details = f"[bold]{enemy_name}[/bold] - HP: {enemy_mon['current_hp']}/{enemy_mon['max_hp']}\n"
-            for move, pp in zip(enemy_moves, enemy_pp):
-                enemy_current_details += f"Move {move}: PP {pp}\n"
-
-        # Add current Pokémon details to the table
-        table.add_row(player_current_details, enemy_current_details)
-
-        # Player's team Pokémon names and HP
-        player_team = observations["player"][observations["player"]["isActive"] != 1]
-        player_team_details = ""
-        for _, mon in player_team.iterrows():
-            mon_name = get_pokemon_name(mon["id"])
-            player_team_details += (
-                f"{mon_name}: HP {mon['current_hp']}/{mon['max_hp']}\n"
-            )
-
-        # Enemy's team Pokémon names and HP
-        enemy_team = observations["enemy"][observations["enemy"]["isActive"] != 1]
-        enemy_team_details = ""
-        for _, mon in enemy_team.iterrows():
-            mon_name = get_pokemon_name(mon["id"])
-            enemy_team_details += (
-                f"{mon_name}: HP {mon['current_hp']}/{mon['max_hp']}\n"
-            )
-
-        # Add team details to the table
-        table.add_row(player_team_details, enemy_team_details)
-
-        # Print the table to the console
-        self.console.print(table)
+        pass
 
     def observe(self, agent):
         """
@@ -360,7 +356,7 @@ class BattleArena(AECEnv):
         # gymnasium spaces are defined and documented here: https://gymnasium.farama.org/api/spaces/
 
         # (73 params / pkmn) * (6 pkmn / party) = 438
-        return Discrete(438)
+        return Discrete(OBS_SPACE_SIZE)
 
     # Action space should be defined here.
     # If your spaces change over time, remove this line (disable caching).
@@ -369,7 +365,7 @@ class BattleArena(AECEnv):
         # We can seed the action space to make the environment deterministic.
         #
         # 4 moves + 5 pkmn switch = 9
-        return Discrete(9)
+        return Discrete(ACTION_SPACE_SIZE)
 
     def close():
         """
