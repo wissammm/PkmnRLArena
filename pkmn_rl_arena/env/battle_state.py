@@ -4,8 +4,6 @@ from typing import List
 
 class TurnType(Enum):
     """Enumeration for different turn types"""
-
-    NOT_STARTED ="not_started"
     CREATE_TEAM = "create_team"  # Initial team creation
     GENERAL = "general"  # Both players act simultaneously
     PLAYER = "player"  # Only player acts
@@ -19,7 +17,7 @@ class BattleState:
 
     current_step: int = 0
     episode_done: bool = False
-    current_turn: TurnType = TurnType.NOT_STARTED
+    current_turn: TurnType = TurnType.CREATE_TEAM
     waiting_for_action: bool = False
     episode_steps: int = 0
 
