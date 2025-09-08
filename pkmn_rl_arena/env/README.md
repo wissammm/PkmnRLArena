@@ -10,12 +10,13 @@ defined by 2 players :
 Each player has a team containing up to 6 pokemons.
 Each pokemon is defined described by 35 values 
 
-Fonction reset core.py
-regarde savestate_manager
-data_mon_dump.c pour descripteur de pkmn
-Save state invalide nsi elle est faite prieure à une recompilation.
-important files : battle.h
-modifier list tests à lancer dans env/test.py
+# Action & observation spaces 
+## Action space
+At each turn our agent has 9 possible actions:
+| IDX  | Action                    |
+|------|---------------------------|
+|0 - 3 | Moves                     |
+|4 - 9 | Switch with another pokemon
 
 # PKMN DESCRITPION
 Pokemons are described in 28 values by the game : 
@@ -65,7 +66,7 @@ Of these we remove SPECIES & IV's and we add moves data :
 | 7  |   SPDEF                                  |
 | 8  | ABILITY                                  |
 | 9  | ABILITY(placeholder)                     |
-| 10  | SPECIE_1                                 |
+| 10 | SPECIE_1                                 |
 | 11 | SPECIE_2                                 |
 |    | STATUS:                                  |
 | 12 |   HP                                     |
