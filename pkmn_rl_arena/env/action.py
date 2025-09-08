@@ -3,6 +3,9 @@ from .battle_state import TurnType
 
 from typing import Dict, List
 
+ACTION_SPACE_SIZE = 9
+
+
 class ActionManager:
     """
     Manages action validation and execution.
