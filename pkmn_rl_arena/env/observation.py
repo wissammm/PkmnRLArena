@@ -12,7 +12,7 @@ import pandas as pd
 AgentObs = npt.NDArray[int]
 
 NB_PARAM_OBS = 69
-
+OBS_SPACE_SIZE= 438
 
 @dataclass
 class Observation:
