@@ -153,10 +153,18 @@ class BattleCore:
         self.gba.add_stop_addr(addr, size, read, name, stop_id)
 
     def run_to_next_stop(self, max_steps=2000000) -> int:
-        """Run the emulator until we hit a stop condition"""
+        """
+        Run the emulator until we hit a stop condition and updates game state.
+        Args:
+            max_steps : number of steps to run in the gba before timeout
+        Return:
+            stop_id : -1 if uncatched error, 
+        Raises :
+            TimeOutError : if max steps < nb of steps executed to run to next stop
+        """
         stop_id = self.gba.run_to_next_stop(self.steps)
 
-        # Keep running if we didn't hit a stop
+        # Keep running until we hit a stop
         while stop_id == -1:
             max_steps -= 1
             if max_steps <= 0:
@@ -218,7 +226,7 @@ class BattleCore:
         """Write team data for specified agent"""
         authorized_agents = ["player", "enemy"]
         for agent, team in teams_data.items():
-            if agent not in authorized_agents :
+            if agent not in authorized_agents:
                 raise ValueError(
                     f'Error: write_team_data : Invalid agent, expected either {authorized_agents}, got "{agent}".'
                 )
