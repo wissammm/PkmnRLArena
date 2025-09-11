@@ -1,8 +1,6 @@
-from torch.ao.quantization.backend_config.backend_config import OBSERVATION_TYPE_DICT_KEY
 from pkmn_rl_arena.env.pkmn_team_factory import DataSize
 from .action import ActionManager, ACTION_SPACE_SIZE
-from .battle_core import BattleCore
-from .battle_state import BattleState, TurnType
+from .battle_core import BattleCore, TurnType, BattleState
 from .observation import ObservationFactory, OBS_SPACE_SIZE
 from .pkmn_team_factory import PkmnTeamFactory
 from .save_state import SaveStateManager
@@ -20,10 +18,15 @@ from enum import Enum
 from typing import Any, Dict, Optional
 import functools
 
-from gymnasium.spaces import Discrete
+
 import numpy as np
 from numpy import typing as npt
-from pettingzoo import AECEnv
+
+from gymnasium.spaces import Discrete
+
+from pettingzoo import ParallelEnv
+from pettingzoo.utils import AgentSelector
+
 from rich.console import Console
 from rich.table import Table
 
@@ -37,7 +40,7 @@ class RenderMode(Enum):
     RUSTBOY = 4  # show a picture of each turn rendered in rustboy advance
 
 
-class BattleArena(AECEnv):
+class BattleArena(ParallelEnv):
     """
     This class describes the pokemon battle environment for MARL
     It handles :
@@ -75,13 +78,15 @@ class BattleArena(AECEnv):
         # Environment configuration
         self.possible_agents = ["player", "enemy"]
         self.agents = self.possible_agents
-        self.reset_options = {"required": ["save_state", "teams"], "optional": []}
+        # self.reset_options = {"required": ["save_state", "teams"], "optional": []}
         self.action_space_size = 10
         self.observations = {
             agent: {"observation": np.array([], dtype=int), "action_mask": []}
             for agent in self.agents
         }
         self.terminations = {agent: False for agent in self.agents}
+        self.truncations = {agent: False for agent in self.agents}
+
         self.rewards = {agent: 0.0 for agent in self.agents}
         self.episode_steps = 0
         self.max_steps_per_episode = max_steps_per_episode  # Configurable
@@ -95,9 +100,9 @@ class BattleArena(AECEnv):
             raise RuntimeError(
                 "Upon creating BattleCore and calling advance_to_next_turn(), turntype should be advance to next turn"
             )
-        self.save_state_manager.save_state("turn_type_create_team")
+        self.save_state_manager.save_state("boot_state")
         logger.info(
-            f"Created save_state : {self.save_state_manager.list_save_states()}"
+            f"Created save_state : {self.save_state_manager.save_states}"
         )
 
     ##########################################################################
@@ -105,16 +110,16 @@ class BattleArena(AECEnv):
     # RESET & OPTIONS FCTN
     #
     ##########################################################################
-    def check_options_valid(self, options: Dict[str, Any]):
-        for option in options.keys():
-            if not (
-                option in self.reset_options["required"]
-                or option in self.reset_options["optional"]
-            ):
-                raise ValueError(
-                    f"Invalid reset option found : {option}.\n Expected options : {self.reset_options['required']} and {self.reset_options['optional']}"
-                )
-        return
+    # def check_options_valid(self, options: Dict[str, Any]):
+    #     for option in options.keys():
+    #         if not (
+    #             option in self.reset_options["required"]
+    #             or option in self.reset_options["optional"]
+    #         ):
+    #             raise ValueError(
+    #                 f"Invalid reset option found : {option}.\n Expected options : {self.reset_options['required']} and {self.reset_options['optional']}"
+    #             )
+    #     return
 
     def load_save_state(self, options: Dict[str, str]):
         """In charge of trying to load a save state.
@@ -133,6 +138,7 @@ class BattleArena(AECEnv):
         loaded = self.save_state_manager.load_state(options.get("save_state"))
         if not loaded:
             raise RuntimeError("Failed to load save state.")
+        self.battle_state.current_turn = self.core.get_turn_type()
         return
 
     def create_teams(self, options: Dict[str, Any]) -> Dict[str, list[int]]:
@@ -158,7 +164,7 @@ class BattleArena(AECEnv):
             while len(team) / DataSize.PKMN < DataSize.PARTY_SIZE:
                 team.extend([0, 0, 0, 0, 0, 0, 0, 0])  # Empty pkmn slot
             if not self.team_factory.is_team_valid(np.array(team)):
-                raise ValueError("Invalid reset param : \"team\".")
+                raise ValueError('Invalid reset param : "team".')
 
             teams[agent] = team
 
@@ -193,7 +199,7 @@ class BattleArena(AECEnv):
             raise ValueError(
                 f"No options given, for env reset, required options : {self.reset_options}"
             )
-        self.check_options_valid(options)
+        # self.check_options_valid(options)
 
         # Reset managers
         self.agents = self.possible_agents
@@ -201,6 +207,8 @@ class BattleArena(AECEnv):
         self._cumulative_rewards = {agent: 0.0 for agent in self.agents}
         self.terminations = {agent: False for agent in self.agents}
         self.episode_steps = 0
+        self._agent_selector = AgentSelector(self.agents)
+        self.agent_selection = self._agent_selector.next()
 
         ##### reset battle
         # Load save state if provided otherwise creates a new battlecore
@@ -208,8 +216,6 @@ class BattleArena(AECEnv):
         # create new teams
         teams = self.create_teams(options)
         self.core.write_team_data(teams)
-
-        self.battle_state = BattleState()
 
         # Advance to first turn to  get initial observations
         self.battle_state.current_turn = self.core.advance_to_next_turn()
@@ -235,7 +241,7 @@ class BattleArena(AECEnv):
         # Get dummy infos. Necessary for proper parallel_to_aec conversion
         self.infos = {a: {} for a in self.agents}
 
-        return  # observations, infosj
+        return self.observations, self.infos
 
     ##########################################################################
     #
@@ -278,7 +284,7 @@ class BattleArena(AECEnv):
         # Get dummy infos (not used in this example)
         # Validate actions
         for agent, action in actions.items():
-            if not ActionManager.is_valid_action(action):
+            if not ActionManager.is_valid_action(agent, action):
                 raise ValueError(f"Invalid action {action} for agent {agent}")
 
         # Write actions
@@ -314,7 +320,13 @@ class BattleArena(AECEnv):
 
         self.infos = {}
 
-        return  # self.observations, self.rewards, self.terminations, self.truncations, self.infos
+        return (
+            self.observations,
+            self.rewards,
+            self.terminations,
+            self.truncations,
+            self.infos,
+        )
 
     ##########################################################################
     #
@@ -339,14 +351,18 @@ class BattleArena(AECEnv):
         # Create a table with two columns: Player and Enemy
         pass
 
-    def observe(self, agent):
-        """
-        Observe should return the observation of the specified agent. This function
-        should return a sane observation (though not necessarily the most up to date possible)
-        at any time after reset() is called.
-        """
-        # observation of one agent is the previous state of the other
-        return self.observation_manager.get_observations()[agent]
+    def _get_observations(self):
+        obs = self.observation_factory.from_game()
+        return {
+            "player": {
+                "observation": obs.o["player"],
+                "action_mask": self.action_manager.get_action_mask("player"),
+            },
+            "enemy": {
+                "observation": obs.o["enemy"],
+                "action_mask": self.action_manager.get_action_mask("enemy"),
+            },
+        }
 
     # Observation space should be defined here.
     # lru_cache allows observation and action spaces to be memoized, reducing clock cycles required to get each agent's space.
@@ -367,10 +383,11 @@ class BattleArena(AECEnv):
         # 4 moves + 5 pkmn switch = 9
         return Discrete(ACTION_SPACE_SIZE)
 
-    def close():
+    def close(self):
         """
         Close should release any graphical displays, subprocesses, network connections
         or any other environment data which should not be kept around after the
         user is no longer using the environment.
         """
-        pass
+        self.save_state_manager.remove_save_states()
+        return
