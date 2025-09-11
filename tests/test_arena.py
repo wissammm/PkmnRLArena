@@ -68,6 +68,17 @@ class TestArena(unittest.TestCase):
     #     self.arena.render()
 
 
+class TestPettingZooAPI(unittest.TestCase):
+    def setUp(self):
+        logger.setLevel(logging.DEBUG)
+        core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+        self.arena = BattleArena(core)
+
+    def test(self):
+        parallel_api_test(self.arena, num_cycles=1000)
+
+    def tearDown(self):
+        BattleArena.close()
 
 
 class TestResetOptions(unittest.TestCase):
