@@ -188,6 +188,267 @@ class TestResetOptions(unittest.TestCase):
         )
 
 
+class TestFightUnfold(unittest.TestCase):
+    """
+    The following tests writes directly actions using the action_manager to test
+
+    Its purpose is to test the action manager as well as other lower level apis.
+
+    NOTE: Should be refactored to not use BattleArena nor PkmnRLCore
+    """
+
+    def setUp(self):
+        logger.setLevel(logging.DEBUG)
+        core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+        self.arena = BattleArena(core)
+
+    def tearDown(self):
+        BattleArena.close()
+
+    def test_enemy_lost(self):
+        # pikachu lvl 99 using shock wave (86) with 100% accyracy
+        options = {
+            "save_state": "boot_state",
+            "teams": {
+                # Pikachu with moves and 100% HP
+                "player": [
+                    25,
+                    99,
+                    84,
+                    84,
+                    84,
+                    84,
+                    100,
+                    0,
+                ],
+                # Magikarp uses splash wich does nothing 10% HP
+                "enemy": [
+                    129,
+                    10,
+                    150,
+                    0,
+                    0,
+                    0,
+                    10,
+                    0,
+                ],
+            },
+        }
+
+        self.arena.reset(options)
+        self.arena.step()
+
+        for agent in self.arena.possible_agents:
+            self.assertTrue(self.arena.terminations[agent])
+
+    def test_switch_pokemon(self):
+        options = {
+            "save_state": "boot_state",
+            "teams": {
+                "player": [
+                    129,  # Magikarp lvl 1 with splash wich does nothing
+                    1,  # lvl 1
+                    150,  # splash
+                    0,
+                    0,
+                    0,
+                    100,  # 100% hp
+                    0,
+                ],
+                "enemy": [
+                    # Squirtle
+                    7,
+                    99,  # lvl 99
+                    111,  # DEFENSE CURL
+                    0,
+                    0,
+                    0,
+                    10,  # 10 % hp
+                    0,
+                    # WARTORTLE
+                    8,
+                    99,
+                    5,  # MEGAPUNCH
+                    5,  # MEGAPUNCH
+                    5,  # MEGAPUNCH
+                    5,  # MEGAPUNCH
+                    11,
+                    0,
+                ],
+            },
+        }
+
+        self.arena.reset(options=options)
+
+        player_action = 0  # use move defense curl
+        enemy_action = 5  #
+        actions = {"player": player_action, "enemy": enemy_action}
+
+        self.arena.action_manager.write_actions(
+            self.arena.battle_state.current_turn, actions
+        )
+        turn = self.arena.core.advance_to_next_turn()
+        self.assertEqual(turn, TurnType.GENERAL)
+
+        enemy_team_dump_data = self.arena.core.read_team_data("enemy")
+
+        enemydf = pokemon_data.to_pandas_team_dump_data(enemy_team_dump_data)
+        active_enemy = enemydf[enemydf["isActive"] == 1]
+        print(enemydf)
+        self.assertEqual(
+            len(active_enemy),
+            1,
+            "There should be exactly one active Pokémon in the enemy team.",
+        )
+        self.assertEqual(
+            active_enemy.iloc[0]["id"],
+            8,
+            "The active Pokémon in the enemy team should have ID 8.",
+        )
+
+    def test_invalid_action(self):
+        options = {
+            "save_state": "boot_state",
+            "teams": {
+                "player": [
+                    # SQUIRTLE
+                    7,
+                    2,  # lvl 2
+                    5,
+                    5,
+                    5,
+                    5,
+                    10,
+                    0,
+                    # RAICHU
+                    26,
+                    10,
+                    5,
+                    5,
+                    5,
+                    5,
+                    100,
+                    0,
+                ],
+                "enemy": [
+                    25,  # pikachu
+                    50,
+                    84,  # Thunderschock
+                    84,
+                    84,
+                    84,
+                    100,  # %HP
+                    0,
+                ],
+            },
+        }
+
+        # This test case Pikachu has 100% chance to faint
+        self.arena.reset(options=options)
+
+        # Both use first move (Pikachu will faint)
+        player_action = 0
+        enemy_action = 0
+        actions = {"player": player_action, "enemy": enemy_action}
+
+        self.arena.action_manager.write_actions(
+            self.arena.battle_state.current_turn, actions
+        )
+
+        turn = self.arena.core.advance_to_next_turn()
+        self.assertEqual(turn, TurnType.PLAYER)
+        player_action = 5  # Switch with the [1] mon (Bulbasaur)
+        actions = {"player": player_action}
+        written_actions = self.arena.action_manager.write_actions(turn, actions)
+        self.assertFalse(
+            written_actions["enemy"],
+            "Invalid action written successfully! This should not happen.",
+        )
+
+    def test_switch_pokemon_when_one_fainted_player(self):
+        options = {
+            "save_state": "boot_state",
+            "teams": {
+                "player": [
+                    # SQUIRTLE
+                    7,
+                    2,  # lvl 2
+                    5,
+                    5,
+                    5,
+                    5,
+                    10,
+                    0,
+                    # RAICHU
+                    26,
+                    10,
+                    5,
+                    5,
+                    5,
+                    5,
+                    100,
+                    0,
+                ],
+                "enemy": [
+                    25,  # pikachu
+                    50,
+                    84,  # Thunderschock
+                    84,
+                    84,
+                    84,
+                    100,  # %HP
+                    0,
+                ],
+            },
+        }
+
+        # This test case Pikachu has 100% chance to faint
+        self.arena.reset(options=options)
+
+        # Both use first move (Pikachu will faint)
+        actions = {"player": 0, "enemy": 0}
+
+        for agent, result in self.arena.action_manager.write_actions(
+            self.arena.battle_state.current_turn, actions
+        ).items():
+            self.assertTrue(result, "Valid action not written this should not happen.")
+
+        turn = self.arena.core.advance_to_next_turn()
+        self.assertEqual(turn, TurnType.PLAYER)
+
+        actions = {"player": 5}  # Switch with the [1] mon (RAICHU)}
+        for agent, result in self.arena.action_manager.write_actions(
+            self.arena.battle_state.current_turn, actions
+        ).items():
+            self.assertTrue(result, "Valid action not written this should not happen.")
+
+        turn = self.arena.core.advance_to_next_turn()
+        self.assertEqual(turn, TurnType.GENERAL)
+
+        player_team_dump_data = self.arena.core.read_team_data("player")
+        playerdf = pokemon_data.to_pandas_team_dump_data(player_team_dump_data)
+        active_player = playerdf[playerdf["isActive"] == 1]
+        self.assertEqual(
+            len(active_player),
+            1,
+            "There should be exactly one active Pokémon in the player team.",
+        )
+        self.assertEqual(
+            active_player.iloc[0]["id"],
+            26,
+            "The active Pokémon in the player team should have ID 26.",
+        )
+
+    # def test_special_moves():
+    #     #ROAR FLEE FLY MULTIMOVE MULTIHIT ENCORE move 5 also
+    #     pass
+    # def test_status():
+    #     pass
+
+    # def test_all_moves():
+    #     # # Test all moves
+    #     pass
+
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
