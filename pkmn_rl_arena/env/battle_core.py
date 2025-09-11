@@ -239,15 +239,16 @@ class BattleCore:
                          The name must not be prefixed by SAVE_PATH
         """
         save_path = os.path.join(SAVE_PATH, f"{name}.savestate")
-        if os.path.exists(save_path):
-            logger.info(f"Attempting to load save state : {save_path}")
-            self.gba.load_savestate(save_path, BIOS_PATH, ROM_PATH)
-            self.setup_addresses()
-            self.setup_stops()
-            return True
-        else:
+        if not os.path.exists(save_path):
             print(f"Save state {save_path} does not exist.")
             return False
+
+        logger.info(f"Loading following save state : {save_path}")
+        self.gba.load_savestate(save_path, BIOS_PATH, ROM_PATH)
+        self.setup_addresses()
+        self.setup_stops()
+        self.state = BattleStateFactory.from_save_path(save_path)
+        return True
 
     def is_episode_done(self) -> bool:
         """Check if battle is finished"""
