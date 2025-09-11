@@ -1,11 +1,13 @@
 from typing import Dict, List
 from dataclasses import dataclass
 from numpy import typing as npt
+from pkmn_rl_arena import POKEMON_CSV_PATH, MOVES_CSV_PATH
 
 from pkmn_rl_arena.env.battle_core import BattleCore
 from pkmn_rl_arena.env.pkmn_team_factory import PkmnTeamFactory
 
 import numpy as np
+import pandas as pd
 
 AgentObs = npt.NDArray[int]
 
@@ -44,10 +46,8 @@ class Observation:
 
 
         result = {"player" : [], "enemy" : []}
-        for agent , array in result.items():
-            array[self._o[hp_idx_pkmn_1],self._o[hp_idx_pkmn_2],self._o[hp_idx_pkmn_3],self._o[hp_idx_pkmn_4],self._o[hp_idx_pkmn_5],self._o[hp_idx_pkmn_6]]
 
-        return array
+        return result
 
     def stat_changes(self) -> None:
         """Return per pkmn per agent stat changes since last turn
@@ -63,44 +63,56 @@ class Observation:
 
 @dataclass(frozen=True)
 class ObsIdx:
-    #
-    #
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!
-    #  NOT UP TO DATE
-    #
-    #
-    # 
-    MAX_PKMN_MOVES = 4
-    NB_STATS_PER_PKMN = 0  # ??????
-    NB_DATA_PKMN = 72
-    # TO BE MODIFIED
-    RAW_DATA = {
-        "is_active": 0,
-        "species": 1,
-        "stats_begin": 2,
-        "stats_end": 6,
-        "moves_begin": 7,
-        "moves_end": 10,
-        "iv_begin": 11,
-        "iv_end": 16,
-        "ability": 17,
-        "abitlity_2": 18,
-        "specie_1": 19,
-        "specie_2": 20,
-        "HP": 21,
-        "level": 22,
-        "friendship": 23,
-        "max_HP": 24,
-        "held_item": 25,
-        "pp_bonuses": 26,
-        "personality": 27,
-        "status": 28,
-        "status_1": 29,
-        "status_2": 30,
-        "PP_begin": 31,
-        "PP_end": 34,
-    }
 
+    MAX_PKMN_MOVES = 4
+    NB_STATS_PER_PKMN = 5  # ATK, DEF, SPEED, SPATK, SPDEF
+    MOVE_ATTRIBUTES_PER_MOVE = 10  # id, pp, effect, power, type, accuracy, pp, priority, secondaryEffectChance, target, flags
+    NB_DATA_PKMN = 20 + (MAX_PKMN_MOVES * MOVE_ATTRIBUTES_PER_MOVE)  # 20 base fields + move data
+
+    RAW_DATA = {
+       "species": 0,
+        "is_active": 1,
+
+        # Stats [2..6] => Python slice end is exclusive, so use 7
+        "stats_begin": 2,   # ATK, DEF, SPEED, SPATK, SPDEF
+        "stats_end": 7,     # exclusive
+
+        "ability": 7,       # ability num
+        "type_1": 8,
+        "type_2": 9,
+
+        "HP": 10,
+        "level": 11,
+        "friendship": 12,
+        "max_HP": 13,
+        "held_item": 14,
+        "pp_bonuses": 15,
+        "personality": 16,
+        "status": 17,
+        "status_2": 18,     # reserved in dump
+        "status_3": 19,     # reserved in dump
+
+        # Move data with all attributes from moves_data.csv
+        # For each move, we store:
+        # [move_id, pp, effect, power, type, accuracy, priority, secondaryEffectChance, target, flags]
+        "moves_begin": 20,
+        "moves_end": 20 + (MAX_PKMN_MOVES * MOVE_ATTRIBUTES_PER_MOVE),  # exclusive
+        
+        # Attribute offsets within each move's data block
+        "move_id_offset": 0,
+        "pp_offset": 1,
+        "effect_offset": 2,
+        "power_offset": 3,
+        "type_offset": 4,
+        "accuracy_offset": 5,
+        "priority_offset": 6,
+        "secondaryEffectChance_offset": 7,
+        "target_offset": 8,
+        "flags_offset": 9,
+        
+        # Each move occupies MOVE_ATTRIBUTES_PER_MOVE slots
+        "move_slot_stride": MOVE_ATTRIBUTES_PER_MOVE,
+    }
 
 class ObservationFactory:
     """
@@ -126,65 +138,66 @@ class ObservationFactory:
           2. For each move: include id, pp info, and extra move stats.
           3. Concatenate into a flat observation array for the agent.
         """
-        observations: Dict[str, np.ndarray | None] = {"player": None, "enemy": None}
-
-        # Pre-index moves_df by id for O(1) lookups
-        moves_df = PkmnTeamFactory.moves.set_index("id").drop(columns=["moveName"])
-        moves_dict = {idx: row.to_numpy() for idx, row in moves_df.iterrows()}
-
-        for agent in observations.keys():
-            # Split raw team data into 6 Pokémon entries
+        moves_df = pd.read_csv(MOVES_CSV_PATH)
+    
+        move_attrs = {}
+        for _, row in moves_df.iterrows():
+            move_id = int(row['id'])
+            move_attrs[move_id] = {
+                'effect': int(row['effect']),
+                'power': int(row['power']),
+                'type': int(row['type']),
+                'accuracy': int(row['accuracy']),
+                'pp': int(row['pp']),  # This is max PP, not current PP
+                'priority': int(row['priority']),
+                'secondaryEffectChance': int(row['secondaryEffectChance']),
+                'target': int(row['target']),
+                'flags': int(row['flags'])
+            }
+        
+        observations = {}
+        for agent in ["player", "enemy"]:
+            raw_team_data = self.battle_core.read_team_data(agent)
             raw_data_list = np.split(
-                np.array(
-                    self.battle_core.read_team_data(agent), dtype=int
-                ),  # force int dtype
+                np.array(raw_team_data, dtype=int),  # force int dtype
                 indices_or_sections=6,
             )
-
-            agent_data = np.array([])
-
-            for raw_pkmn in raw_data_list:
-                # Core Pokémon attributes
-                core_data = np.concatenate(
-                    [
-                        [raw_pkmn[ObsIdx.RAW_DATA_IDX["is_active"]]],
-                        raw_pkmn[
-                            ObsIdx.RAW_DATA_IDX["stats_begin"] : ObsIdx.RAW_DATA_IDX[
-                                "stats_end"
-                            ]
-                        ],
-                        raw_pkmn[
-                            ObsIdx.RAW_DATA_IDX["ability"] : ObsIdx.RAW_DATA_IDX[
-                                "status_2"
-                            ]
-                        ],
-                    ]
-                )
-
-                # Moves data (id, pp, stats)
-                moves_id = raw_pkmn[7:11]
-                moves_data = np.concatenate(
-                    [
-                        np.concatenate(
-                            [
-                                [move_id],
-                                [
-                                    moves_dict[move_id][0]
-                                ],  # max_pp from first col of stored row
-                                [raw_pkmn[ObsIdx.RAW_DATA_IDX["PP_begin"] + i]],
-                                moves_dict[move_id][1:],  # the rest of stats
-                            ]
-                        )
-                        for i, move_id in enumerate(moves_id)
-                        if move_id in moves_dict
-                    ]
-                )
-
-                # Merge into agent array
-                agent_data = np.concatenate([agent_data, core_data, moves_data])
-                observations[agent] = agent_data
-
-        return observations
+            
+            team_obs = []
+            for pkmn_data in raw_data_list:
+                pkmn_obs = list(pkmn_data[:20])
+                
+                for i in range(0, ObsIdx.MAX_PKMN_MOVES):
+                    move_idx = 20 + (i * 2)  # 20, 22, 24, 26 (move indices in raw data)
+                    pp_idx = move_idx + 1     # 21, 23, 25, 27 (PP indices in raw data)
+                    
+                    move_id = pkmn_data[move_idx]
+                    pp = pkmn_data[pp_idx]
+                    
+                    move_obs = [move_id, pp]
+                    
+                    if move_id > 0 and move_id in move_attrs:
+                        attrs = move_attrs[move_id]
+                        move_obs.extend([
+                            attrs['effect'],
+                            attrs['power'],
+                            attrs['type'],
+                            attrs['accuracy'],
+                            attrs['priority'],
+                            attrs['secondaryEffectChance'],
+                            attrs['target'],
+                            attrs['flags']
+                        ])
+                    else:
+                        move_obs.extend([0] * 8)  # 8 additional attributes
+                    
+                    pkmn_obs.extend(move_obs)
+                
+                team_obs.extend(pkmn_obs)
+            
+            observations[agent] = np.array(team_obs, dtype=int)
+        
+        return Observation(_o=observations)
 
     def from_diff(o1: Observation, o2: Observation) -> Observation:
         """Computes difference between 2 observations"""

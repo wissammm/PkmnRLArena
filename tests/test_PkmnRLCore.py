@@ -1,8 +1,10 @@
+from pkmn_rl_arena.env.observation import ObsIdx, Observation
 from pkmn_rl_arena.env.pokemon_rl_core import PokemonRLCore
 from pkmn_rl_arena.env.battle_state import TurnType
 from pkmn_rl_arena.env.pkmn_team_factory import PkmnTeamFactory
 import pkmn_rl_arena.data.parser
 import pkmn_rl_arena.data.pokemon_data
+import numpy as np
 
 from pkmn_rl_arena import (
     ROM_PATH,
@@ -707,7 +709,87 @@ class TestPokemonRLCore(unittest.TestCase):
     #     pass
 
     def test_observation_space(self):
-        pass 
+        teams = {
+            "player": [
+                25, 10, 84, 84, 84, 84, 100, 0,  # Pikachu (ID 25) as active
+                1, 10, 1, 2, 3, 4, 50, 0,        # Bulbasaur as backup
+                0, 0, 0, 0, 0, 0, 0, 0,          # Empty slots
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+            ],
+            "enemy": [
+                7, 10, 45, 45, 45, 45, 80, 0,    # Squirtle (ID 7) as active
+                4, 10, 5, 6, 7, 8, 60, 0,        # Charmander as backup
+                0, 0, 0, 0, 0, 0, 0, 0,          # Empty slots
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+            ],
+        }
+        
+        turn = self.core.battle_core.advance_to_next_turn()
+        self.assertEqual(turn, TurnType.CREATE_TEAM)
+        self.core.battle_core.write_team_data(teams)
+        
+        turn = self.core.battle_core.advance_to_next_turn()
+        self.assertEqual(turn, TurnType.GENERAL)
+        
+        player_team_dump = self.core.battle_core.read_team_data("player")
+        enemy_team_dump = self.core.battle_core.read_team_data("enemy")
+        
+        player_df = pkmn_rl_arena.data.pokemon_data.to_pandas_team_dump_data(player_team_dump)
+        enemy_df = pkmn_rl_arena.data.pokemon_data.to_pandas_team_dump_data(enemy_team_dump)
+        
+        self.assertEqual(player_df[player_df["isActive"] == 1].iloc[0]["id"], 25)
+        self.assertEqual(enemy_df[enemy_df["isActive"] == 1].iloc[0]["id"], 7)
+
+        observation_factory = self.core.observation_factory
+        observations = observation_factory.from_game()
+        self.assertIsInstance(observations, Observation)
+        self.assertIn("player", observations._o)
+        self.assertIn("enemy", observations._o)
+        
+        for agent in ["player", "enemy"]:
+            obs = observations._o[agent] 
+            self.assertIsInstance(obs, np.ndarray)
+            self.assertEqual(obs.dtype, int)
+            expected_shape = (6 * ObsIdx.NB_DATA_PKMN,)
+            self.assertEqual(obs.shape, expected_shape)
+        
+        player_obs = observations._o["player"]
+        enemy_obs = observations._o["enemy"]
+        
+        player_active_idx = 0
+        enemy_active_idx = 0
+        
+        # Check species ID
+        self.assertEqual(player_obs[player_active_idx + ObsIdx.RAW_DATA["species"]], 25)
+        self.assertEqual(enemy_obs[enemy_active_idx + ObsIdx.RAW_DATA["species"]], 7)
+        
+        self.assertEqual(player_obs[player_active_idx + ObsIdx.RAW_DATA["is_active"]], 1)
+        self.assertEqual(enemy_obs[enemy_active_idx + ObsIdx.RAW_DATA["is_active"]], 1)
+        
+        player_second_idx = ObsIdx.NB_DATA_PKMN  
+        enemy_second_idx = ObsIdx.NB_DATA_PKMN
+        
+        self.assertEqual(player_obs[player_second_idx + ObsIdx.RAW_DATA["species"]], 1)
+        self.assertEqual(enemy_obs[enemy_second_idx + ObsIdx.RAW_DATA["species"]], 4)
+        
+        self.assertEqual(player_obs[player_second_idx + ObsIdx.RAW_DATA["is_active"]], 0)
+        self.assertEqual(enemy_obs[enemy_second_idx + ObsIdx.RAW_DATA["is_active"]], 0)
+        
+        move_start = ObsIdx.RAW_DATA["moves_begin"]
+        first_move_offset = move_start + ObsIdx.RAW_DATA["move_id_offset"]
+        power_offset = move_start + ObsIdx.RAW_DATA["power_offset"]
+        
+        self.assertEqual(player_obs[player_active_idx + first_move_offset], 84)  # Move ID
+        self.assertEqual(player_obs[player_active_idx + power_offset], 40)  # Power of Thunder Shock
+        
+        for i in range(2, 6):  # Pokémon 3 to 6
+            pkmn_start = i * ObsIdx.NB_DATA_PKMN
+            self.assertEqual(player_obs[pkmn_start + ObsIdx.RAW_DATA["species"]], 0)
+            self.assertEqual(enemy_obs[pkmn_start + ObsIdx.RAW_DATA["species"]], 0)
 
 
 if __name__ == "__main__":
