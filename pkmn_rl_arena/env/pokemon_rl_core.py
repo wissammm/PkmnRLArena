@@ -1,7 +1,6 @@
 from pkmn_rl_arena import ROM_PATH, BIOS_PATH, MAP_PATH, POKEMON_CSV_PATH, SAVE_PATH
 from .action import ActionManager
-from .battle_core import BattleCore
-from .battle_state import TurnType
+from .battle_core import BattleCore, TurnType
 from .episode import EpisodeManager
 from .observation import ObservationFactory
 from .save_state import SaveStateManager

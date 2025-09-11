@@ -1,10 +1,9 @@
 from pkmn_rl_arena.logging import logger
-from .battle_core import BattleCore
-from .battle_state import TurnType
+from .battle_core import BattleCore, TurnType
 
 import numpy as np
 import numpy.typing as npt
-from typing import Dict, List
+from typing import Dict
 
 ACTION_SPACE_SIZE = 9
 

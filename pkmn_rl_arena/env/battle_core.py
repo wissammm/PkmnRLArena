@@ -3,10 +3,53 @@ from pkmn_rl_arena import SAVE_PATH, ROM_PATH, BIOS_PATH, logger
 import pkmn_rl_arena.data.parser
 import pkmn_rl_arena.data.pokemon_data
 
-from .battle_state import TurnType
-
+from dataclasses import dataclass
+from enum import Enum
 import os
 from typing import Dict, List
+
+
+class TurnType(Enum):
+    """Enumeration for different turn types"""
+
+    CREATE_TEAM = "create_team"  # Initial team creation
+    GENERAL = "general"  # Both players act simultaneously
+    PLAYER = "player"  # Only player acts
+    ENEMY = "enemy"  # Only enemy acts
+    DONE = "done"  # Battle is finished
+
+
+@dataclass
+class BattleState:
+    """
+    Represents the current state of the battle
+    NOTE :
+        DO NOTE USE THIS CLASS CONSTRUCTOR.
+        STATES MUST ONLY BE MANUFACTURED THROUGH StateFactory
+    """
+
+    id: int = 0  # unique id for this run
+    step: int = 0  # nb step in this run
+    turn: TurnType = TurnType.CREATE_TEAM  # current battle turntype
+
+
+class BattleStateFactory:
+    id_gen: int = 0  # unique episode id  generator
+    id: int = 0  # unique id for this run
+
+    def build_state(self, current_turn=TurnType.CREATE_TEAM, step=0) -> BattleState:
+        id = BattleStateFactory.id_gen
+        BattleStateFactory.id_gen += 1
+        return BattleState(id=id, step=step, turn=current_turn)
+
+    def from_save_path(save_path: str) -> BattleState:
+        split_path = save_path.split("_")
+        episode_step = split_path[-1]
+        episode_step = int(episode_step[episode_step.find(":") :])
+        turntype = split_path[-2]
+        turntype = int(turntype[turntype.find(":") :])
+
+        return BattleState(current_turn=turntype, step=episode_step)
 
 
 class BattleCore:
@@ -32,6 +75,7 @@ class BattleCore:
         self.gba = rustboyadvance_py.RustGba()
         self.gba.load(bios_path, rom_path)
 
+        self.state = BattleState()
         if setup:
             self.addrs = {}  # filled in fctn below
             self.addrs = self.setup_addresses()
@@ -121,6 +165,7 @@ class BattleCore:
                 )
             stop_id = self.gba.run_to_next_stop(self.steps)
 
+        self.state.turn = self.stop_ids[stop_id]
         return stop_id
 
     def advance_to_next_turn(self) -> TurnType:
@@ -203,3 +248,23 @@ class BattleCore:
         else:
             print(f"Save state {save_path} does not exist.")
             return False
+
+    def is_episode_done(self) -> bool:
+        """Check if battle is finished"""
+        return self.state.turn == TurnType.DONE
+
+    def get_current_turn(self) -> TurnType:
+        """Get current turn type"""
+        return self.state.turn
+
+    def get_required_agents(self) -> List[str]:
+        """Get list of agents required for current turn"""
+        match self.state.turn:
+            case TurnType.GENERAL:
+                return ["player", "enemy"]
+            case TurnType.PLAYER:
+                return ["player"]
+            case TurnType.ENEMY:
+                return ["enemy"]
+            case _:
+                return []
