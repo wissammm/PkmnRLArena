@@ -701,15 +701,15 @@ class TestPokemonRLCore(unittest.TestCase):
     def test_stats_change(self):
         teams = {
             "player": [
-                8, 2, 45, 45, 45, 45, 10, 0,
-                8, 10, 8, 3, 4, 2, 100,  0,    
+                8, 99, 45, 45, 45, 45, 10, 0,
+                8, 99, 8, 3, 4, 2, 100,  0,    
                 0, 10, 0, 0, 0, 0, 0,0,
                 0, 10, 0, 0, 0, 0, 0,0,
                 0, 10, 0, 0, 0, 0, 0,0,
                 0, 10, 0, 0, 0, 0, 0,0
             ],
             "enemy": [
-                7, 10, 45, 45, 45, 45, 100,0,  
+                7, 99, 45, 45, 45, 45, 100,0,  
                 0, 10, 0, 0, 0, 0, 0,0,
                 0, 10, 0, 0, 0, 0, 0,0,
                 0, 10, 0, 0, 0, 0, 0,0,
@@ -726,47 +726,61 @@ class TestPokemonRLCore(unittest.TestCase):
         turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.GENERAL)
 
-         # Read initial team data and get base attack for active player
         player_team_dump_data = self.core.battle_core.read_team_data("player")
         playerdf = pkmn_rl_arena.data.pokemon_data.to_pandas_team_dump_data(
             player_team_dump_data
         )
-
-        player_team_dump_data = self.core.battle_core.read_team_data("enemy")
+        
+        enemy_team_dump_data = self.core.battle_core.read_team_data("enemy")
         enemydf = pkmn_rl_arena.data.pokemon_data.to_pandas_team_dump_data(
-            player_team_dump_data
+            enemy_team_dump_data
         )
 
         print("Player dataframe:")
         print(playerdf)
-        print("isActive column values:", playerdf["isActive"].values)
-        print("isActive column values:", enemydf["isActive"].values)
+        print("Enemy dataframe:")
+        print(enemydf)
+        print("isActive column values (player):", playerdf["isActive"].values)
+        print("isActive column values (enemy):", enemydf["isActive"].values)
 
         active_player = playerdf[playerdf["isActive"] == 1]
-        initial_attack = active_player.iloc[0]["baseAttack"]
+        active_enemy = enemydf[enemydf["isActive"] == 1]
+        
+        initial_player_attack = active_player.iloc[0]["baseAttack"]
+        initial_enemy_attack = active_enemy.iloc[0]["baseAttack"]
+        
+        print(f"Initial Player Attack: {initial_player_attack}")
+        print(f"Initial Enemy Attack: {initial_enemy_attack}")
 
-        # Perform actions: both use move 0
         player_action = 0
         enemy_action = 0
         actions = {"player": player_action, "enemy": enemy_action}
         self.core.action_manager.write_actions(turn, actions)
 
-        # Advance to next turn
         turn = self.core.battle_core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.GENERAL)
 
-        # Read team data again and check if attack is lower
         player_team_dump_data = self.core.battle_core.read_team_data("player")
         playerdf = pkmn_rl_arena.data.pokemon_data.to_pandas_team_dump_data(
             player_team_dump_data
         )
         active_player = playerdf[playerdf["isActive"] == 1]
-        new_attack = active_player.iloc[0]["baseAttack"]
+        new_player_attack = active_player.iloc[0]["baseAttack"]
+        
+        enemy_team_dump_data = self.core.battle_core.read_team_data("enemy")
+        enemydf = pkmn_rl_arena.data.pokemon_data.to_pandas_team_dump_data(
+            enemy_team_dump_data
+        )
+        active_enemy = enemydf[enemydf["isActive"] == 1]
+        new_enemy_attack = active_enemy.iloc[0]["baseAttack"]
 
-        # Assert that the new attack is lower than the initial (base) attack
-        print(f"Initial Attack: {initial_attack}, New Attack: {new_attack}")
-        self.assertLess(new_attack, initial_attack, "Player's attack stat should be lower after using a stat-lowering move.")
-
+        print(f"Player Attack: {initial_player_attack} -> {new_player_attack}")
+        print(f"Enemy Attack: {initial_enemy_attack} -> {new_enemy_attack}")
+        
+        self.assertLess(new_player_attack, initial_player_attack, 
+                        "Player's attack stat should be lower after using a stat-lowering move")
+        self.assertLess(new_enemy_attack, initial_enemy_attack, 
+                        "Enemy's attack stat should be lower after using a stat-lowering move")
 
 
 
