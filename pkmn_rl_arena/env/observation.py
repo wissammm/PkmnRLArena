@@ -35,30 +35,81 @@ class Observation:
             )
         self._o[a]
 
+    def get_agent_data(self, agent: str) -> AgentObs:
+        """Get the full observation array for an agent"""
+        if agent not in self._o:
+            raise ValueError(f"Invalid agent name, must be in {self._o.keys()}, got {agent}.")
+        return self._o[agent]
+
     def active_pkmn(self) -> Dict[str, int]:
         """
-        return active pkmn idx for each agent
+        Return active pkmn idx for each agent
         """
-        return {"player": 0, "ennemy": 5}
-
-    def hp(self) -> Dict[str,List[int]]:
-        """Would return hp diff between 2 observations? or would return an Observation?"""
-
-
-        result = {"player" : [], "enemy" : []}
-
+        result = {}
+        for agent in self._o:
+            agent_data = self._o[agent]
+            pokemon_data = np.split(agent_data, 6)
+            
+            for i, pkmn in enumerate(pokemon_data):
+                if pkmn[ObsIdx.RAW_DATA["is_active"]] == 1:
+                    result[agent] = i
+                    break
+            
+            if agent not in result:
+                result[agent] = None
+                
         return result
 
-    def stat_changes(self) -> None:
-        """Return per pkmn per agent stat changes since last turn
-        Idk if it should return an array, a dict or smthg else? Maybe it would be interesting to create a wrapper / helper class to decode status specifically ?"""
-        return None
+    def hp(self) -> Dict[str, List[int]]:
+        """
+        Return current HP values for all Pokémon in each team
+        """
+        result = {"player": [], "enemy": []}
+        
+        for agent in self._o:
+            agent_data = self._o[agent]
+            pokemon_data = np.split(agent_data, 6)
+            
+            for pkmn in pokemon_data:
+                hp_value = int(pkmn[ObsIdx.RAW_DATA["HP"]])
+                result[agent].append(hp_value)
+                
+        return result
 
-    def pkmn_ko(self, agent: int, pkmn: int) -> Dict[str, List[int]]:
+    def stat_changes(self) -> Dict[str, List[List[int]]]:
         """
-        returns an array of idx for each agent.
+        Return current stat values for all Pokémon in each team
+        Returns a dictionary with agents as keys, and values as lists of stat arrays
+        Each stat array contains [ATK, DEF, SPEED, SPATK, SPDEF]
         """
-        return 
+        result = {"player": [], "enemy": []}
+        
+        for agent in self._o:
+            agent_data = self._o[agent]
+            pokemon_data = np.split(agent_data, 6)
+            
+            for pkmn in pokemon_data:
+                stats = pkmn[ObsIdx.RAW_DATA["stats_begin"]:ObsIdx.RAW_DATA["stats_end"]].tolist()
+                result[agent].append(stats)
+                
+        return result
+
+    def pkmn_ko(self) -> Dict[str, List[bool]]:
+        """
+        Returns for each agent a list of booleans indicating if each Pokémon is KO'd
+        A Pokémon is KO'd if its HP is 0
+        """
+        result = {"player": [], "enemy": []}
+        
+        for agent in self._o:
+            agent_data = self._o[agent]
+            pokemon_data = np.split(agent_data, 6)
+            
+            for pkmn in pokemon_data:
+                hp_value = int(pkmn[ObsIdx.RAW_DATA["HP"]])
+                result[agent].append(hp_value == 0)
+                
+        return result
 
 
 @dataclass(frozen=True)
@@ -200,5 +251,20 @@ class ObservationFactory:
         return Observation(_o=observations)
 
     def from_diff(o1: Observation, o2: Observation) -> Observation:
-        """Computes difference between 2 observations"""
-        pass
+        diff_observations = {}
+
+        if set(o1._o.keys()) != set(o2._o.keys()):
+            raise ValueError("Observations must have the same agents")
+        
+        for agent in o1._o:
+            arr1 = o1._o[agent]
+            arr2 = o2._o[agent]
+            
+            if arr1.shape != arr2.shape:
+                raise ValueError(f"Observation arrays for agent {agent} have different shapes")
+            
+            diff = arr2 - arr1
+            
+            diff_observations[agent] = diff
+        
+        return Observation(_o=diff_observations)
