@@ -22391,3 +22391,5 @@ type1: 14
 [INFO] GBA Debug: move22: 94
 
 [WARN] Debugger: Connection lost
+[INFO] GBA Debug: Should not be here
+[WARN] Debugger: Connection lost
