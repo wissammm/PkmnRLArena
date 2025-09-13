@@ -32,24 +32,36 @@ class BattleState:
     step: int = 0  # nb step in this run
     turn: TurnType = TurnType.CREATE_TEAM  # current battle turntype
 
+    def __eq__(self, other) -> bool:
+        """This is a helper for tests, it doesn't tests the id voluntarly ad it is unique."""
+        return self.step == other.step and self.turn == other.turn
+
 
 class BattleStateFactory:
     id_gen: int = 0  # unique episode id  generator
     id: int = 0  # unique id for this run
 
-    def build_state(self, current_turn=TurnType.CREATE_TEAM, step=0) -> BattleState:
+    def build(self, current_turn=TurnType.CREATE_TEAM, step=0) -> BattleState:
+        if step < 0:
+            raise ValueError(
+                f"Attempting to create a step with negative step, step value must be strictly > 0, got {step}"
+            )
         id = BattleStateFactory.id_gen
         BattleStateFactory.id_gen += 1
         return BattleState(id=id, step=step, turn=current_turn)
 
-    def from_save_path(save_path: str) -> BattleState:
-        split_path = save_path.split("_")
-        episode_step = split_path[-1]
-        episode_step = int(episode_step[episode_step.find(":") :])
-        turntype = split_path[-2]
-        turntype = int(turntype[turntype.find(":") :])
+    def from_save_path(self, save_path: str) -> BattleState:
+        """
+        Creates state from save path, assuming save path is of shape :
+        {save_name}_turntype:{turntype.value}_step:{step}_id:{id}.savestate
+        """
+        data = save_path.split(".")[0].split("_")[-3:]
 
-        return BattleState(current_turn=turntype, step=episode_step)
+        turntype = TurnType(int(data[0][data[0].find(":") + 1 :]))
+        step = int(data[1][data[1].find(":") + 1 :])
+        id = int(data[2][data[2].find(":") + 1 :])
+
+        return BattleState(id, step, turntype)
 
 
 class BattleCore:
