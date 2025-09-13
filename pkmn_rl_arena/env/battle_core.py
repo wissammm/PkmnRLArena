@@ -50,12 +50,14 @@ class BattleStateFactory:
         BattleStateFactory.id_gen += 1
         return BattleState(id=id, step=step, turn=current_turn)
 
-    def from_save_path(self, save_path: str) -> BattleState:
+    @staticmethod
+    def from_save_path(save_path: str) -> BattleState:
         """
         Creates state from save path, assuming save path is of shape :
         {save_name}_turntype:{turntype.value}_step:{step}_id:{id}.savestate
         """
-        data = save_path.split(".")[0].split("_")[-3:]
+        logger.debug(f"Creating battlestate from {save_path}")
+        data = save_path.split(".")[-2].split("_")[-3:]
 
         turntype = TurnType(int(data[0][data[0].find(":") + 1 :]))
         step = int(data[1][data[1].find(":") + 1 :])
