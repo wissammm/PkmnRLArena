@@ -245,10 +245,10 @@ class BattleCore:
             self.gba.write_u32_list(self.addrs[f"{agent}Team"], team)
         return
 
-    def save_savestate(self, name: str) -> str:
-        """Save the current state of the emulator"""
+    def save_savestate(self, ave_path: str) -> str:
+        """Save the current state of the emulator in SAVE_PATH"""
         os.makedirs(SAVE_PATH, exist_ok=True)
-        save_path = os.path.join(SAVE_PATH, f"{name}.savestate")
+        save_path = os.path.join(SAVE_PATH, f"{ave_path}")
         self.gba.save_savestate(save_path)
         return save_path
 
@@ -258,7 +258,7 @@ class BattleCore:
             name : str = Save state name.
                          The name must not be prefixed by SAVE_PATH
         """
-        save_path = os.path.join(SAVE_PATH, f"{name}.savestate")
+        save_path = os.path.join(SAVE_PATH, name)
         if not os.path.exists(save_path):
             print(f"Save state {save_path} does not exist.")
             return False

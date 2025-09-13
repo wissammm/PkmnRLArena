@@ -13,7 +13,7 @@ class SaveStateManager:
     Manages emulator save states for quick save/load functionality.
     """
 
-    save_file_ext = ".save_state"
+    save_file_ext = ".savestate"
 
     regex_file_ext = re.compile(f".+\{save_file_ext}")
 
@@ -49,7 +49,7 @@ class SaveStateManager:
         Args:
             name : 3 possible values :
                 1. None: Retrieves latests savestate and loads it
-                2. Name without extension : loads 1st matching save state in self.save_states
+                2. Name without extension : loads 1st matching save state in self.savestates
                 3. Name with extension : loads save state
 
         Returns :
@@ -57,6 +57,7 @@ class SaveStateManager:
         Raises :
             If state given by arg does not exist
         """
+        logger.info(f"Loading save state : {name}")
         # case 1
         if name is None:
             logger.warn(
@@ -84,5 +85,5 @@ class SaveStateManager:
     def remove_save_states(self):
         """Delete all save states."""
         for path in self.save_states:
-            os.remove(path)
+            os.remove(os.path.join(SAVE_PATH, path))
         return
