@@ -12,11 +12,11 @@ from typing import Dict, List
 class TurnType(Enum):
     """Enumeration for different turn types"""
 
-    CREATE_TEAM = "create_team"  # Initial team creation
-    GENERAL = "general"  # Both players act simultaneously
-    PLAYER = "player"  # Only player acts
-    ENEMY = "enemy"  # Only enemy acts
-    DONE = "done"  # Battle is finished
+    CREATE_TEAM = 1  # Initial team creation
+    GENERAL = 2  # Both players act simultaneously
+    PLAYER = 3  # Only player acts
+    ENEMY = 4  # Only enemy acts
+    DONE = 5  # Battle is finished
 
 
 @dataclass
