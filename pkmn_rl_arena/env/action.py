@@ -50,10 +50,13 @@ class ActionManager:
 
         return action_written
 
-    def get_action_mask(self, agent: str) -> npt.NDArray[int]:
+    def get_valid_action_ids(self, agent: str) -> list[int]:
         """
-        Creates an action mask for the agent. The mask is here to signal the unauthorized actions
-        It returns illegal moves : (PP == 0)
+        Return valid action ids
+        It returns a subset of the action space, removing illegal moves
+        (such as PP == 0 & ko  pkmn (forbidden switch))
+        Note : Action space :
+            [0,1,2,3,4,5,6,7,8,9]
         """
         legal_moves = self.battle_core.gba.read_u16_list(
             self.battle_core.addrs[f"legalMoveActions{agent.capitalize()}"], 4
@@ -68,9 +71,19 @@ class ActionManager:
         ]  # Offset switches by 4
 
         # Combine moves and switches into a single list of legal actions
-        valid_actions = [valid_moves + valid_switches]
+        return valid_moves + valid_switches
+
+    def get_action_mask(self, agent: str) -> npt.NDArray[int]:
+        """
+        Creates an action mask for the agent. The mask is here to signal the unauthorized actions
+        It returns illegal moves : (PP == 0 & ko  pkmn (forbidden switch))
+        Action space :
+            [0,1,2,3,4,5,6,7,8,9]
+        Example for an action mask :
+            [0,1,1,0,1,1,1,0,0,1]
+        """
 
         action_mask = np.zeros(shape=ACTION_SPACE_SIZE)
-        action_mask[valid_actions] = 1
+        action_mask[self.get_valid_action_ids(agent)] = 1
 
         return action_mask
