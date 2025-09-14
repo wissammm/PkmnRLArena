@@ -200,8 +200,6 @@ class BattleArena(ParallelEnv):
         self.rewards = {agent: 0.0 for agent in self.agents}
         self._cumulative_rewards = {agent: 0.0 for agent in self.agents}
         self.terminations = {agent: False for agent in self.agents}
-        self._agent_selector = AgentSelector(self.agents)
-        self.agent_selection = self._agent_selector.next()
 
         ##### reset battle
         # Load save state if provided otherwise creates a new battlecore
@@ -243,14 +241,12 @@ class BattleArena(ParallelEnv):
     ##########################################################################
     def step(self, actions: Optional[Dict[str, int]]):
         """
-        step(action) takes in an action for the current agent (specified by
-        agent_selection) and needs to update
+        step(action) takes in an action for all agents and needs to update
         - rewards
         - _cumulative_rewards (accumulating the rewards)
         - terminations
         - truncations
         - infos
-        - agent_selection (to the next agent)
         And any internal state used by observe() or render()
 
         Args:
@@ -269,11 +265,9 @@ class BattleArena(ParallelEnv):
             return {}, {}, {}, {}, {}
 
         # if previous step terminated the episode then calling ded step
-        if (
-            self.truncations[self.agent_selection]
-            or self.terminations[self.agent_selection]
-        ):
-            return self._was_dead_step(actions)
+        for agent in self.agents:
+            if self.truncations[agent] or self.terminations[agent]:
+                return self._was_dead_step(actions)
 
         # Write actions
         self.action_manager.write_actions(actions)
