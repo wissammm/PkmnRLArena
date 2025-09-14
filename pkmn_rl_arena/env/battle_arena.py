@@ -1,6 +1,7 @@
 from pkmn_rl_arena.env.pkmn_team_factory import DataSize
 from .action import ActionManager, ACTION_SPACE_SIZE
-from .battle_core import BattleCore, TurnType, BattleState
+from .battle_core import BattleCore
+from .battle_state import TurnType, BattleState
 from .observation import ObservationFactory, OBS_SPACE_SIZE
 from .pkmn_team_factory import PkmnTeamFactory
 from .save_state import SaveStateManager

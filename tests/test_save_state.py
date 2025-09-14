@@ -1,4 +1,5 @@
-from pkmn_rl_arena.env.battle_core import BattleCore, TurnType
+from pkmn_rl_arena.env.battle_core import BattleCore
+from pkmn_rl_arena.env.battle_state import TurnType
 from pkmn_rl_arena.env.save_state import SaveStateManager
 from pkmn_rl_arena.env.action import ActionManager
 from pkmn_rl_arena.env.pkmn_team_factory import PkmnTeamFactory

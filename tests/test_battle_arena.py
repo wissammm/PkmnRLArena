@@ -4,7 +4,8 @@ from pkmn_rl_arena import (
     MAP_PATH,
 )
 from pkmn_rl_arena import log
-from pkmn_rl_arena.env.battle_core import BattleCore, TurnType, BattleState
+from pkmn_rl_arena.env.battle_core import BattleCore
+from pkmn_rl_arena.env.battle_state import  TurnType, BattleState
 from pkmn_rl_arena.env.battle_arena import BattleArena
 from pkmn_rl_arena.env.pkmn_team_factory import DataSize
 from pkmn_rl_arena.data import pokemon_data
@@ -59,19 +60,6 @@ class TestArena(unittest.TestCase):
             observations, rewards, terminations, truncations, infos = self.arena.step(
                 actions
             )
-
-
-    # def test_load_save_state():
-    #     pass
-
-    # def test_create_team(self):
-    #     pass
-
-    # def test_switch_pokemon(self):
-    #     pass
-
-    # def test_switch_pokemon_when_one_fainted_player(self):
-    #     pass
 
     # def test_render(self):
     #     self.arena.reset(seed=42)

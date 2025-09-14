@@ -2,7 +2,8 @@ import sys
 import os
 import random
 import time
-from pkmn_rl_arena.env.core import PokemonRLCore, TurnType
+from pkmn_rl_arena.env.core import PokemonRLCore
+from pkmn_rl_arena.env.BattleState import TurnType
 import rustboyadvance_py
 import pkmn_rl_arena.data.parser
 import pkmn_rl_arena.data.pokemon_data

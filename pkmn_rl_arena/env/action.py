@@ -1,5 +1,6 @@
 from pkmn_rl_arena.logging import log
-from .battle_core import BattleCore, TurnType
+from .battle_core import BattleCore
+from .battle_state import TurnType
 
 import numpy as np
 import numpy.typing as npt
