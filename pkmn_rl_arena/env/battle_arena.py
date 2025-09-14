@@ -77,7 +77,7 @@ class BattleArena(ParallelEnv):
         # Environment configuration
         self.possible_agents = ["player", "enemy"]
         self.agents = self.possible_agents
-        self.action_space_size = 10
+        self.action_space_size = ACTION_SPACE_SIZE
         self.observations = {
             agent: {"observation": np.array([], dtype=int), "action_mask": []}
             for agent in self.agents
@@ -93,9 +93,9 @@ class BattleArena(ParallelEnv):
         self.console = Console()
 
         self.core.advance_to_next_turn()
-        if not self.core.state.turn == TurnType.CREATE_TEAM:
+        if self.core.state.turn != TurnType.CREATE_TEAM:
             raise RuntimeError(
-                "Upon creating BattleCore and calling advance_to_next_turn(), turntype should be advance to next turn"
+                f"Env creation : Upon creating BattleCore and calling advance_to_next_turn(), turntype should be {TurnType.CREATE_TEAM}. Got {self.core.state.turn}."
             )
         self.save_state_manager.save_state("boot_state")
         log.info(f"Created save_state : {self.save_state_manager.save_states}")
