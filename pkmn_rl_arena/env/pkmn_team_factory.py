@@ -1,6 +1,6 @@
 from pkmn_rl_arena import POKEMON_CSV_PATH, MOVES_CSV_PATH
 from .battle_core import BattleCore
-from pkmn_rl_arena import logger
+from pkmn_rl_arena import log
 
 import ast
 from dataclasses import dataclass
@@ -100,7 +100,7 @@ class PkmnTeamFactory:
     @staticmethod
     def is_valid_id(id: int):
         if not Ranges.PKMN_ID_BOUNDS[0] <= id <= Ranges.PKMN_ID_BOUNDS[1]:
-            logger.error(
+            log.error(
                 f"Trying to create a pokemon with invalid id. Authorized range [{Ranges.PKMN_ID_BOUNDS[0]},{Ranges.PKMN_ID_BOUNDS[1]}], got {id}."
             )
             return False
@@ -110,7 +110,7 @@ class PkmnTeamFactory:
         movepool = self.get_movepool_from(pkmn_id)
         for move_id in move_ids:
             if move_id not in movepool:
-                logger.error(
+                log.error(
                     f"Trying to create a pkmn :"
                     f"\n\tname {self.get_pkmn_name_from(pkmn_id)}"
                     f"\n\tid {pkmn_id}"
@@ -128,7 +128,7 @@ class PkmnTeamFactory:
             or Ranges.ITEM_1[0] <= id <= Ranges.ITEM_1[1]
             or Ranges.ITEM_2[0] <= id <= Ranges.ITEM_2[1]
         ):
-            logger.error(
+            log.error(
                 f"Trying to create a pokemon with invalid item id."
                 f"\n\tAuthorized values 0, [{Ranges.ITEM_1[0]}, {Ranges.ITEM_1[1]}] or [{Ranges.ITEM_2[0]}, {Ranges.ITEM_2[1]}]"
                 f"\n\tGot {id}."
@@ -139,7 +139,7 @@ class PkmnTeamFactory:
     @staticmethod
     def is_hp_percent_valid(percent: int) -> bool:
         if not 0 <= percent <= 100:  # hp percent
-            logger.error(
+            log.error(
                 f"Invalid HP percentage : expected value comprised between [0;100], got {percent}."
             )
             return False
@@ -161,13 +161,13 @@ class PkmnTeamFactory:
                 f"\tGot {len(team)} data points : {team}."
             )
 
-        logger.debug("Creating a pkmn team with following pkmn:")
+        log.debug("Creating a pkmn team with following pkmn:")
         team_pkmns = np.split(team, DataSize.PARTY_SIZE)
         for i, pkmn in enumerate(team_pkmns):
             if np.all(pkmn == 0):
-                logger.debug(f"PKMN {i} : Empty slot")
+                log.debug(f"PKMN {i} : Empty slot")
                 continue
-            logger.debug(
+            log.debug(
                 f"PKMN {i} :"
                 f"\n\tid : {pkmn[0]}"
                 f"\n\tlvl : {pkmn[1]}"

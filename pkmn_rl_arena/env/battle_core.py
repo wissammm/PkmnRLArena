@@ -56,7 +56,7 @@ class BattleStateFactory:
         Creates state from save path, assuming save path is of shape :
         {save_name}_turntype:{turntype.value}_step:{step}_id:{id}.savestate
         """
-        logger.debug(f"Creating battlestate from {save_path}")
+        log.debug(f"Creating battlestate from {save_path}")
         data = save_path.split(".")[-2].split("_")[-3:]
 
         turntype = TurnType(int(data[0][data[0].find(":") + 1 :]))
@@ -265,7 +265,7 @@ class BattleCore:
             print(f"Save state {save_path} does not exist.")
             return False
 
-        logger.info(f"Loading following save state : {save_path}")
+        log.info(f"Loading following save state : {save_path}")
         self.gba.load_savestate(save_path, BIOS_PATH, ROM_PATH)
         self.setup_addresses()
         self.setup_stops()

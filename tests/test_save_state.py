@@ -2,7 +2,7 @@ from pkmn_rl_arena.env.battle_core import BattleCore, TurnType
 from pkmn_rl_arena.env.save_state import SaveStateManager
 from pkmn_rl_arena.env.action import ActionManager
 from pkmn_rl_arena.env.pkmn_team_factory import PkmnTeamFactory
-from pkmn_rl_arena import logger
+from pkmn_rl_arena import log
 
 import unittest
 import random
@@ -28,7 +28,7 @@ class TestSaveState(unittest.TestCase):
     ]
 
     def setUp(self):
-        logger.setLevel(logging.DEBUG)
+        log.setLevel(logging.DEBUG)
 
         self.core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
         turn = self.core.advance_to_next_turn()
@@ -62,7 +62,7 @@ class TestSaveState(unittest.TestCase):
 
     def test_save_load_state(self):
         for save_name, nb_turn_to_advance in TestSaveState.save_load_cases:
-            logger.debug(
+            log.debug(
                 f"test : {save_name}, nb turn to advance : {nb_turn_to_advance}"
             )
 

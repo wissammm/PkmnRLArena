@@ -12,7 +12,7 @@ from pkmn_rl_arena import (
     MAP_PATH,
 )
 
-from pkmn_rl_arena.logging import logger
+from pkmn_rl_arena.logging import log
 
 from enum import Enum
 from typing import Any, Dict, Optional
@@ -101,9 +101,7 @@ class BattleArena(ParallelEnv):
                 "Upon creating BattleCore and calling advance_to_next_turn(), turntype should be advance to next turn"
             )
         self.save_state_manager.save_state("boot_state")
-        logger.info(
-            f"Created save_state : {self.save_state_manager.save_states}"
-        )
+        log.info(f"Created save_state : {self.save_state_manager.save_states}")
 
     ##########################################################################
     #
@@ -128,7 +126,7 @@ class BattleArena(ParallelEnv):
 
         """
         if options.get("save_state") is None:
-            logger.debug(
+            log.debug(
                 'No save state name given in options["save_state"], creating a new battle core.'
             )
             self.core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
@@ -149,7 +147,7 @@ class BattleArena(ParallelEnv):
 
         teams = options["teams"]
         for agent, team in teams.items():
-            logger.info(f"Creating {agent} team.")
+            log.info(f"Creating {agent} team.")
             if team is None:
                 teams[agent] = self.team_factory.create_random_team()
                 continue
@@ -194,7 +192,7 @@ class BattleArena(ParallelEnv):
         """
         # TODO Implement seed args
 
-        logger.debug(f"Resetting env with options {options}")
+        log.debug(f"Resetting env with options {options}")
         if options is None:
             raise ValueError(
                 f"No options given, for env reset, required options : {self.reset_options}"
@@ -269,6 +267,7 @@ class BattleArena(ParallelEnv):
             done: Whether the episode is finished
             info: Additional information
         """
+        log.debug(f"{self.core.state}")
         # If a user passes in actions with no agents, then just return empty observations, etc.
         if not actions:
             self.agents = []

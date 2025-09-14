@@ -1,4 +1,4 @@
-from pkmn_rl_arena.logging import logger
+from pkmn_rl_arena.logging import log
 from .battle_core import BattleCore, TurnType
 
 import numpy as np

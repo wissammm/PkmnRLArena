@@ -32,5 +32,5 @@ def setup_colored_logging(level=logging.DEBUG):
 # Call once at startup
 setup_colored_logging()
 
-logger = logging.getLogger("pkmn_rl")  # Library-scoped root logger
-logger.addHandler(logging.NullHandler())  # Prevent "No handlers could be found" warnings
+log = logging.getLogger("pkmn_rl")  # Library-scoped root logger
+log.addHandler(logging.NullHandler())  # Prevent "No handlers could be found" warnings

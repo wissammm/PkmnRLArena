@@ -1,6 +1,6 @@
 import os
 
-from .logging import logger
+from .logging import log
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROM_PATH = os.path.join(BASE_DIR, "../pokeemerald_ai_rl/pokeemerald_modern.elf")
