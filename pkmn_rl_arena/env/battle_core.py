@@ -1,5 +1,5 @@
 import rustboyadvance_py
-from pkmn_rl_arena import SAVE_PATH, ROM_PATH, BIOS_PATH, logger
+from pkmn_rl_arena import SAVE_PATH, ROM_PATH, BIOS_PATH, log
 import pkmn_rl_arena.data.parser
 import pkmn_rl_arena.data.pokemon_data
 
