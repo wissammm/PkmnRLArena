@@ -13,9 +13,9 @@ class SaveStateManager:
     Manages emulator save states for quick save/load functionality.
     """
 
-    save_file_ext = ".savestate"
+    save_file_ext = "savestate"
 
-    regex_file_ext = re.compile(f".+\{save_file_ext}")
+    regex_file_ext = re.compile(f".+\.{save_file_ext}")
 
     def __init__(self, battle_core: BattleCore):
         self.core = battle_core
@@ -26,7 +26,7 @@ class SaveStateManager:
 
     @staticmethod
     def buid_save_path(name: str, state: BattleState):
-        return f"{name}_turntype:{state.turn.value}_step:{state.step}_id:{state.id}{SaveStateManager.save_file_ext}"
+        return f"{name}_turntype:{state.turn.value}_step:{state.step}_id:{state.id}.{SaveStateManager.save_file_ext}"
 
     def save_state(self, name: str):
         """
