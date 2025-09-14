@@ -5,7 +5,7 @@ import numpy as np
 import numpy.typing as npt
 from typing import Dict
 
-ACTION_SPACE_SIZE = 9
+ACTION_SPACE_SIZE = 10
 
 
 class ActionManager:
@@ -13,33 +13,31 @@ class ActionManager:
     Manages action validation and execution.
     """
 
+    allowed_turntype = {
+        "player": [TurnType.PLAYER, TurnType.GENERAL],
+        "enemy": [TurnType.ENEMY, TurnType.GENERAL],
+    }
+
     def __init__(self, battle_core: BattleCore):
         self.battle_core = battle_core
         self.action_space_size = 10  # Actions 0-9
 
-    def is_valid_action(self, agent, action: int) -> bool:
+    def is_valid_action(self, agent, action_id: int) -> bool:
         """Check if action is valid."""
-        return 0 <= action <= 9 and self.get_action_mask(agent)[action] == 1
+        return 0 <= action_id <= 9 and self.get_action_mask(agent)[action_id] == 1
 
-    @staticmethod
-    def check_agent_match_turntype(agent, turn_type) -> bool:
-        return (
-            agent == "player" and turn_type in [TurnType.PLAYER, TurnType.GENERAL]
-        ) or (agent == "enemy" and turn_type in [TurnType.ENEMY, TurnType.GENERAL])
-
-    def write_actions(
-        self, turn_type: TurnType, actions: Dict[str, int]
-    ) -> Dict[str, bool]:
+    def write_actions(self, actions: Dict[str, int]) -> Dict[str, bool]:
         """Write actions based on turn type"""
         action_written = {agent: False for agent in actions.keys()}
         for agent, action in actions.items():
-            if not self.check_agent_match_turntype(agent, turn_type):
-                raise ValueError(
-                    f'Error : write_actions : invalid agent, expected "player" or "enemy", got {agent}'
-                )
+            # if self.battle_core.state.turn not in ActionManager.allowed_turntype[agent]:
+            #     raise ValueError(
+            #         f"Error : write_actions : invalid turntype ({self.battle_core.state.turn}), for current agent ({agent})."
+            #         f"Expected to be in {ActionManager.allowed_turntype[agent]}"
+            #     )
 
             if not self.is_valid_action(agent, action):
-                logger.warning(
+                log.warning(
                     f"Trying to write invalid action : authorized, values {self.get_action_mask(agent)}, got {action}."
                 )
                 action_written[agent] = False
