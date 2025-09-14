@@ -2,72 +2,67 @@ from pkmn_rl_arena import (
     ROM_PATH,
     BIOS_PATH,
     MAP_PATH,
-    POKEMON_CSV_PATH,
-    MOVES_CSV_PATH,
 )
-from pkmn_rl_arena import logger
-from pkmn_rl_arena.env.battle_core import BattleCore
+from pkmn_rl_arena import log
+from pkmn_rl_arena.env.battle_core import BattleCore, TurnType, BattleState
 from pkmn_rl_arena.env.battle_arena import BattleArena
-from pkmn_rl_arena.env.battle_state import TurnType
-from pkmn_rl_arena.env.pkmn_team_factory import PkmnTeamFactory, DataSize
+from pkmn_rl_arena.env.pkmn_team_factory import DataSize
 from pkmn_rl_arena.data import pokemon_data
 
-from pettingzoo.test import api_test
+from pettingzoo.test import parallel_api_test
 
 import unittest
 import picologging as logging
 
-from typing import Dict
+import random
 
 
 class TestArena(unittest.TestCase):
     def setUp(self):
-        logger.setLevel(logging.DEBUG)
+        log.setLevel(logging.DEBUG)
         core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
         self.arena = BattleArena(core)
-        self.required_agents = self.arena.battle_state.get_required_agents()
 
     def tearDown(self):
-        BattleArena.close()
-
-    def test_step(self):
-        for agent in self.arena.battle_state.get_required_agents():
-            observation, reward, termination, truncation, info = self.arena.last()
-
-            if termination or truncation:
-                action = None
-            else:
-                # insert neural network here to choose action from observation space
-                #
-                # until then here is a dummy fctn
-                action[agent] = self.arena.action_space(agent).sample()
-
-        self.arena.step(action)
+        self.arena.close()
 
     def test_reset(self):
-        required_agents = self.arena.battle_state.get_required_agents()
-        action: Dict[str, int] | None = {} if required_agents == [] else None
+        observations, infos = self.arena.reset()
+        self.assertEqual(
+            self.arena.core.state, BattleState(id=0, step=0, turn=TurnType.GENERAL)
+        )
+        for agent, value in self.arena.terminations.items():
+            self.assertFalse(
+                value,
+                f"Wrong value after env reset, expected {False} for env.termination, got {self.arena.terminations}",
+            )
+        for agent, value in self.arena.truncations.items():
+            self.assertFalse(
+                value,
+                f"Wrong value after env reset, expected {False} for env.truncations, got {self.arena.truncations}",
+            )
 
-        for agent in required_agents:
-            observation, reward, termination, truncation, info = self.arena.last()
+        for agent, value in self.arena.rewards.items():
+            self.assertEqual(value, 0.0)
+        for agent, value in self.arena._cumulative_rewards.items():
+            self.assertEqual(value, 0.0)
 
-            if not (termination or truncation):
-                action = None
-                break
-            else:
-                # insert neural network here to choose action from observation space
-                #
-                # until then here is a dummy fctn
-                action[agent] = self.arena.action_space(agent).sample()
+    def test_step(self):
+        observations, infos = self.arena.reset()
 
-        self.arena.step(action)
-        self.arena.reset()
+        for i in range(300):
+            actions = {
+                agent: random.choice(self.arena.action_manager.get_valid_action_ids(agent))
+                for agent in self.arena.core.get_required_agents()
+            }
+
+            observations, rewards, terminations, truncations, infos = self.arena.step(
+                actions
+            )
+
 
     # def test_load_save_state():
     #     pass
-
-    def test_pettingzoo(self):
-        api_test(self.arena, num_cycles=1000, verbose_progress=False)
 
     # def test_create_team(self):
     #     pass
@@ -83,15 +78,27 @@ class TestArena(unittest.TestCase):
     #     self.arena.render()
 
 
-class TestResetOptions(unittest.TestCase):
+class TestPettingZooAPI(unittest.TestCase):
     def setUp(self):
-        logger.setLevel(logging.DEBUG)
+        log.setLevel(logging.DEBUG)
         core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
         self.arena = BattleArena(core)
-        self.required_agents = self.arena.battle_state.get_required_agents()
+
+    def test(self):
+        parallel_api_test(self.arena, num_cycles=20)
 
     def tearDown(self):
-        BattleArena.close()
+        self.arena.close()
+
+
+class TestResetOptions(unittest.TestCase):
+    def setUp(self):
+        log.setLevel(logging.DEBUG)
+        core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+        self.arena = BattleArena(core)
+
+    def tearDown(self):
+        self.arena.close()
 
     def test_load_savestate(self):
         """
@@ -111,10 +118,13 @@ class TestResetOptions(unittest.TestCase):
             - Team generated with team_factory
         """
         options = {
-            "save_state": "turn_type_create_team",
+            "save_state": "boot_state",
         }
         self.arena.reset(options=options)
-        self.assertEqual(self.arena.battle_state.current_turn, TurnType.GENERAL)
+        # state id of 0 means that BattleStateFactory.build() hasn't been called & has not created a new state
+        self.assertEqual(
+            self.arena.core.state, BattleState(id=0, step=0, turn=TurnType.GENERAL)
+        )
         return
 
     def test_create_team(self):
@@ -141,7 +151,7 @@ class TestResetOptions(unittest.TestCase):
             },
         }
         self.arena.reset(options=options)
-        self.assertEqual(self.arena.battle_state.current_turn, TurnType.GENERAL)
+        self.assertEqual(self.arena.core.state.turn, TurnType.GENERAL)
 
         for agent in self.arena.possible_agents:
             ground_truth_team_params = options["teams"][agent]
@@ -177,7 +187,7 @@ class TestResetOptions(unittest.TestCase):
         Trying to create a squirtle with GROWL even if its not in squirtle movepool
         """
         options = {
-            "save_state": "turn_type_create_team",
+            "save_state": "boot_state",
             "teams": {
                 "player": [
                     7,
@@ -203,7 +213,7 @@ class TestResetOptions(unittest.TestCase):
 
 class TestFightUnfold(unittest.TestCase):
     """
-    The following tests writes directly actions using the action_manager to test 
+    The following tests writes directly actions using the action_manager to test
 
     Its purpose is to test the action manager as well as other lower level apis.
 
@@ -211,19 +221,19 @@ class TestFightUnfold(unittest.TestCase):
     """
 
     def setUp(self):
-        logger.setLevel(logging.DEBUG)
+        log.setLevel(logging.DEBUG)
         core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
         self.arena = BattleArena(core)
 
     def tearDown(self):
-        BattleArena.close()
+        self.arena.close()
 
     def test_enemy_lost(self):
         # pikachu lvl 99 using shock wave (86) with 100% accyracy
         options = {
             "save_state": "turn_type_create_team",
             "teams": {
-                # Pikachu with moves and 100% HP
+                # Pikachu with move thundershock & 100% HP
                 "player": [
                     25,
                     99,
@@ -234,14 +244,14 @@ class TestFightUnfold(unittest.TestCase):
                     100,
                     0,
                 ],
-                # Magikarp uses splash wich does nothing 10% HP
+                # Lvl 10 Magikarp with move splash (no effect) & 10% HP
                 "enemy": [
                     129,
                     10,
                     150,
-                    0,
-                    0,
-                    0,
+                    150,
+                    150,
+                    150,
                     10,
                     0,
                 ],
@@ -249,22 +259,27 @@ class TestFightUnfold(unittest.TestCase):
         }
 
         self.arena.reset(options)
-        self.arena.step()
 
+        self.arena.step(actions={"player": 0, "enemy": 0})
+
+        log.debug(f"state = {self.arena.core.state}")
+        player_team_dump_data = self.arena.core.read_team_data("player")
+        log.debug(pokemon_data.to_pandas_team_dump_data(player_team_dump_data)["current_hp"])
+        
         for agent in self.arena.possible_agents:
             self.assertTrue(self.arena.terminations[agent])
 
     def test_switch_pokemon(self):
         options = {
-            "save_state": "turn_type_create_team",
+            "save_state": "boot_state",
             "teams": {
                 "player": [
                     129,  # Magikarp lvl 1 with splash wich does nothing
                     1,  # lvl 1
                     150,  # splash
-                    0,
-                    0,
-                    0,
+                    150,
+                    150,
+                    150,
                     100,  # 100% hp
                     0,
                 ],
@@ -297,9 +312,7 @@ class TestFightUnfold(unittest.TestCase):
         enemy_action = 5  #
         actions = {"player": player_action, "enemy": enemy_action}
 
-        self.arena.action_manager.write_actions(
-            self.arena.battle_state.current_turn, actions
-        )
+        self.arena.action_manager.write_actions(actions)
         turn = self.arena.core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.GENERAL)
 
@@ -321,7 +334,7 @@ class TestFightUnfold(unittest.TestCase):
 
     def test_invalid_action(self):
         options = {
-            "save_state": "turn_type_create_team",
+            "save_state": "boot_state",
             "teams": {
                 "player": [
                     # SQUIRTLE
@@ -364,23 +377,23 @@ class TestFightUnfold(unittest.TestCase):
         enemy_action = 0
         actions = {"player": player_action, "enemy": enemy_action}
 
-        self.arena.action_manager.write_actions(
-            self.arena.battle_state.current_turn, actions
-        )
+        self.arena.action_manager.write_actions(actions)
 
-        turn = self.arena.core.advance_to_next_turn()
-        self.assertEqual(turn, TurnType.PLAYER)
-        player_action = 5  # Switch with the [1] mon (Bulbasaur)
-        actions = {"player": player_action}
-        written_actions = self.arena.action_manager.write_actions(turn, actions)
+        self.arena.core.advance_to_next_turn()
+        self.assertEqual(
+            self.arena.core.state, BattleState(id=0, step=0, turn=TurnType.PLAYER)
+        )
+        player_action = 4
+        actions = {"player": 4}  # Switch with the [1] mon (Raichu)
+        written_actions = self.arena.action_manager.write_actions(actions)
         self.assertFalse(
-            written_actions["enemy"],
+            written_actions["player"],
             "Invalid action written successfully! This should not happen.",
         )
 
     def test_switch_pokemon_when_one_fainted_player(self):
         options = {
-            "save_state": "turn_type_create_team",
+            "save_state": "boot_state",
             "teams": {
                 "player": [
                     # SQUIRTLE
@@ -421,18 +434,14 @@ class TestFightUnfold(unittest.TestCase):
         # Both use first move (Pikachu will faint)
         actions = {"player": 0, "enemy": 0}
 
-        for agent, result in self.arena.action_manager.write_actions(
-            self.arena.battle_state.current_turn, actions
-        ).items():
+        for agent, result in self.arena.action_manager.write_actions(actions).items():
             self.assertTrue(result, "Valid action not written this should not happen.")
 
         turn = self.arena.core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.PLAYER)
 
         actions = {"player": 5}  # Switch with the [1] mon (RAICHU)}
-        for agent, result in self.arena.action_manager.write_actions(
-            self.arena.battle_state.current_turn, actions
-        ).items():
+        for agent, result in self.arena.action_manager.write_actions(actions).items():
             self.assertTrue(result, "Valid action not written this should not happen.")
 
         turn = self.arena.core.advance_to_next_turn()
