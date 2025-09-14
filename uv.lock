@@ -123,6 +123,21 @@ wheels = [
 ]
 
 [[package]]
+name = "icecream"
+version = "2.1.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "asttokens" },
+    { name = "colorama" },
+    { name = "executing" },
+    { name = "pygments" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a2/d0/738341f0a3636a8e4bc798b98b9e0594d0de894e85208af43a6a05b9db44/icecream-2.1.7.tar.gz", hash = "sha256:936df053e65ff3c7a219fa79311b32bdae19aad83dd2e23d153ab8864b78acd9", size = 17355, upload-time = "2025-08-17T16:02:12.342Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7b/ae/7abd8d0db31ffafdc5088db7297d6fa14de53cb7daf6da21b4794a7567ce/icecream-2.1.7-py3-none-any.whl", hash = "sha256:b52cdd40cb5080279c4534fcd77aa510b1e7397a687e9d4daf2f8d2028bd738c", size = 14942, upload-time = "2025-08-17T16:02:11.468Z" },
+]
+
+[[package]]
 name = "iniconfig"
 version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -654,6 +669,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "icecream" },
     { name = "ipdb" },
     { name = "pytest" },
 ]
@@ -674,6 +690,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "icecream", specifier = ">=2.1.7" },
     { name = "ipdb", specifier = ">=0.13.13" },
     { name = "pytest", specifier = ">=8.4.1" },
 ]

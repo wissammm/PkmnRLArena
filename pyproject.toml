@@ -23,6 +23,7 @@ package-dir = {"" = "pkmn_rl_arena"}
 
 [dependency-groups]
 dev = [
+    "icecream>=2.1.7",
     "ipdb>=0.13.13",
     "pytest>=8.4.1",
 ]
