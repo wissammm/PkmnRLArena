@@ -132,7 +132,7 @@ class BattleArena(ParallelEnv):
 
         loaded = self.save_state_manager.load_state(options.get("save_state"))
         if not loaded:
-            raise RuntimeError(f"Failed to load save state {options.get("save_state")}")
+            raise RuntimeError(f"Failed to load save state {options.get('save_state')}")
         return
 
     def create_teams(self, options: Dict[str, Any]) -> Dict[str, list[int]]:
