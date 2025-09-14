@@ -77,7 +77,6 @@ class BattleArena(ParallelEnv):
         # Environment configuration
         self.possible_agents = ["player", "enemy"]
         self.agents = self.possible_agents
-        # self.reset_options = {"required": ["save_state", "teams"], "optional": []}
         self.action_space_size = 10
         self.observations = {
             agent: {"observation": np.array([], dtype=int), "action_mask": []}
@@ -106,17 +105,6 @@ class BattleArena(ParallelEnv):
     # RESET & OPTIONS FCTN
     #
     ##########################################################################
-    # def check_options_valid(self, options: Dict[str, Any]):
-    #     for option in options.keys():
-    #         if not (
-    #             option in self.reset_options["required"]
-    #             or option in self.reset_options["optional"]
-    #         ):
-    #             raise ValueError(
-    #                 f"Invalid reset option found : {option}.\n Expected options : {self.reset_options['required']} and {self.reset_options['optional']}"
-    #             )
-    #     return
-
     def load_save_state(self, options: Dict[str, str]):
         """In charge of trying to load a save state.
         Args:
@@ -190,11 +178,6 @@ class BattleArena(ParallelEnv):
         # TODO Implement seed args
 
         log.debug(f"Resetting env with options {options}")
-        if options is None:
-            raise ValueError(
-                f"No options given, for env reset, required options : {self.reset_options}"
-            )
-        # self.check_options_valid(options)
 
         # Reset managers
         self.agents = self.possible_agents
