@@ -1,5 +1,5 @@
 from pkmn_rl_arena import SAVE_PATH
-from pkmn_rl_arena.logging import logger
+from pkmn_rl_arena.logging import log
 
 from .battle_core import BattleState, BattleCore
 
@@ -57,20 +57,20 @@ class SaveStateManager:
         Raises :
             If state given by arg does not exist
         """
-        logger.info(f"Loading save state : {name}")
+        log.info(f"Loading save state : {name}")
         # case 1
         if name is None:
-            logger.warn(
+            log.warn(
                 f"Called load_save_state but the entry options save state name is {name}. Loading first state saved."
             )
             if len(self.save_states) == 0:
-                logger.fatal("No save state available to load. Exiting.")
+                log.fatal("No save state available to load. Exiting.")
                 exit(1)
             return self.core.load_savestate(self.save_states[0])
 
         # case 2
         if not re.match(SaveStateManager.regex_file_ext, name):
-            logger.debug(
+            log.debug(
                 f"Given state without file ext, attempting to load 1st state whose name matches regex {name}.+"
             )
             for save in self.save_states:
