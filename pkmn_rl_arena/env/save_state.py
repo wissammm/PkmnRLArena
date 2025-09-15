@@ -49,7 +49,7 @@ class SaveStateManager:
         Args:
             name : 3 possible values :
                 1. None: Retrieves latests savestate and loads it
-                2. Name without extension : loads 1st matching save state in self.savestates
+                2. Name without .savestate extension : loads 1st matching save state in self.savestates
                 3. Name with extension : loads save state
 
         Returns :
