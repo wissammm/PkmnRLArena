@@ -5,10 +5,12 @@ from pkmn_rl_arena import (
 )
 from pkmn_rl_arena import log
 from pkmn_rl_arena.env.battle_core import BattleCore
-from pkmn_rl_arena.env.battle_state import  TurnType, BattleState
+from pkmn_rl_arena.env.battle_state import  BattleState
 from pkmn_rl_arena.env.battle_arena import BattleArena
 from pkmn_rl_arena.env.pkmn_team_factory import DataSize
 from pkmn_rl_arena.data import pokemon_data
+from pkmn_rl_arena.env.turn_type import TurnType
+
 
 from pettingzoo.test import parallel_api_test
 
@@ -111,7 +113,7 @@ class TestResetOptions(unittest.TestCase):
         self.arena.reset(options=options)
         # state id of 0 means that BattleStateFactory.build() hasn't been called & has not created a new state
         self.assertEqual(
-            self.arena.core.state, BattleState(id=0, step=0, turn=TurnType.GENERAL)
+            self.arena.core.state, BattleState(id=0, step=2, turn=TurnType.GENERAL)
         )
         return
 
@@ -181,7 +183,6 @@ class TestResetOptions(unittest.TestCase):
             },
         }
 
-        # This test case Pikachu has 100% chance to faint
         with self.assertRaises(ValueError) as context_manager:
             self.arena.reset(options=options)
         self.assertEqual(

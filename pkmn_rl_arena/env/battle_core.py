@@ -2,7 +2,7 @@ import rustboyadvance_py
 from pkmn_rl_arena import SAVE_PATH, ROM_PATH, BIOS_PATH, log
 import pkmn_rl_arena.data.parser
 import pkmn_rl_arena.data.pokemon_data
-from pkmn_rl_arena.env.enums import TurnType
+from pkmn_rl_arena.env.turn_type import TurnType
 from dataclasses import dataclass
 import os
 from typing import Dict, List

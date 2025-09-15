@@ -2,7 +2,8 @@ from pkmn_rl_arena import log
 
 from dataclasses import dataclass
 from enum import Enum
-from pkmn_rl_arena.env.enums import TurnType
+
+from pkmn_rl_arena.env.turn_type import TurnType
 
 @dataclass
 class BattleState:
