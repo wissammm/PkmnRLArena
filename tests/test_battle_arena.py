@@ -239,7 +239,6 @@ class TestFightUnfold(unittest.TestCase):
                 ],
             },
         }
-        print(f"OPTIONS state: {options}")
 
         self.arena.reset(options = options)
 
@@ -308,6 +307,8 @@ class TestFightUnfold(unittest.TestCase):
         enemydf = pokemon_data.to_pandas_team_dump_data(enemy_team_dump_data)
         active_enemy = enemydf[enemydf["isActive"] == 1]
         print(enemydf)
+        turn = self.arena.core.advance_to_next_turn()
+        self.assertEqual(turn, TurnType.GENERAL)
         self.assertEqual(
             len(active_enemy),
             1,
@@ -368,7 +369,7 @@ class TestFightUnfold(unittest.TestCase):
 
         self.arena.core.advance_to_next_turn()
         self.assertEqual(
-            self.arena.core.state, BattleState(id=0, step=0, turn=TurnType.PLAYER)
+            self.arena.core.state, BattleState(id=0, step=2, turn=TurnType.PLAYER)
         )
         player_action = 4
         actions = {"player": 4}  # Switch with the [1] mon (Raichu)
