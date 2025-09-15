@@ -1,8 +1,4 @@
-from pkmn_rl_arena import (
-    ROM_PATH,
-    BIOS_PATH,
-    MAP_PATH,
-)
+from pkmn_rl_arena.paths import PATHS
 from pkmn_rl_arena import log
 from pkmn_rl_arena.env.battle_core import BattleCore
 from pkmn_rl_arena.env.battle_state import  BattleState
@@ -23,7 +19,7 @@ import random
 class TestArena(unittest.TestCase):
     def setUp(self):
         log.setLevel(logging.DEBUG)
-        core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+        core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
         self.arena = BattleArena(core)
 
     def tearDown(self):
@@ -71,7 +67,7 @@ class TestArena(unittest.TestCase):
 class TestPettingZooAPI(unittest.TestCase):
     def setUp(self):
         log.setLevel(logging.DEBUG)
-        core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+        core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
         self.arena = BattleArena(core)
 
     def test(self):
@@ -84,7 +80,7 @@ class TestPettingZooAPI(unittest.TestCase):
 class TestResetOptions(unittest.TestCase):
     def setUp(self):
         log.setLevel(logging.DEBUG)
-        core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+        core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
         self.arena = BattleArena(core)
 
     def tearDown(self):
@@ -203,7 +199,7 @@ class TestFightUnfold(unittest.TestCase):
 
     def setUp(self):
         log.setLevel(logging.DEBUG)
-        core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+        core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
         self.arena = BattleArena(core)
 
     def tearDown(self):

@@ -1,7 +1,7 @@
 from typing import Dict, List
 from dataclasses import dataclass
 from numpy import typing as npt
-from pkmn_rl_arena import POKEMON_CSV_PATH, MOVES_CSV_PATH
+from pkmn_rl_arena.paths import PATHS
 
 from pkmn_rl_arena.env.battle_core import BattleCore
 from pkmn_rl_arena.env.pkmn_team_factory import PkmnTeamFactory
@@ -190,7 +190,7 @@ class ObservationFactory:
           2. For each move: include id, pp info, and extra move stats.
           3. Concatenate into a flat observation array for the agent.
         """
-        moves_df = pd.read_csv(MOVES_CSV_PATH)
+        moves_df = pd.read_csv(PATHS["MOVES_CSV"])
     
         move_attrs = {}
         for _, row in moves_df.iterrows():

@@ -1,4 +1,4 @@
-from pkmn_rl_arena import POKEMON_CSV_PATH, MOVES_CSV_PATH
+from pkmn_rl_arena.paths import PATHS
 from .battle_core import BattleCore
 from pkmn_rl_arena import log
 
@@ -37,15 +37,15 @@ class Ranges:
 class PkmnTeamFactory:
     def __init__(
         self,
-        pkmn_path=POKEMON_CSV_PATH,
-        moves_path=POKEMON_CSV_PATH,
+        pkmn_path=PATHS["POKEMON_CSV"],
+        moves_path=PATHS["POKEMON_CSV"],
         seed: int | None = None,
     ):
         # "id" 0 is test
-        self.pkmns = pd.read_csv(POKEMON_CSV_PATH)
+        self.pkmns = pd.read_csv(PATHS["POKEMON_CSV"])
         self.pkmns = self.pkmns[self.pkmns["id"] != 0]
 
-        self.moves = pd.read_csv(MOVES_CSV_PATH)
+        self.moves = pd.read_csv(PATHS["MOVES_CSV"])
 
         # indexing DF by pkm ids
         self.pkmns = self.pkmns.set_index("id", drop=False)

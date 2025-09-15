@@ -1,4 +1,4 @@
-from pkmn_rl_arena import SAVE_PATH
+from pkmn_rl_arena.paths import PATHS
 from pkmn_rl_arena.logging import log
 
 from .battle_core import BattleState, BattleCore
@@ -19,7 +19,7 @@ class SaveStateManager:
 
     def __init__(self, battle_core: BattleCore):
         self.core = battle_core
-        self.save_dir = SAVE_PATH
+        self.save_dir = PATHS["SAVE"]
         self.save_states = []
         self.state_wild_card = "_turntype:*_step:*.savestate"
         os.makedirs(self.save_dir, exist_ok=True)
@@ -85,5 +85,5 @@ class SaveStateManager:
     def remove_save_states(self):
         """Delete all save states."""
         for path in self.save_states:
-            os.remove(os.path.join(SAVE_PATH, path))
+            os.remove(os.path.join(PATHS["SAVE"], path))
         return

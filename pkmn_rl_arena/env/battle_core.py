@@ -1,5 +1,6 @@
 import rustboyadvance_py
-from pkmn_rl_arena import SAVE_PATH, ROM_PATH, BIOS_PATH, log
+from pkmn_rl_arena.paths import PATHS
+from pkmn_rl_arena import log
 import pkmn_rl_arena.data.parser
 import pkmn_rl_arena.data.pokemon_data
 from pkmn_rl_arena.env.turn_type import TurnType
@@ -238,9 +239,9 @@ class BattleCore:
         return
 
     def save_savestate(self, ave_path: str) -> str:
-        """Save the current state of the emulator in SAVE_PATH"""
-        os.makedirs(SAVE_PATH, exist_ok=True)
-        save_path = os.path.join(SAVE_PATH, f"{ave_path}")
+        """Save the current state of the emulator in PATHS["SAVE"]"""
+        os.makedirs(PATHS["SAVE"], exist_ok=True)
+        save_path = os.path.join(PATHS["SAVE"], f"{ave_path}")
         self.gba.save_savestate(save_path)
         return save_path
 
@@ -248,15 +249,15 @@ class BattleCore:
         """Load a saved state
         Args :
             name : str = Save state name.
-                         The name must not be prefixed by SAVE_PATH
+                         The name must not be prefixed by PATHS["SAVE"]
         """
-        save_path = os.path.join(SAVE_PATH, name)
+        save_path = os.path.join(PATHS["SAVE"], name)
         if not os.path.exists(save_path):
             print(f"Save state {save_path} does not exist.")
             return False
 
         log.info(f"Loading following save state : {save_path}")
-        self.gba.load_savestate(save_path, BIOS_PATH, ROM_PATH)
+        self.gba.load_savestate(save_path, PATHS["BIOS"], PATHS["ROM"])
         self.setup_addresses()
         self.setup_stops()
         self.state = BattleStateFactory.from_save_path(save_path)
