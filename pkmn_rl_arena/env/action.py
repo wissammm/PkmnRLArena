@@ -1,54 +1,68 @@
+from pkmn_rl_arena.logging import log
 from .battle_core import BattleCore
 from .battle_state import TurnType
 
-from typing import Dict, List
+import numpy as np
+import numpy.typing as npt
+from typing import Dict
+
+ACTION_SPACE_SIZE = 10
+
 
 class ActionManager:
     """
     Manages action validation and execution.
     """
 
+    allowed_turntype = {
+        "player": [TurnType.PLAYER, TurnType.GENERAL],
+        "enemy": [TurnType.ENEMY, TurnType.GENERAL],
+    }
+
     def __init__(self, battle_core: BattleCore):
         self.battle_core = battle_core
         self.action_space_size = 10  # Actions 0-9
 
-    @staticmethod
-    def is_valid_action(action: int) -> bool:
-        """Check if action is valid (simplified version)"""
-        return 0 <= action <= 9
+    def is_valid_action(self, agent, action_id: int) -> bool:
+        """Check if action is valid."""
+        return 0 <= action_id <= 9 and self.get_action_mask(agent)[action_id] == 1
 
-    @staticmethod
-    def check_agent_match_turntype(agent, turn_type) -> bool:
-        return (
-            agent == "player" and turn_type in [TurnType.PLAYER, TurnType.GENERAL]
-        ) or (agent == "enemy" and turn_type in [TurnType.ENEMY, TurnType.GENERAL])
-
-    def write_actions(self, turn_type: TurnType, actions: Dict[str, int]):
+    def write_actions(self, actions: Dict[str, int]) -> Dict[str, bool]:
         """Write actions based on turn type"""
-        for agent , action in actions.items():
-            if not self.check_agent_match_turntype(agent, turn_type):
-                raise ValueError(f"Error : write_actions : invalid agent, expected \"player\" or \"enemy\", got {agent}")
+        action_written = {agent: False for agent in actions.keys()}
+        for agent, action in actions.items():
+            # if self.battle_core.state.turn not in ActionManager.allowed_turntype[agent]:
+            #     raise ValueError(
+            #         f"Error : write_actions : invalid turntype ({self.battle_core.state.turn}), for current agent ({agent})."
+            #         f"Expected to be in {ActionManager.allowed_turntype[agent]}"
+            #     )
+
+            if not self.is_valid_action(agent, action):
+                log.warning(
+                    f"Trying to write invalid action : authorized, values {self.get_action_mask(agent)}, got {action}."
+                )
+                action_written[agent] = False
+                continue
+
             self.battle_core.write_action(agent, actions[agent])
+            action_written[agent] = True
 
+        return action_written
 
-    def get_legal_actions(self, agent: str) -> List[int]:
-        match agent:
-            case "player":
-                legal_moves = self.battle_core.gba.read_u16_list(
-                    self.battle_core.addrs["legalMoveActionsPlayer"], 4
-                )
-                legal_switches = self.battle_core.gba.read_u16_list(
-                    self.battle_core.addrs["legalSwitchActionsPlayer"], 6
-                )
-            case "enemy":
-                legal_moves = self.battle_core.gba.read_u16_list(
-                    self.battle_core.addrs["legalMoveActionsEnemy"], 4
-                )
-                legal_switches = self.battle_core.gba.read_u16_list(
-                    self.battle_core.addrs["legalSwitchActionsEnemy"], 6
-                )
-            case _:
-                raise ValueError(f"Unknown agent: {agent}")
+    def get_valid_action_ids(self, agent: str) -> list[int]:
+        """
+        Return valid action ids
+        It returns a subset of the action space, removing illegal moves
+        (such as PP == 0 & ko  pkmn (forbidden switch))
+        Note : Action space :
+            [0,1,2,3,4,5,6,7,8,9]
+        """
+        legal_moves = self.battle_core.gba.read_u16_list(
+            self.battle_core.addrs[f"legalMoveActions{agent.capitalize()}"], 4
+        )
+        legal_switches = self.battle_core.gba.read_u16_list(
+            self.battle_core.addrs[f"legalSwitchActions{agent.capitalize()}"], 6
+        )
 
         valid_moves = [i for i, move in enumerate(legal_moves) if move]
         valid_switches = [
@@ -57,3 +71,18 @@ class ActionManager:
 
         # Combine moves and switches into a single list of legal actions
         return valid_moves + valid_switches
+
+    def get_action_mask(self, agent: str) -> npt.NDArray[int]:
+        """
+        Creates an action mask for the agent. The mask is here to signal the unauthorized actions
+        It returns illegal moves : (PP == 0 & ko  pkmn (forbidden switch))
+        Action space :
+            [0,1,2,3,4,5,6,7,8,9]
+        Example for an action mask :
+            [0,1,1,0,1,1,1,0,0,1]
+        """
+
+        action_mask = np.zeros(shape=ACTION_SPACE_SIZE)
+        action_mask[self.get_valid_action_ids(agent)] = 1
+
+        return action_mask

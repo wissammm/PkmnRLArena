@@ -282,7 +282,7 @@ if __name__ == "__main__":
         # Generate random actions for required agents
         actions = {}
         for agent in required_agents:
-            legal_actions = rl_core.action_manager.get_legal_actions(agent)
+            legal_actions = rl_core.action_manager.get_action_mask(agent)
             if legal_actions:
                 actions[agent] = random.choice(
                     legal_actions

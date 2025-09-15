@@ -1,12 +1,69 @@
 import rustboyadvance_py
-from pkmn_rl_arena import SAVE_PATH, ROM_PATH, BIOS_PATH, logger
+from pkmn_rl_arena import SAVE_PATH, ROM_PATH, BIOS_PATH, log
 import pkmn_rl_arena.data.parser
 import pkmn_rl_arena.data.pokemon_data
 
-from .battle_state import TurnType
-
+from dataclasses import dataclass
+from enum import Enum
 import os
 from typing import Dict, List
+
+
+class TurnType(Enum):
+    """Enumeration for different turn types"""
+
+    CREATE_TEAM = 0  # Initial team creation
+    GENERAL = 1  # Both players act simultaneously
+    PLAYER = 2  # Only player acts
+    ENEMY = 3  # Only enemy acts
+    DONE = 4  # Battle is finished
+
+
+@dataclass
+class BattleState:
+    """
+    Represents the current state of the battle
+    NOTE :
+        DO NOTE USE THIS CLASS CONSTRUCTOR.
+        STATES MUST ONLY BE MANUFACTURED THROUGH StateFactory
+    """
+
+    id: int = 0  # unique id for this run
+    step: int = 0  # nb step in this run
+    turn: TurnType = TurnType.CREATE_TEAM  # current battle turntype
+
+    def __eq__(self, other) -> bool:
+        """This is a helper for tests, it doesn't tests the id voluntarly ad it is unique."""
+        return self.step == other.step and self.turn == other.turn
+
+
+class BattleStateFactory:
+    id_gen: int = 0  # unique episode id  generator
+    id: int = 0  # unique id for this run
+
+    def build(self, current_turn=TurnType.CREATE_TEAM, step=0) -> BattleState:
+        if step < 0:
+            raise ValueError(
+                f"Attempting to create a step with negative step, step value must be strictly > 0, got {step}"
+            )
+        id = BattleStateFactory.id_gen
+        BattleStateFactory.id_gen += 1
+        return BattleState(id=id, step=step, turn=current_turn)
+
+    @staticmethod
+    def from_save_path(save_path: str) -> BattleState:
+        """
+        Creates state from save path, assuming save path is of shape :
+        {save_name}_turntype:{turntype.value}_step:{step}_id:{id}.savestate
+        """
+        log.debug(f"Creating battlestate from {save_path}")
+        data = save_path.split(".")[-2].split("_")[-3:]
+
+        turntype = TurnType(int(data[0][data[0].find(":") + 1 :]))
+        step = int(data[1][data[1].find(":") + 1 :])
+        id = int(data[2][data[2].find(":") + 1 :])
+
+        return BattleState(id, step, turntype)
 
 
 class BattleCore:
@@ -32,6 +89,7 @@ class BattleCore:
         self.gba = rustboyadvance_py.RustGba()
         self.gba.load(bios_path, rom_path)
 
+        self.state = BattleState()
         if setup:
             self.addrs = {}  # filled in fctn below
             self.addrs = self.setup_addresses()
@@ -109,10 +167,18 @@ class BattleCore:
         self.gba.add_stop_addr(addr, size, read, name, stop_id)
 
     def run_to_next_stop(self, max_steps=2000000) -> int:
-        """Run the emulator until we hit a stop condition"""
+        """
+        Run the emulator until we hit a stop condition and updates game state.
+        Args:
+            max_steps : number of steps to run in the gba before timeout
+        Return:
+            stop_id : -1 if uncatched error, 
+        Raises :
+            TimeOutError : if max steps < nb of steps executed to run to next stop
+        """
         stop_id = self.gba.run_to_next_stop(self.steps)
 
-        # Keep running if we didn't hit a stop
+        # Keep running until we hit a stop
         while stop_id == -1:
             max_steps -= 1
             if max_steps <= 0:
@@ -121,6 +187,8 @@ class BattleCore:
                 )
             stop_id = self.gba.run_to_next_stop(self.steps)
 
+        self.state.turn = self.stop_ids[stop_id]
+        self.state.step += 1
         return stop_id
 
     def advance_to_next_turn(self) -> TurnType:
@@ -173,26 +241,54 @@ class BattleCore:
         """Write team data for specified agent"""
         authorized_agents = ["player", "enemy"]
         for agent, team in teams_data.items():
-            if agent not in authorized_agents :
+            if agent not in authorized_agents:
                 raise ValueError(
                     f'Error: write_team_data : Invalid agent, expected either {authorized_agents}, got "{agent}".'
                 )
             self.gba.write_u32_list(self.addrs[f"{agent}Team"], team)
         return
 
-    def save_savestate(self, name: str) -> str:
-        """Save the current state of the emulator"""
+    def save_savestate(self, ave_path: str) -> str:
+        """Save the current state of the emulator in SAVE_PATH"""
         os.makedirs(SAVE_PATH, exist_ok=True)
-        save_path = os.path.join(SAVE_PATH, f"{name}.savestate")
+        save_path = os.path.join(SAVE_PATH, f"{ave_path}")
         self.gba.save_savestate(save_path)
         return save_path
 
     def load_savestate(self, name: str) -> bool:
-        """Load a saved state"""
-        save_path = os.path.join(SAVE_PATH, f"{name}.savestate")
-        if os.path.exists(save_path):
-            self.gba.load_savestate(save_path, BIOS_PATH, ROM_PATH)
-            return True
-        else:
+        """Load a saved state
+        Args :
+            name : str = Save state name.
+                         The name must not be prefixed by SAVE_PATH
+        """
+        save_path = os.path.join(SAVE_PATH, name)
+        if not os.path.exists(save_path):
             print(f"Save state {save_path} does not exist.")
             return False
+
+        log.info(f"Loading following save state : {save_path}")
+        self.gba.load_savestate(save_path, BIOS_PATH, ROM_PATH)
+        self.setup_addresses()
+        self.setup_stops()
+        self.state = BattleStateFactory.from_save_path(save_path)
+        return True
+
+    def is_episode_done(self) -> bool:
+        """Check if battle is finished"""
+        return self.state.turn == TurnType.DONE
+
+    def get_current_turn(self) -> TurnType:
+        """Get current turn type"""
+        return self.state.turn
+
+    def get_required_agents(self) -> List[str]:
+        """Get list of agents required for current turn"""
+        match self.state.turn:
+            case TurnType.GENERAL:
+                return ["player", "enemy"]
+            case TurnType.PLAYER:
+                return ["player"]
+            case TurnType.ENEMY:
+                return ["enemy"]
+            case _:
+                return []

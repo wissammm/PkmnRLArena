@@ -15,8 +15,15 @@ dependencies = [
     "maturin",
     "pettingzoo>=1.25.0",
     "gymnasium>=1.2.0",
-    "picologging>=0.9.3",
+    "colorama>=0.4.6",
 ]
 
 [tool.setuptools]
 package-dir = {"" = "pkmn_rl_arena"}
+
+[dependency-groups]
+dev = [
+    "icecream>=2.1.7",
+    "ipdb>=0.13.13",
+    "pytest>=8.4.1",
+]
