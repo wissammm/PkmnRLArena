@@ -13,7 +13,7 @@ from pkmn_rl_arena.quantize.quantize import FullQuantizer
 
 from pkmn_rl_arena.data.parser import MapAnalyzer
 
-from pkmn_rl_arena import BIOS_PATH
+from pkmn_rl_arena.paths import PATHS
 
 import rustboyadvance_py
 
@@ -121,7 +121,7 @@ def apply_fusion_passes(
 def setup_gba_environment(rom_path, map_path):
     """Setup GBA environment and return necessary objects."""
     gba = rustboyadvance_py.RustGba()
-    gba.load(BIOS_PATH, rom_path)
+    gba.load(PATHS["BIOS"], rom_path)
     parser = MapAnalyzer(map_path)
     addr_write, addr_read = setup_stop_addr(parser, gba)
 

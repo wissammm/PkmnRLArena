@@ -9,11 +9,11 @@ import pkmn_rl_arena.data.parser
 import pkmn_rl_arena.data.pokemon_data
 
 STEPS = 50
-from pkmn_rl_arena import ROM_PATH, BIOS_PATH, MAP_PATH
+from pkmn_rl_arena.paths import PATHS
 
 class Benchmark:
     def __init__(self):
-        self.rl_core = PokemonRLCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+        self.rl_core = PokemonRLCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
         obs = self.rl_core.reset()
 
     def run(self):

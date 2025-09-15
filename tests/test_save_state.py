@@ -10,13 +10,7 @@ import random
 
 import picologging as logging
 
-from pkmn_rl_arena import (
-    ROM_PATH,
-    BIOS_PATH,
-    MAP_PATH,
-    POKEMON_CSV_PATH,
-    MOVES_CSV_PATH,
-)
+from pkmn_rl_arena.paths import PATHS
 
 
 class TestSaveState(unittest.TestCase):
@@ -31,7 +25,7 @@ class TestSaveState(unittest.TestCase):
     def setUp(self):
         log.setLevel(logging.DEBUG)
 
-        self.core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+        self.core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
         turn = self.core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.CREATE_TEAM)
 
@@ -63,9 +57,7 @@ class TestSaveState(unittest.TestCase):
 
     def test_save_load_state(self):
         for save_name, nb_turn_to_advance in TestSaveState.save_load_cases:
-            log.debug(
-                f"test : {save_name}, nb turn to advance : {nb_turn_to_advance}"
-            )
+            log.debug(f"test : {save_name}, nb turn to advance : {nb_turn_to_advance}")
 
             # skip turns with random moves to simulate battle
             for i in range(nb_turn_to_advance):

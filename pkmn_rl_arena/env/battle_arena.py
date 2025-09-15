@@ -5,13 +5,7 @@ from .battle_state import TurnType, BattleState
 from .observation import ObservationFactory, OBS_SPACE_SIZE
 from .pkmn_team_factory import PkmnTeamFactory
 from .save_state import SaveStateManager
-from pkmn_rl_arena import (
-    POKEMON_CSV_PATH,
-    MOVES_CSV_PATH,
-    ROM_PATH,
-    BIOS_PATH,
-    MAP_PATH,
-)
+from pkmn_rl_arena.paths import PATHS
 
 from pkmn_rl_arena.logging import log
 
@@ -70,7 +64,7 @@ class BattleArena(ParallelEnv):
         self.core = battle_core
         self.observation_factory = ObservationFactory(self.core)
         self.action_manager = ActionManager(self.core)
-        self.team_factory = PkmnTeamFactory(POKEMON_CSV_PATH, MOVES_CSV_PATH)
+        self.team_factory = PkmnTeamFactory(PATHS["POKEMON_CSV"], PATHS["MOVES_CSV"])
 
         self.save_state_manager = SaveStateManager(self.core)
 
@@ -115,7 +109,7 @@ class BattleArena(ParallelEnv):
             log.debug(
                 'No save state name given in options["save_state"], creating a new battle core.'
             )
-            self.core = BattleCore(ROM_PATH, BIOS_PATH, MAP_PATH)
+            self.core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
             self.core.advance_to_next_turn()
             return
 

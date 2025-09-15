@@ -1,6 +1,6 @@
 import pkmn_rl_arena.data.parser
 import pkmn_rl_arena.data.pokemon_data
-from pkmn_rl_arena import ROM_PATH, BIOS_PATH, MAP_PATH, SAVE_PATH
+from pkmn_rl_arena.paths import PATHS
 import rustboyadvance_py
 
 import random
@@ -18,8 +18,8 @@ MAIN_STEPS = 64000
 class TestGbaFunctions(unittest.TestCase):
     def setUp(self):
         self.gba = rustboyadvance_py.RustGba()
-        self.parser = pkmn_rl_arena.data.parser.MapAnalyzer(MAP_PATH)
-        self.gba.load(BIOS_PATH, ROM_PATH)
+        self.parser = pkmn_rl_arena.data.parser.MapAnalyzer(PATHS["MAP"])
+        self.gba.load(PATHS["BIOS"], PATHS["ROM"])
 
     def test_read_u32(self):
         self.gba.add_stop_addr(
@@ -114,12 +114,12 @@ class TestGbaFunctions(unittest.TestCase):
         self.gba.write_u32_list(addr, data)
 
         # Save the state
-        save_path = f"{SAVE_PATH}/test_rustboy_advance_py.savestate"
+        save_path = f"{PATHS["SAVE"]}/test_rustboy_advance_py.savestate"
         self.gba.save_savestate(save_path)
 
 
         # Load the state
-        self.gba.load_savestate("save_path", BIOS_PATH, ROM_PATH)
+        self.gba.load_savestate(save_path, PATHS["BIOS"], PATHS["ROM"])
         self.gba.add_stop_addr(
             int(self.parser.get_address("stopTestReadWriteTwo"), 16),
             1,
