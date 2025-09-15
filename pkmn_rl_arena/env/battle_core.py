@@ -2,21 +2,10 @@ import rustboyadvance_py
 from pkmn_rl_arena import SAVE_PATH, ROM_PATH, BIOS_PATH, log
 import pkmn_rl_arena.data.parser
 import pkmn_rl_arena.data.pokemon_data
-
+from pkmn_rl_arena.env.enums import TurnType
 from dataclasses import dataclass
-from enum import Enum
 import os
 from typing import Dict, List
-
-
-class TurnType(Enum):
-    """Enumeration for different turn types"""
-
-    CREATE_TEAM = 0  # Initial team creation
-    GENERAL = 1  # Both players act simultaneously
-    PLAYER = 2  # Only player acts
-    ENEMY = 3  # Only enemy acts
-    DONE = 4  # Battle is finished
 
 
 @dataclass

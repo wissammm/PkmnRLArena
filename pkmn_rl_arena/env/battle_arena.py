@@ -92,7 +92,7 @@ class BattleArena(ParallelEnv):
         # render console
         self.console = Console()
 
-        self.core.advance_to_next_turn()
+        current_turn = self.core.advance_to_next_turn()
         if self.core.state.turn != TurnType.CREATE_TEAM:
             raise RuntimeError(
                 f"Env creation : Upon creating BattleCore and calling advance_to_next_turn(), turntype should be {TurnType.CREATE_TEAM}. Got {self.core.state.turn}."
