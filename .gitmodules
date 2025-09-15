@@ -4,6 +4,8 @@
 [submodule "pokeemerald_ai_rl"]
 	path = pokeemerald_ai_rl
 	url = git@github.com:wissammm/pokeemerald_ai_rl.git
+	branch = dev
 [submodule "rustboyadvance-ng-for-rl"]
 	path = rustboyadvance-ng-for-rl
 	url = git@github.com:wissammm/rustboyadvance-ng-for-rl.git
+	branch = main
