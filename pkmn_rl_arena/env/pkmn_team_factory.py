@@ -81,7 +81,6 @@ class PkmnTeamFactory:
                 [random_species["id"], LVL] + random_moves_idx + [hp_percent, item_id]
             )
 
-        print(f"Created random team: {team}")
         return team
 
     def get_pkmn_name_from(self, pkmn_id: int) -> str:

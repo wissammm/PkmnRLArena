@@ -126,6 +126,7 @@ class BattleArena(ParallelEnv):
 
     def create_teams(self, options: Dict[str, Any]) -> Dict[str, list[int]]:
         if options.get("teams") is None:
+            log.debug('No team provided in options["teams"], creating random teams.')
             return {
                 agent: self.team_factory.create_random_team() for agent in self.agents
             }
@@ -134,6 +135,7 @@ class BattleArena(ParallelEnv):
         for agent, team in teams.items():
             log.info(f"Creating {agent} team.")
             if team is None:
+                log.info(f"No team provided for {agent}, creating a random one.")
                 teams[agent] = self.team_factory.create_random_team()
                 continue
 
@@ -197,15 +199,14 @@ class BattleArena(ParallelEnv):
         assert self.core.state.turn == TurnType.GENERAL, (
             f"Expected turntype.GENERAL, got {self.core.state.current_turn}"
         )
-        observations = self.observation_factory.from_game().o
         observations = self.observation_factory.from_game()
         self.observations = {
             "player": {
-                "observation": observations.o["player"],
+                "observation": observations._o["player"],
                 "action_mask": self.action_manager.get_action_mask("player"),
             },
             "enemy": {
-                "observation": observations.o["enemy"],
+                "observation": observations._o["enemy"],
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }
@@ -261,11 +262,11 @@ class BattleArena(ParallelEnv):
         observation = self.observation_factory.from_game()
         self.observations = {
             "player": {
-                "observation": observation.o["player"],
+                "observation": observation._o["player"],
                 "action_mask": self.action_manager.get_action_mask("player"),
             },
             "enemy": {
-                "observation": observation.o["enemy"],
+                "observation": observation._o["enemy"],
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }

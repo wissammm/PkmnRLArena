@@ -26,7 +26,7 @@ class Observation:
     Agent :
     """
 
-    o: Dict[str, AgentObs]
+    _o: Dict[str, AgentObs]
 
     @property
     def agent(self, a: str):
