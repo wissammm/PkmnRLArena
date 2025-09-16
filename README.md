@@ -1,11 +1,13 @@
 # PkmnRLArena
+A library for training, deploying, and running multi-agent reinforcement learning (MARL) agents inside the Game Boy Advance (GBA) environment.
 
+## Features
 Reinforcement learning environment and tools for Pokémon Emerald : 
-    - Modified Emulator to have python librairy 
-    - PettingZoo environnement for MARL
-    - Quantization 
-    - Neural Network graph manipulation 
-    - Export 
+- Modified Emulator to have python librairy 
+- PettingZoo environnement for MARL
+- Quantization 
+- Neural Network graph manipulation 
+- Export 
 
 
 ## Project structure
