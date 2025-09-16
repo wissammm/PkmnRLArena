@@ -46,8 +46,8 @@ Using Docker ensures a fully reproducible environment without needing to manuall
 > You need to have [Docker](https://docs.docker.com/get-docker/) installed on your system before continuing.
 
 ```bash
-git clone --recurse-submodules https://github.com/wissammm/rl_new_pokemon_ai.git
-cd rl_new_pokemon_ai
+git clone --recurse-submodules https://github.com/wissammm/PkmnRLArena.git
+cd PkmnRLArena
 docker build -t pokemon-rl .
 ```
 
