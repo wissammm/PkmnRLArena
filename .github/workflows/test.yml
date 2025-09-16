@@ -1,4 +1,4 @@
-name: build & test
+name: Project Build & Test
 on:
    push
 
@@ -6,7 +6,11 @@ jobs:
   uv-build:
     name: python
     runs-on: ubuntu-latest
-
+    container:
+         image: ghcr.io/${{ github.repository }}/ci-image:latest
+         credentials:
+           username: ${{ github.actor }}
+           password: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
