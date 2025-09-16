@@ -2,7 +2,10 @@
 name = "pkmn_rl_arena"
 version = "0.1.0"
 description = "Reinforcement learning and exporting neural networks on pokemon emerald to flash a game card. Yes we run AI on a Game Boy Advance."
-authors = [{ name = "Wissam Boussella", email = "wissamboussella@gmail.com" },{ name = "Grégoire Kubler", email = "greg_is_kub@pm.me" }]
+authors = [
+    { name = "Wissam Boussella", email = "wissamboussella@gmail.com" },
+    { name = "Grégoire Kubler", email = "greg_is_kub@pm.me" }
+]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -18,8 +21,13 @@ dependencies = [
     "colorama>=0.4.6",
 ]
 
-[tool.setuptools]
-package-dir = {"" = "pkmn_rl_arena"}
+[build-system]
+requires = ["uv_build>=0.8.17,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "pkmn_rl_arena"
+module-root = ""
 
 [dependency-groups]
 dev = [
