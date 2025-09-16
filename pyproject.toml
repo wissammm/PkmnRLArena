@@ -19,6 +19,7 @@ dependencies = [
     "pettingzoo>=1.25.0",
     "gymnasium>=1.2.0",
     "colorama>=0.4.6",
+    "picologging>=0.9.3",
 ]
 
 [build-system]
