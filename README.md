@@ -96,33 +96,27 @@ sudo dkp-pacman -Sy --noconfirm gba-dev
 source /etc/profile.d/devkit-env.sh
 ```
 
-5. Clone the repo (with submodules)
-```bash
-git clone --recurse-submodules https://github.com/wissammm/rl_new_pokemon_ai.git
-cd rl_new_pokemon_ai
-```
-
-6. Download GBA BIOS to the emulator folder
+7. Download GBA BIOS to the emulator folder
 ```bash
 wget -O rustboyadvance-ng-for-rl/gba_bios.bin \
   https://raw.githubusercontent.com/Nebuleon/ReGBA/master/bios/gba_bios.bin
 ```
 
-7. Create venv and install Python dependencies (uses uv.lock if available)
+8. Create venv and install Python dependencies (uses uv.lock if available)
 ```bash
 uv venv .venv        # or: python3 -m venv .venv
 source .venv/bin/activate
 uv sync              # installs packages from uv.lock / pyproject.toml
 ```
 
-8. Build & install the Rust emulator Python extension
+9. Build & install the Rust emulator Python extension
 ```bash
 cd rustboyadvance-ng-for-rl/platform/rustboyadvance-py
 maturin develop --features elf_support --release -j6
 cd ../../../
 ```
 
-9. Build agbcc and install into the pokeemerald build tree
+10. Build agbcc and install into the pokeemerald build tree
 ```bash
 cd agbcc
 ./build.sh
@@ -130,7 +124,7 @@ cd agbcc
 cd ..
 ```
 
-10. Build the custom pokeemerald ROM
+11. Build the custom pokeemerald ROM
 ```bash
 cd pokeemerald_ai_rl
 make modern DINFO=1 DOBSERVED_DATA=1 DSKIP_TEXT=1 DSKIP_GRAPHICS=1 NO_DEBUG_PRINT=1 -j$(nproc)
