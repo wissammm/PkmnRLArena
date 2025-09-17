@@ -23,21 +23,27 @@ RUN apt-get update && apt-get install -y \
     gdebi-core \
     && rm -rf /var/lib/apt/lists/*
 
+# Install RUST / CARGO & UV
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.cargo/bin:/root/.local/bin:${PATH}"
 
+# clone repo
 WORKDIR /app
 RUN git config --global url."https://github.com/".insteadOf git@github.com:
 RUN git clone --recurse-submodules https://github.com/wissammm/PkmnRLArena.git .
 
+# retrieve GBA BIOS
 RUN wget -O ./rustboyadvance-ng-for-rl/bios.bin https://raw.githubusercontent.com/Nebuleon/ReGBA/master/bios/gba_bios.bin
 RUN mv /app/rustboyadvance-ng-for-rl/bios.bin /app/rustboyadvance-ng-for-rl/gba_bios.bin
 
 COPY pyproject.toml uv.lock /app/
-RUN uv venv .venv && uv sync
+RUN uv venv .venv
+RUN bash -c "source /app/.venv/bin/activate"
+RUN uv sync
+
 ENV PATH="/app/.venv/bin:${PATH}"
 
 
