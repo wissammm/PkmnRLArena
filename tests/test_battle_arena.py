@@ -1,3 +1,4 @@
+import pkmn_rl_arena
 from pkmn_rl_arena.paths import PATHS
 from pkmn_rl_arena import log
 from pkmn_rl_arena.env.battle_core import BattleCore
@@ -185,8 +186,6 @@ class TestResetOptions(unittest.TestCase):
             str(context_manager.exception), 'Invalid reset param : "team".'
         )
     
-
-
 
 class TestFightUnfold(unittest.TestCase):
     """
@@ -441,6 +440,64 @@ class TestFightUnfold(unittest.TestCase):
             active_player.iloc[0]["id"],
             26,
             "The active Pokémon in the player team should have ID 26.",
+        )
+    
+    def test_stats_change(self):
+        options = {
+            "save_state": "boot_state",
+            "teams": {
+                "player": [
+                    1, 99, 45, 45, 45, 45, 10, 0,
+                ],
+                "enemy": [
+                    1, 99, 45, 45, 45, 45, 100, 0,
+                ],
+            },
+        }
+
+        # reset the arena with the specified teams
+        self.arena.reset(options=options)
+        self.assertEqual(self.arena.core.state.turn, TurnType.GENERAL)
+
+        # read initial stats
+        player_team_dump_data = self.arena.core.read_team_data("player")
+        playerdf = pokemon_data.to_pandas_team_dump_data(player_team_dump_data)
+        enemy_team_dump_data = self.arena.core.read_team_data("enemy")
+        enemydf = pokemon_data.to_pandas_team_dump_data(enemy_team_dump_data)
+
+        active_player = playerdf[playerdf["isActive"] == 1]
+        active_enemy = enemydf[enemydf["isActive"] == 1]
+
+        initial_player_attack = active_player.iloc[0]["baseAttack"]
+        initial_enemy_attack = active_enemy.iloc[0]["baseAttack"]
+
+        # both use their first move (stat-affecting in this test setup)
+        actions = {"player": 0, "enemy": 0}
+        self.arena.action_manager.write_actions(actions)
+        turn = self.arena.core.advance_to_next_turn()
+        self.assertEqual(turn, TurnType.GENERAL)
+
+        # read stats after the move
+        player_team_dump_data = self.arena.core.read_team_data("player")
+        playerdf = pokemon_data.to_pandas_team_dump_data(player_team_dump_data)
+        active_player = playerdf[playerdf["isActive"] == 1]
+        new_player_attack = active_player.iloc[0]["baseAttack"]
+
+        enemy_team_dump_data = self.arena.core.read_team_data("enemy")
+        enemydf = pokemon_data.to_pandas_team_dump_data(enemy_team_dump_data)
+        active_enemy = enemydf[enemydf["isActive"] == 1]
+        new_enemy_attack = active_enemy.iloc[0]["baseAttack"]
+
+        # assert stats changed as expected
+        self.assertLess(
+            new_player_attack,
+            initial_player_attack,
+            "Player's attack stat should be lower after using a stat-lowering move",
+        )
+        self.assertLess(
+            new_enemy_attack,
+            initial_enemy_attack,
+            "Enemy's attack stat should be lower after using a stat-lowering move",
         )
 
     # def test_special_moves():
