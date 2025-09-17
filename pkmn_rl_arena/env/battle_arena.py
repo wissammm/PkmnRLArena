@@ -1,4 +1,5 @@
 from pkmn_rl_arena.env.pkmn_team_factory import DataSize
+from pkmn_rl_arena.env.reward_manager import RewardManager
 from .action import ActionManager, ACTION_SPACE_SIZE
 from .battle_core import BattleCore
 from .battle_state import TurnType, BattleState
@@ -65,7 +66,7 @@ class BattleArena(ParallelEnv):
         self.observation_factory = ObservationFactory(self.core)
         self.action_manager = ActionManager(self.core)
         self.team_factory = PkmnTeamFactory(PATHS["POKEMON_CSV"], PATHS["MOVES_CSV"])
-
+        self.reward_manager = RewardManager()
         self.save_state_manager = SaveStateManager(self.core)
 
         # Environment configuration
@@ -210,6 +211,8 @@ class BattleArena(ParallelEnv):
             },
         }
 
+        self.reward_manager.update_observation(observations)
+
         # clean rendering
         self.console.clear()
 
@@ -275,6 +278,8 @@ class BattleArena(ParallelEnv):
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }
+
+        self.reward_manager.update_observation(observation)
 
         if self.core.is_episode_done():
             self.terminations = {agent: True for agent in self.agents}
