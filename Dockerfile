@@ -41,14 +41,11 @@ RUN mv /app/rustboyadvance-ng-for-rl/bios.bin /app/rustboyadvance-ng-for-rl/gba_
 
 COPY pyproject.toml uv.lock /app/
 RUN uv venv .venv
-RUN bash -c "source /app/.venv/bin/activate"
+ENV PATH="/app/.venv/bin:${PATH}" 
 RUN uv sync
 
-ENV PATH="/app/.venv/bin:${PATH}"
-
-
 WORKDIR /app/rustboyadvance-ng-for-rl/platform/rustboyadvance-py
-RUN maturin develop --features elf_support --release -j6
+RUN python -m maturin develop --features elf_support --release -j6
 
 WORKDIR /app
 
