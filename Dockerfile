@@ -1,5 +1,5 @@
 # Use a recent devkitPro image (recommended)
-FROM devkitpro/devkitarm:20250728
+FROM docker.io/devkitpro/devkitarm:20250728
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONDONTWRITEBYTECODE=1
