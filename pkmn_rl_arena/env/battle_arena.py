@@ -110,6 +110,11 @@ class BattleArena(ParallelEnv):
                 'No save state name given in options["save_state"], creating a new battle core.'
             )
             self.core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
+            self.action_manager.battle_core = self.core
+            self.observation_factory.battle_core = self.core
+            self.team_factory.battle_core = self.core
+            self.save_state_manager.battle_core = self.core
+
             self.core.advance_to_next_turn()
             return
 
