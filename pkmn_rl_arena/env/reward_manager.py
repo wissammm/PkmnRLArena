@@ -3,10 +3,7 @@ from typing import Optional
 
 import numpy as np
 
-from pkmn_rl_arena.env.observation import ObsIdx, ObservationFactory 
-
-from .Observation import Observation
-
+from pkmn_rl_arena.env.observation import Observation, ObsIdx, ObservationFactory
 
 
 @dataclass
