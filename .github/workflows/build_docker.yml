@@ -1,13 +1,13 @@
 name: Docker Build and Push 
 
 on:
-  workflow_dispatch: # allow manual trigger
   push:
     branches: [ "main" ]
     paths:
       - 'Dockerfile'
       - 'pyproject.toml'
       - 'uv.lock'
+  workflow_dispatch: # allow manual trigger
 
 jobs:
   docker:
@@ -15,6 +15,8 @@ jobs:
     permissions:
       contents: read
       packages: write # needed to push to GHCR
+    env:
+      IMAGE: ghcr.io/${{ github.repository_owner }}/pkmnrlarena/ci-image
 
     steps:
       - name: Checkout code
@@ -27,12 +29,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract version from pyproject.toml
+        id: get_version
+        run: |
+          VERSION=$(grep '^version' pyproject.toml | head -n1 | cut -d'"' -f2)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Package version: $VERSION"
+
       - name: Build Docker image
         run: |
-          IMAGE=ghcr.io/${{ github.repository }}/ci:latest
-          docker build -t $IMAGE .
+          echo "Building $IMAGE:latest and $IMAGE:$VERSION"
+          docker build -t $IMAGE:latest -t $IMAGE:$VERSION .
 
-      - name: Push Docker image
+      - name: Push Docker images
         run: |
-          IMAGE=ghcr.io/${{ github.repository }}/ci:latest
-          docker push $IMAGE
+          docker push $IMAGE:latest
+          docker push $IMAGE:$VERSION
+
