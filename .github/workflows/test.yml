@@ -16,10 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Activate venv
-        run: source .venv/bin/activate
-        shell: bash
-
       - name: Install the project
         run: uv pip install . -v
 
