@@ -11,9 +11,6 @@ import pandas as pd
 
 AgentObs = npt.NDArray[int]
 
-NB_PARAM_OBS = 69
-OBS_SPACE_SIZE= 438
-
 @dataclass
 class Observation:
     """
@@ -120,7 +117,7 @@ class ObsIdx:
     NB_STATS_PER_PKMN = 5  # ATK, DEF, SPEED, SPATK, SPDEF
     MOVE_ATTRIBUTES_PER_MOVE = 10  # id, pp, effect, power, type, accuracy, pp, priority, secondaryEffectChance, target, flags
     NB_DATA_PKMN = 20 + (MAX_PKMN_MOVES * MOVE_ATTRIBUTES_PER_MOVE)  # 20 base fields + move data
-
+    OBS_SIZE = 6 * NB_DATA_PKMN  
     RAW_DATA = {
        "species": 0,
         "is_active": 1,

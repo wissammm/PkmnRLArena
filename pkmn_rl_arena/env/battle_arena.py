@@ -2,7 +2,7 @@ from pkmn_rl_arena.env.pkmn_team_factory import DataSize
 from .action import ActionManager, ACTION_SPACE_SIZE
 from .battle_core import BattleCore
 from .battle_state import TurnType, BattleState
-from .observation import ObservationFactory, OBS_SPACE_SIZE
+from .observation import ObservationFactory, ObsIdx
 from .pkmn_team_factory import PkmnTeamFactory
 from .save_state import SaveStateManager
 from pkmn_rl_arena.paths import PATHS
@@ -337,8 +337,7 @@ class BattleArena(ParallelEnv):
     def observation_space(self, agent):
         # gymnasium spaces are defined and documented here: https://gymnasium.farama.org/api/spaces/
 
-        # (73 params / pkmn) * (6 pkmn / party) = 438
-        return Discrete(OBS_SPACE_SIZE)
+        return Discrete(ObsIdx.OBS_SIZE)
 
     # Action space should be defined here.
     # If your spaces change over time, remove this line (disable caching).
