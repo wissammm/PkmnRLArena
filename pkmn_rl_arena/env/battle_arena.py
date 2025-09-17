@@ -217,6 +217,12 @@ class BattleArena(ParallelEnv):
         self.infos = {a: {} for a in self.agents}
 
         return self.observations, self.infos
+    
+    def _was_dead_step(self, actions):
+        # No agents left after episode ends
+        # We can improve this method by keeping the last valid observation, reward, info
+        self.agents = []
+        return {}, {}, {}, {}, {}
 
     ##########################################################################
     #
