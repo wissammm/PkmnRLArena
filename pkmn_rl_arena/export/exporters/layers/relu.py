@@ -1,8 +1,7 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
-from export.base import LayerExporter
+from pkmn_rl_arena.export.base import LayerExporter
 from ...enums import CallPosition
-from .layer_base import BaseLayerExporter
 
 class ReLUExporter(LayerExporter):
     def __init__(self, name: str, input_shape: tuple, output_shape: tuple, input_idx: int=0, output_idx: int=0, datatype : str = "int8_t", call_position: CallPosition = CallPosition.BETWEEN):
