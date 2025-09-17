@@ -144,7 +144,8 @@ class PkmnTeamFactory:
             return False
         return True
 
-    def is_pkmn_valid(self, pkmn: npt.NDArray) -> bool:
+    def is_pkmn_valid(self, pkmn: npt.NDArray,check_moves: bool =True) -> bool:
+        
         return (
             self.is_valid_id(pkmn[0])
             and self.is_in_pkmn_movepool(pkmn[0], pkmn[2:6])
