@@ -11,6 +11,8 @@ import pandas as pd
 
 AgentObs = npt.NDArray[int]
 
+
+
 @dataclass
 class Observation:
     """
@@ -38,6 +40,62 @@ class Observation:
         if agent not in self._o:
             raise ValueError(f"Invalid agent name, must be in {self._o.keys()}, got {agent}.")
         return self._o[agent]
+    
+    def get_normalized_agent_data(self, agent: str) -> AgentObs:
+        """Get the full observation array for an agent, normalized to [0,1]"""
+        if agent not in self._o:
+            raise ValueError(f"Invalid agent name, must be in {self._o.keys()}, got {agent}.")
+        
+        raw_data = self._o[agent].copy()
+        
+        pokemon_data = np.split(raw_data, 6)
+        normalized_team = []
+        
+        MAX_SPECIES = 411
+        MAX_TYPE = 14
+        MAX_STAT = 550
+        MAX_HP = 550
+        MAX_MOVE_ID = 354
+        MAX_POWER = 256
+        MAX_ACCURACY = 100
+        MAX_PP = 40
+        MAX_LEVEL = 100
+        MAX_FRIENDSHIP = 255
+        
+        for pkmn in pokemon_data:
+            normalized_pkmn = pkmn.copy()
+            normalized_pkmn[ObsIdx.RAW_DATA["species"]] /= MAX_SPECIES
+            for i in range(ObsIdx.RAW_DATA["stats_begin"], ObsIdx.RAW_DATA["stats_end"]):
+                normalized_pkmn[i] /= MAX_STAT
+            normalized_pkmn[ObsIdx.RAW_DATA["type_1"]] /= MAX_TYPE
+            normalized_pkmn[ObsIdx.RAW_DATA["type_2"]] /= MAX_TYPE
+            normalized_pkmn[ObsIdx.RAW_DATA["ability"]]
+            normalized_pkmn[ObsIdx.RAW_DATA["HP"]] /= MAX_HP
+            normalized_pkmn[ObsIdx.RAW_DATA["max_HP"]] /= MAX_HP
+            normalized_pkmn[ObsIdx.RAW_DATA["level"]] /= MAX_LEVEL
+            normalized_pkmn[ObsIdx.RAW_DATA["friendship"]] /= MAX_FRIENDSHIP
+            # Normalize move data
+            for i in range(ObsIdx.MAX_PKMN_MOVES):
+                move_start = ObsIdx.RAW_DATA["moves_begin"] + (i * ObsIdx.RAW_DATA["move_slot_stride"])
+                
+                normalized_pkmn[move_start + ObsIdx.RAW_DATA["move_id_offset"]] /= MAX_MOVE_ID
+                normalized_pkmn[move_start + ObsIdx.RAW_DATA["pp_offset"]] /= MAX_PP
+                normalized_pkmn[move_start + ObsIdx.RAW_DATA["power_offset"]] /= MAX_POWER
+                normalized_pkmn[move_start + ObsIdx.RAW_DATA["type_offset"]] /= MAX_TYPE
+                normalized_pkmn[move_start + ObsIdx.RAW_DATA["accuracy_offset"]] /= MAX_ACCURACY
+                
+                # Normalize priority (-7 to 7, so shift to 0-14 first)
+                priority = normalized_pkmn[move_start + ObsIdx.RAW_DATA["priority_offset"]]
+                normalized_pkmn[move_start + ObsIdx.RAW_DATA["priority_offset"]] = (priority + 7) / 14
+                
+                normalized_pkmn[move_start + ObsIdx.RAW_DATA["secondaryEffectChance_offset"]] /= 100
+                
+                normalized_pkmn[move_start + ObsIdx.RAW_DATA["target_offset"]] /= 10
+                
+            
+            normalized_team.append(normalized_pkmn)
+
+        return np.concatenate(normalized_team)
 
     def active_pkmn(self) -> Dict[str, int]:
         """
@@ -162,7 +220,7 @@ class ObsIdx:
         # Each move occupies MOVE_ATTRIBUTES_PER_MOVE slots
         "move_slot_stride": MOVE_ATTRIBUTES_PER_MOVE,
     }
-
+    
 class ObservationFactory:
     """
     Manages extraction and formatting of observations from the battle state.
@@ -266,3 +324,5 @@ class ObservationFactory:
             diff_observations[agent] = diff
         
         return Observation(_o=diff_observations)
+    
+    
