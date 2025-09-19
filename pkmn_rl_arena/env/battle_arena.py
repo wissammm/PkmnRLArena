@@ -1,19 +1,20 @@
 from pkmn_rl_arena.env.pkmn_team_factory import DataSize
-from pkmn_rl_arena.env.reward_manager import RewardManager
 from .action import ActionManager, ACTION_SPACE_SIZE
 from .battle_core import BattleCore
 from .battle_state import TurnType, BattleState
 from .observation import ObservationFactory, ObsIdx
 from .pkmn_team_factory import PkmnTeamFactory
+from .reward.manager import RewardManager
+from .reward.functions import reward_functions
 from .save_state import SaveStateManager
 from pkmn_rl_arena.paths import PATHS
 
 from pkmn_rl_arena.logging import log
 
+from collections.abc import Callable
 from enum import Enum
 from typing import Any, Dict, Optional
 import functools
-
 
 import numpy as np
 
@@ -78,6 +79,9 @@ class BattleArena(ParallelEnv):
     def __init__(
         self,
         battle_core: BattleCore,
+        reward_function: Callable[[str, list[Observation]], float] = reward_functions[
+            0
+        ],
         max_steps_per_episode: int = 1000,
         render_mode: RenderMode = RenderMode.DISABLED,
     ):
@@ -86,7 +90,7 @@ class BattleArena(ParallelEnv):
         self.observation_factory = ObservationFactory(self.core)
         self.action_manager = ActionManager(self.core)
         self.team_factory = PkmnTeamFactory(PATHS["POKEMON_CSV"], PATHS["MOVES_CSV"])
-        self.reward_manager = RewardManager()
+        self.reward_manager = RewardManager(reward_function)
         self.save_state_manager = SaveStateManager(self.core)
 
         # Environment configuration
@@ -231,8 +235,9 @@ class BattleArena(ParallelEnv):
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }
-    
-        self.reward_manager.update_observation(observations)
+
+        self.reward_manager.reset()
+        self.reward_manager.add_observation(observations)
 
         # clean rendering
         self.console.clear()
@@ -241,7 +246,7 @@ class BattleArena(ParallelEnv):
         self.infos = {a: {} for a in self.agents}
 
         return self.observations, self.infos
-    
+
     def _was_dead_step(self, actions):
         # No agents left after episode ends
         # We can improve this method by keeping the last valid observation, reward, info
@@ -301,22 +306,17 @@ class BattleArena(ParallelEnv):
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }
-    
-        self.reward_manager.update_observation(observation)
+
+        self.reward_manager.add_observation(observation)
+
+        for agent, observation in self.observations.items():
+            self.rewards[agent] = self.reward_manager.compute_reward(agent)
+            self._cumulative_rewards[agent] += self.rewards[agent]
 
         if self.core.is_episode_done():
             self.terminations = {agent: True for agent in self.agents}
-            # PLACEHOLDER
-            # winner = observation.who_won()
-            winner = "player"
-            self.rewards[winner] = 1.0  # placeholder
         elif self.max_steps_per_episode < self.core.state.step:
             self.truncations = {agent: True for agent in self.agents}
-
-        # Calculate rewards (placeholder)
-        for agent, observation in self.observations.items():
-            self.rewards[agent] = 0.0
-            self._cumulative_rewards[agent] += self.rewards[agent]
 
         self.infos = {}
 

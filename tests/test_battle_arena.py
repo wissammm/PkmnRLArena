@@ -46,6 +46,11 @@ class TestArena(unittest.TestCase):
             self.assertEqual(value, 0.0)
         for agent, value in self.arena._cumulative_rewards.items():
             self.assertEqual(value, 0.0)
+        self.assertEqual(
+            len(self.arena.reward_manager.obs),
+            1,
+            f"Length of observation list of the reward manager after reset should be 1, got {len(self.arena.reward_manager.obs)}",
+        )
 
     def test_step(self):
         observations, infos = self.arena.reset()
@@ -58,6 +63,11 @@ class TestArena(unittest.TestCase):
 
             observations, rewards, terminations, truncations, infos = self.arena.step(
                 actions
+            )
+            self.assertEqual(
+                len(self.arena.reward_manager.obs),
+                i + 2,
+                f"Invalid length of observation state : observation should be i + 1(initial observation) + 1(step completed in the current loop) = {i + 1}, got {len(self.arena.reward_manager.obs)}.",
             )
 
     # def test_render(self):
