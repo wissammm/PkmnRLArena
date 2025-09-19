@@ -12,6 +12,8 @@ import picologging as logging
 
 from pkmn_rl_arena.paths import PATHS
 
+from pkmn_rl_arena.test_utils import advance_turn
+
 
 class TestSaveState(unittest.TestCase):
     #############################################
@@ -45,26 +47,16 @@ class TestSaveState(unittest.TestCase):
         self.save_manager.remove_save_states()
         return
 
-    def advance_turn(self):
-        actions = {}
-        actions = {
-            agent: random.choice(self.action_manager.get_valid_action_ids(agent))
-            for agent in self.core.get_required_agents()
-        }
-
-        for agent, action in actions.items():
-            self.core.write_action(agent, action)
-
     def test_save_load_state(self):
         for save_name, nb_turn_to_advance in TestSaveState.save_load_cases:
             log.debug(f"test : {save_name}, nb turn to advance : {nb_turn_to_advance}")
 
             # skip turns with random moves to simulate battle
             for i in range(nb_turn_to_advance):
-                self.advance_turn()
+                advance_turn(self.core, self.action_manager)
 
             self.save_manager.save_state(save_name)
             battle_state = self.core.state
-            self.advance_turn()
+            advance_turn(self.core, self.action_manager)
             self.save_manager.load_state(save_name)
             self.assertEqual(battle_state, self.core.state)
