@@ -202,11 +202,11 @@ class BattleArena(ParallelEnv):
         observations = self.observation_factory.from_game()
         self.observations = {
             "player": {
-                "observation": observations._o["player"],
+                "observation": observations.get_normalized_agent_data["player"],
                 "action_mask": self.action_manager.get_action_mask("player"),
             },
             "enemy": {
-                "observation": observations._o["enemy"],
+                "observation": observations.get_normalized_agent_data["enemy"],
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }
@@ -270,11 +270,11 @@ class BattleArena(ParallelEnv):
         observation = self.observation_factory.from_game()
         self.observations = {
             "player": {
-                "observation": observation._o["player"],
+                "observation": observation.get_normalized_agent_data["player"],
                 "action_mask": self.action_manager.get_action_mask("player"),
             },
             "enemy": {
-                "observation": observation._o["enemy"],
+                "observation": observation.get_normalized_agent_data["enemy"],
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }
