@@ -61,6 +61,23 @@ class BattleCore:
     Handles GBA emulator, memory operations, and stop conditions.
     """
 
+    stop_address_names = [
+        "stopHandleTurnCreateTeam",
+        "stopHandleTurn",
+        "stopHandleTurnPlayer",
+        "stopHandleTurnEnemy",
+        "stopHandleTurnEnd",
+    ]
+    data_address_names = ["monDataPlayer", "monDataEnemy"]
+    team_address_names = ["playerTeam", "enemyTeam"]
+    legal_actions_address_names = [
+        "legalMoveActionsPlayer",
+        "legalMoveActionsEnemy",
+        "legalSwitchActionsPlayer",
+        "legalSwitchActionsEnemy",
+    ]
+    action_done_address_names = ["actionDonePlayer", "actionDoneEnemy"]
+
     def __init__(
         self,
         rom_path: str,
@@ -92,59 +109,20 @@ class BattleCore:
     def setup_addresses(self):
         """Setup memory addresses from the map file"""
         self.addrs = {
-            "stopHandleTurnCreateTeam": int(
-                self.parser.get_address("stopHandleTurnCreateTeam"), 16
-            ),
-            "stopHandleTurn": int(self.parser.get_address("stopHandleTurn"), 16),
-            "stopHandleTurnPlayer": int(
-                self.parser.get_address("stopHandleTurnPlayer"), 16
-            ),
-            "stopHandleTurnEnemy": int(
-                self.parser.get_address("stopHandleTurnEnemy"), 16
-            ),
-            "stopHandleTurnEnd": int(self.parser.get_address("stopHandleTurnEnd"), 16),
-            "monDataPlayer": int(self.parser.get_address("monDataPlayer"), 16),
-            "monDataEnemy": int(self.parser.get_address("monDataEnemy"), 16),
-            "playerTeam": int(self.parser.get_address("playerTeam"), 16),
-            "enemyTeam": int(self.parser.get_address("enemyTeam"), 16),
-            "legalMoveActionsPlayer": int(
-                self.parser.get_address("legalMoveActionsPlayer"), 16
-            ),
-            "legalMoveActionsEnemy": int(
-                self.parser.get_address("legalMoveActionsEnemy"), 16
-            ),
-            "legalSwitchActionsPlayer": int(
-                self.parser.get_address("legalSwitchActionsPlayer"), 16
-            ),
-            "legalSwitchActionsEnemy": int(
-                self.parser.get_address("legalSwitchActionsEnemy"), 16
-            ),
-            "actionDonePlayer": int(self.parser.get_address("actionDonePlayer"), 16),
-            "actionDoneEnemy": int(self.parser.get_address("actionDoneEnemy"), 16),
+            addr_name: int(self.parser.get_address(addr_name), 16)
+            for addr_name in self.stop_address_names
+            + self.data_address_names
+            + self.team_address_names
+            + self.legal_actions_address_names
+            + self.action_done_address_names
         }
+
         return self.addrs
 
     def setup_stops(self):
         """Setup stop addresses for turn handling"""
-        self.gba.add_stop_addr(
-            self.addrs["stopHandleTurnCreateTeam"],
-            1,
-            True,
-            "stopHandleTurnCreateTeam",
-            0,
-        )
-        self.gba.add_stop_addr(
-            self.addrs["stopHandleTurn"], 1, True, "stopHandleTurn", 1
-        )
-        self.gba.add_stop_addr(
-            self.addrs["stopHandleTurnPlayer"], 1, True, "stopHandleTurnPlayer", 2
-        )
-        self.gba.add_stop_addr(
-            self.addrs["stopHandleTurnEnemy"], 1, True, "stopHandleTurnEnemy", 3
-        )
-        self.gba.add_stop_addr(
-            self.addrs["stopHandleTurnEnd"], 1, True, "stopHandleTurnEnd", 4
-        )
+        for i, address_name in enumerate(self.stop_address_names):
+            self.gba.add_stop_addr(self.addrs[address_name], 1, True, address_name, i)
 
         # Store stop IDs for different turn types
         self.stop_ids = {
