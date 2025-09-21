@@ -13,12 +13,16 @@ Reinforcement learning environment and tools for Pokémon Emerald :
 - Neural Network graph manipulation 
 - Export 
 
+## Tutorials 
+Two tutorials are available inside the folder example :
+- training.ipynb : a simple introduction to the MARL on the project
+- export.ipynb : to run your first inference on the GBA !
 
 ## Project structure
 ```
 pkmn_rl_arena/
 ├──  agbcc                              # Library allowing to compile gba game with cc compiler
-├──  example                            # TO DEFINE / TO ORDER
+├──  example                            # Tutorial to get started
 ├── rustboyadvance-ng-for-rl/           # Rust GBA emulator with Python bindings
 ├── pokeemerald_ai_rl/                  # Custom Pokémon Emerald ROM modified for RL training & build scripts
 ├── data/                               # Data files (CSV, etc.)
