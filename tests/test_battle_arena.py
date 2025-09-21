@@ -202,7 +202,7 @@ class TestResetOptions(unittest.TestCase):
         self.assertEqual(
             str(context_manager.exception), 'Invalid reset param : "team".'
         )
-    
+
 
 class TestFightUnfold(unittest.TestCase):
     """
@@ -220,7 +220,6 @@ class TestFightUnfold(unittest.TestCase):
 
     def tearDown(self):
         self.arena.close()
-
 
     def test_enemy_lost(self):
         # pikachu lvl 99 using shock wave (86) with 100% accyracy
@@ -252,7 +251,7 @@ class TestFightUnfold(unittest.TestCase):
             },
         }
 
-        self.arena.reset(options = options)
+        self.arena.reset(options=options)
 
         self.arena.step(actions={"player": 0, "enemy": 0})
 
@@ -261,8 +260,8 @@ class TestFightUnfold(unittest.TestCase):
         log.debug(pokemon_data.to_pandas_team_dump_data(player_team_dump_data))
         enemy_team_dump_data = self.arena.core.read_team_data("enemy")
         log.debug(pokemon_data.to_pandas_team_dump_data(enemy_team_dump_data))
-        
-        log.debug(f'terminations = {self.arena.terminations}')
+
+        log.debug(f"terminations = {self.arena.terminations}")
 
         for agent in self.arena.possible_agents:
             self.assertTrue(self.arena.terminations[agent])
@@ -304,7 +303,7 @@ class TestFightUnfold(unittest.TestCase):
             },
         }
 
-        self.arena.reset(seed=None,options=options)
+        self.arena.reset(seed=None, options=options)
 
         player_action = 0  # use move defense curl
         enemy_action = 5  #
@@ -458,16 +457,30 @@ class TestFightUnfold(unittest.TestCase):
             26,
             "The active Pokémon in the player team should have ID 26.",
         )
-    
+
     def test_stats_change(self):
         options = {
             "save_state": "boot_state",
             "teams": {
                 "player": [
-                    1, 99, 45, 45, 45, 45, 10, 0,
+                    1,
+                    99,
+                    45,
+                    45,
+                    45,
+                    45,
+                    10,
+                    0,
                 ],
                 "enemy": [
-                    1, 99, 45, 45, 45, 45, 100, 0,
+                    1,
+                    99,
+                    45,
+                    45,
+                    45,
+                    45,
+                    100,
+                    0,
                 ],
             },
         }
