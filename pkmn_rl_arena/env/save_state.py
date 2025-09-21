@@ -69,7 +69,7 @@ class SaveStateManager:
             if len(self.save_states) == 0:
                 log.fatal("No save state available to load. Exiting.")
                 exit(1)
-            return self.core.load_savestate(self.save_states[0])
+            return self.core.load_savestate(self.save_states[0], init=False)
         # case 2
         if not re.match(SaveStateManager.regex_file_ext, name):
             log.debug(
@@ -77,12 +77,12 @@ class SaveStateManager:
             )
             for save in self.save_states:
                 if re.match(f"{name}.+", save):
-                    return self.core.load_savestate(save)
+                    return self.core.load_savestate(save, init=False)
             if name not in self.save_states:
                 raise ValueError(f"Save state not found at path : {name} exiting.")
         # case 3
         else:
-            return self.core.load_savestate(name)
+            return self.core.load_savestate(name, init=False)
 
     def remove_save_states(self):
         """Delete all save states."""
