@@ -6,7 +6,7 @@ import pkmn_rl_arena.data.pokemon_data
 from pkmn_rl_arena.env.turn_type import TurnType
 from dataclasses import dataclass
 import os
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 
 @dataclass
@@ -251,7 +251,7 @@ class BattleCore:
         self.gba.save_savestate(save_path)
         return save_path
 
-    def load_savestate(self, name: str) -> bool:
+    def load_savestate(self, name: str) -> Optional[BattleState]:
         """Load a saved state
         Args :
             name : str = Save state name.
@@ -260,17 +260,16 @@ class BattleCore:
         save_path = os.path.join(PATHS["SAVE"], name)
         if not os.path.exists(save_path):
             print(f"Save state {save_path} does not exist.")
-            return False
+            return None
 
         log.info(f"Loading following save state : {save_path}")
         self.gba.load_savestate(save_path, PATHS["BIOS"], PATHS["ROM"])
         self.setup_addresses()
         self.setup_stops()
+
         self.state = BattleStateFactory.from_save_path(save_path)
-        log.debug(
-            f"Successfully loaded save state, current state is now {self.state}."
-        )
-        return True
+        log.debug(f"Successfully loaded save state, current state is now {self.state}.")
+        return self.state
 
     def is_episode_done(self) -> bool:
         """Check if battle is finished"""

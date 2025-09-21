@@ -139,16 +139,17 @@ class BattleArena(ParallelEnv):
             self.team_factory.battle_core = self.core
             self.save_state_manager.battle_core = self.core
         else:
-            loaded = self.save_state_manager.load_state(options.get("save_state"))
-            if not loaded:
+            returned_state = self.save_state_manager.load_state(options["save_state"])
+            if returned_state is None:
                 raise RuntimeError(
                     f"Failed to load save state {options.get('save_state')}"
                 )
             if options["save_state"] == "boot_state":
                 assert self.core.state.step == 0, (
+                    f'Loaded "boot_state", expected state\'s step number to be 0, got following state: : {self.core.state}.'
                 )
         assert self.core.state.turn == TurnType.CREATE_TEAM, (
-            f"Expected turntype.GENERAL, got {self.core.state.turn}. Its required to reset with a state whose turn type is CREATE_TEAM, got {self.core.state.turn}."
+            f"Its required to reset with a state whose turntype value is {TurnType.CREATE_TEAM}, got {self.core.state.turn}."
         )
         return
 
