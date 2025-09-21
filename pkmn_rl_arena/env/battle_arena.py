@@ -115,6 +115,7 @@ class BattleArena(ParallelEnv):
             raise RuntimeError(
                 f"Env creation : Upon creating BattleCore and calling advance_to_next_turn(), turntype should be {TurnType.CREATE_TEAM}. Got {self.core.state.turn}."
             )
+        log.debug(f"CURRENT STATE = {self.core.state}")
         self.save_state_manager.save_state("boot_state")
         log.info(f"Created save_state : {self.save_state_manager.save_states}")
 
@@ -138,13 +139,23 @@ class BattleArena(ParallelEnv):
             self.observation_factory.battle_core = self.core
             self.team_factory.battle_core = self.core
             self.save_state_manager.battle_core = self.core
-
             self.core.advance_to_next_turn()
-            return
-
-        loaded = self.save_state_manager.load_state(options.get("save_state"))
-        if not loaded:
-            raise RuntimeError(f"Failed to load save state {options.get('save_state')}")
+            assert self.core.state.step == 1, (
+                f"Created a new core, expected step number to be 1(to reach TurnType.CREATE_TEAM), got {self.core.state.step}"
+            )
+        else:
+            loaded = self.save_state_manager.load_state(options.get("save_state"))
+            if not loaded:
+                raise RuntimeError(
+                    f"Failed to load save state {options.get('save_state')}"
+                )
+            if options["save_state"] == "boot_state":
+                assert self.core.state.step == 1, (
+                    f'Loaded "boot_state", expected state\'s step number to be 1(to reach TurnType.CREATE_TEAM), got following state: : {self.core.state}.'
+                )
+        assert self.core.state.turn == TurnType.CREATE_TEAM, (
+            f"Expected turntype.GENERAL, got {self.core.state.turn}. Its required to reset with a state whose turn type is CREATE_TEAM, got {self.core.state.turn}."
+        )
         return
 
     def create_teams(self, options: Dict[str, Any]) -> Dict[str, list[int]]:
@@ -213,15 +224,13 @@ class BattleArena(ParallelEnv):
         ##### reset battle
         # Load save state if provided otherwise creates a new battlecore
         self.load_save_state(options)
+
         # create new teams
         teams = self.create_teams(options)
         self.core.write_team_data(teams)
 
         # Advance to first turn to  get initial observations
         self.core.advance_to_next_turn()
-        assert self.core.state.turn == TurnType.GENERAL, (
-            f"Expected turntype.GENERAL, got {self.core.state.current_turn}"
-        )
 
         observations = self.observation_factory.from_game()
         self.observations = {

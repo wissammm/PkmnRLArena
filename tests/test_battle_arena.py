@@ -57,12 +57,19 @@ class TestArena(unittest.TestCase):
 
         for i in range(20):
             actions = {
-                agent: random.choice(self.arena.action_manager.get_valid_action_ids(agent))
+                agent: random.choice(
+                    self.arena.action_manager.get_valid_action_ids(agent)
+                )
                 for agent in self.arena.core.get_required_agents()
             }
 
             observations, rewards, terminations, truncations, infos = self.arena.step(
                 actions
+            )
+            self.assertEqual(
+                self.arena.core.state.step,
+                i + 3,
+                f"Invalid step number, step amount should be {i} + 2 (startup steps) + 1 (steps executed in the current loop)  = {i + 3}, got {self.arena.core.state.step}.",
             )
             self.assertEqual(
                 len(self.arena.reward_manager.obs),
