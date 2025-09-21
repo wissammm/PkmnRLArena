@@ -1,8 +1,8 @@
 from pkmn_rl_arena.env.pkmn_team_factory import DataSize
 from .action import ActionManager, ACTION_SPACE_SIZE
 from .battle_core import BattleCore
-from .battle_state import TurnType, BattleState
-from .observation import ObservationFactory, ObsIdx
+from .battle_state import TurnType
+from .observation import Observation, ObservationFactory, ObsIdx
 from .pkmn_team_factory import PkmnTeamFactory
 from .reward.manager import RewardManager
 from .reward.functions import reward_functions
@@ -21,7 +21,6 @@ import numpy as np
 from gymnasium.spaces import Discrete
 
 from pettingzoo import ParallelEnv
-from pettingzoo.utils import AgentSelector
 
 from rich.console import Console
 from rich.table import Table

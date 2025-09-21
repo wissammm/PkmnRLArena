@@ -2,7 +2,7 @@ import pkmn_rl_arena
 from pkmn_rl_arena.paths import PATHS
 from pkmn_rl_arena import log
 from pkmn_rl_arena.env.battle_core import BattleCore
-from pkmn_rl_arena.env.battle_state import  BattleState
+from pkmn_rl_arena.env.battle_state import BattleState
 from pkmn_rl_arena.env.battle_arena import BattleArena
 from pkmn_rl_arena.env.pkmn_team_factory import DataSize
 from pkmn_rl_arena.data import pokemon_data
