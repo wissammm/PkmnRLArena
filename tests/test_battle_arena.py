@@ -29,17 +29,17 @@ class TestArena(unittest.TestCase):
     def test_reset(self):
         observations, infos = self.arena.reset()
         self.assertEqual(
-            self.arena.core.state, BattleState(id=0, step=2, turn=TurnType.GENERAL)
+            self.arena.core.state, BattleState(id=0, step=0, turn=TurnType.GENERAL)
         )
         for agent, value in self.arena.terminations.items():
             self.assertFalse(
                 value,
-                f"Wrong value after env reset, expected {False} for env.termination, got {self.arena.terminations}",
+                f"Wrong value after env reset, expected {False} for env.termination, got {self.arena.terminations}.",
             )
         for agent, value in self.arena.truncations.items():
             self.assertFalse(
                 value,
-                f"Wrong value after env reset, expected {False} for env.truncations, got {self.arena.truncations}",
+                f"Wrong value after env reset, expected {False} for env.truncations, got {self.arena.truncations}.",
             )
 
         for agent, value in self.arena.rewards.items():
@@ -49,7 +49,7 @@ class TestArena(unittest.TestCase):
         self.assertEqual(
             len(self.arena.reward_manager.obs),
             1,
-            f"Length of observation list of the reward manager after reset should be 1, got {len(self.arena.reward_manager.obs)}",
+            f"Length of observation list of the reward manager after reset should be 1, got {len(self.arena.reward_manager.obs)}.",
         )
 
     def test_step(self):
@@ -68,8 +68,8 @@ class TestArena(unittest.TestCase):
             )
             self.assertEqual(
                 self.arena.core.state.step,
-                i + 3,
-                f"Invalid step number, step amount should be {i} + 2 (startup steps) + 1 (steps executed in the current loop)  = {i + 3}, got {self.arena.core.state.step}.",
+                i + 1,
+                f"Invalid step number, step amount should be {i} (current step) + 1 (step executed in the current loop)  = {i + 2}, got {self.arena.core.state.step}.",
             )
             self.assertEqual(
                 len(self.arena.reward_manager.obs),
@@ -121,13 +121,11 @@ class TestResetOptions(unittest.TestCase):
         Ground Truth :
             - Team generated with team_factory
         """
-        options = {
-            "save_state": "boot_state",
-        }
+        options = {"save_state": "boot_state", "teams": None}
         self.arena.reset(options=options)
         # state id of 0 means that BattleStateFactory.build() hasn't been called & has not created a new state
         self.assertEqual(
-            self.arena.core.state, BattleState(id=0, step=2, turn=TurnType.GENERAL)
+            self.arena.core.state, BattleState(id=0, step=0, turn=TurnType.GENERAL)
         )
         return
 
@@ -378,7 +376,7 @@ class TestFightUnfold(unittest.TestCase):
 
         self.arena.core.advance_to_next_turn()
         self.assertEqual(
-            self.arena.core.state, BattleState(id=0, step=3, turn=TurnType.PLAYER)
+            self.arena.core.state, BattleState(id=0, step=1, turn=TurnType.PLAYER)
         )
         player_action = 4
         actions = {"player": 4}  # Switch with the [1] mon (Raichu)

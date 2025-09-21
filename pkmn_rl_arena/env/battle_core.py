@@ -46,7 +46,6 @@ class BattleStateFactory:
         Creates state from save path, assuming save path is of shape :
         {save_name}_turntype:{turntype.value}_step:{step}_id:{id}.savestate
         """
-        log.debug(f"Creating battlestate from {save_path}")
         data = save_path.split(".")[-2].split("_")[-3:]
 
         turntype = TurnType(int(data[0][data[0].find(":") + 1 :]))
@@ -69,6 +68,7 @@ class BattleCore:
         map_path: str,
         steps: int = 32000,
         setup: bool = True,
+        run_until_first_stop=True,
     ):
         self.rom_path = rom_path
         self.bios_path = bios_path
@@ -85,6 +85,9 @@ class BattleCore:
             self.addrs = self.setup_addresses()
             self.stop_ids = {}  # filled in fctn below
             self.setup_stops()
+
+        if run_until_first_stop:
+            self.advance_to_next_turn(count_step=False)
 
     def setup_addresses(self):
         """Setup memory addresses from the map file"""
@@ -156,13 +159,13 @@ class BattleCore:
         """Add a stop address to the GBA emulator"""
         self.gba.add_stop_addr(addr, size, read, name, stop_id)
 
-    def run_to_next_stop(self, max_steps=2000000) -> int:
+    def run_to_next_stop(self, max_steps=2000000, count_step=True) -> int:
         """
         Run the emulator until we hit a stop condition and updates game state.
         Args:
             max_steps : number of steps to run in the gba before timeout
         Return:
-            stop_id : -1 if uncatched error, 
+            stop_id : -1 if uncatched error,
         Raises :
             TimeOutError : if max steps < nb of steps executed to run to next stop
         """
@@ -177,15 +180,18 @@ class BattleCore:
                 )
             stop_id = self.gba.run_to_next_stop(self.steps)
 
+        # update state
         self.state.turn = self.stop_ids[stop_id]
-        self.state.step += 1
+        if count_step:
+            self.state.step += 1
+
         return stop_id
 
-    def advance_to_next_turn(self) -> TurnType:
+    def advance_to_next_turn(self, count_step=True) -> TurnType:
         """Advance to the next turn and return current TurnType"""
-        turntype = self.stop_ids[self.run_to_next_stop()]
-        self._clear_stop_condition(turntype)
-        return turntype
+        self.run_to_next_stop(count_step=count_step)
+        self._clear_stop_condition(self.state.turn)
+        return self.state.turn
 
     def get_turn_type(self, stop_id: int) -> TurnType:
         """Convert stop ID to turn type"""
@@ -238,10 +244,10 @@ class BattleCore:
             self.gba.write_u32_list(self.addrs[f"{agent}Team"], team)
         return
 
-    def save_savestate(self, ave_path: str) -> str:
+    def save_savestate(self, save_path: str) -> str:
         """Save the current state of the emulator in PATHS["SAVE"]"""
         os.makedirs(PATHS["SAVE"], exist_ok=True)
-        save_path = os.path.join(PATHS["SAVE"], f"{ave_path}")
+        save_path = os.path.join(PATHS["SAVE"], f"{save_path}")
         self.gba.save_savestate(save_path)
         return save_path
 
@@ -261,6 +267,9 @@ class BattleCore:
         self.setup_addresses()
         self.setup_stops()
         self.state = BattleStateFactory.from_save_path(save_path)
+        log.debug(
+            f"Successfully loaded save state, current state is now {self.state}."
+        )
         return True
 
     def is_episode_done(self) -> bool:
