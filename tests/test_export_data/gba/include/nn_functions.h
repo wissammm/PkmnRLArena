@@ -34,6 +34,22 @@ static inline void relu_int8_t(int8_t* input, int8_t* output, int size) {
     }
 }
 
+static inline void fc_int8_t(int8_t* input, int8_t* output, const int8_t* weights, const int32_t* biases, int in_size, int out_size) {
+    for (int i = 0; i < out_size; i++) {
+        int32_t sum = biases[i];
+        
+        for (int j = 0; j < in_size; j++) {
+            sum += (int32_t)weights[i * in_size + j] * input[j];
+        }
+
+        // Clip
+        if (sum > 127) sum = 127;
+        if (sum < -128) sum = -128;
+        
+        output[i] = (int8_t)sum;
+    }
+}
+
 // static inline void qgemm_int8_t(const int8_t* input, int8_t* output,
 //                  const int8_t* weights, const int32_t* biases,
 //                  const int input_size, const int output_size,

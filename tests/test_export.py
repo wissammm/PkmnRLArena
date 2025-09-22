@@ -394,7 +394,7 @@ class TestExportForward(unittest.TestCase):
                         use_delete_first_pass=False, use_delete_first_last_pass=False)
 
         exporter = ONNXExporter(fused_path)
-        exporter.export(output_dir=os.path.join(os.path.dirname(__file__), "gba"))
+        exporter.export(output_dir=os.path.join(os.path.dirname(__file__), "test_export_data/gba"))
         launch_makefile()
 
         gba, parser, addr_write, addr_read, output_addr, input_addr = setup_gba_environment(
@@ -430,6 +430,7 @@ class TestExportForward(unittest.TestCase):
             print(f"Differences: {diff}")
 
         self.assertTrue(float_match, "Outputs don't match even after dequantization")
+
 
     def test_qgemm_relu_qgemm_relu(self):
         class TwoFCQuantRelu(nn.Module):
@@ -472,7 +473,7 @@ class TestExportForward(unittest.TestCase):
                             use_gemm_fusion=True, use_delete_pass=True, 
                             use_delete_first_pass=False, use_delete_first_last_pass=False)
         exporter = ONNXExporter(fused_path)
-        exporter.export(output_dir=os.path.join(os.path.dirname(__file__), "gba"))
+        exporter.export(output_dir=os.path.join(os.path.dirname(__file__), "test_export_data/gba"))
         launch_makefile()
         gba, parser, addr_write, addr_read, output_addr, input_addr = setup_gba_environment(
             self.rom_path, self.map_path)
@@ -577,22 +578,6 @@ class TestExportForward(unittest.TestCase):
         )
         input_scale = get_first_qdq_scaling_factor(quantized_model.graph)[0]
         input_gba = np.round(input_random / input_scale).astype(np.int8)
-
-        array_data = input_gba.reshape(-1).tolist()
-        array_name = "input_data"
-        output_path = "input_data.h"
-        memory_region = ""
-        datatype = "int8_t"
-
-        exporter = ExportParameters(
-            template_path=self.template_parameters_path,
-            array_data=np.array(array_data, dtype=np.int8),
-            array_name=array_name,
-            memory_region=memory_region,
-            datatype=datatype,
-            output_path=output_path
-        )
-        exporter.export_array()
 
         output_size = 5
 
