@@ -11,7 +11,7 @@
 #include <gba.h>
 
 #include "forward.h"
-#include "input_data.h"
+// #include "input_data.h"
 // #include "_matmul_2_matmuladdfusion_fused_weights.h"
 
 #include <stdio.h>

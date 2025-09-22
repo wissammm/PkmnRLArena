@@ -8,4 +8,6 @@ PATHS = {
     "POKEMON_CSV": os.path.join(BASE_DIR, "../data/csv_data/pokemon_data.csv"),
     "MOVES_CSV": os.path.join(BASE_DIR, "../data/csv_data/moves_data.csv"),
     "SAVE": os.path.join(BASE_DIR, "../savestate"),
+    "GBA": os.path.join(BASE_DIR, "export/gba"),
+    "PARAMETERS": os.path.join(BASE_DIR, "export/templates/parameters.jinja"),
 }
