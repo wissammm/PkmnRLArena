@@ -18,4 +18,3 @@ class MapAnalyzer:
     
     def get_address(self, symbol) -> int | None :
         return self.symbols.get(symbol)
-    

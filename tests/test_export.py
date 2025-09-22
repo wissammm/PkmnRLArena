@@ -264,12 +264,12 @@ class TestExportForward(unittest.TestCase):
         )
         self.template_parameters_path = os.path.abspath(self.template_parameters_path)
         self.rom_path = os.path.join(
-            os.path.dirname(__file__), "./../pokeemerald_ai_rl/pokeemerald_modern.elf"
+            os.path.dirname(__file__), "./test_export_data/gba/gba.elf"
         )
         self.map_path = os.path.join(
-            os.path.dirname(__file__), "./../pokeemerald_ai_rl/pokeemerald_modern.gba"
+            os.path.dirname(__file__), "./test_export_data/gba/build/gba.map"
         )
-
+        
     def _test_model_inference(
         self,
         model,

@@ -38,7 +38,7 @@ int main(void)
     if(TESTS_DMA)
         all_tests();
     else
-        forward(input_data, output);
+        forward(input, output);
     // forward(input, output);
     stopReadData = 1;
 
