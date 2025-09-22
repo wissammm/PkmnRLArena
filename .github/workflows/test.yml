@@ -1,30 +1,20 @@
 name: Project Build & Test
 on:
   push:
-  workflow_dispatch: # allow manual trigger
+  workflow_dispatch:
 
 jobs:
-  uv-build:
-    name: python
+  docker-build-test:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/${{ github.repository_owner }}/pkmnrlarena/ci-image:latest  
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - name: Build rustboyadvance_py extension
-        run: |
-          source .venv/bin/activate || true
-          cd rustboyadvance-ng-for-rl/platform/rustboyadvance-py
-          python -m maturin develop --features elf_support --release -j6
-          cd ../../../
-          
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Install the project
-        run: uv pip install . -v
+      - name: Build Docker image
+        run: docker build -t pokemon-rl .
 
-      - name: Run tests
-        run: uv run pytest tests/*
+      - name: Run tests in Docker
+        run: |
+          docker run --rm pokemon-rl pytest tests/
