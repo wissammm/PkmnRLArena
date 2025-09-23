@@ -1,23 +1,20 @@
 name: Project Build & Test
 on:
   push:
-  workflow_dispatch: # allow manual trigger
+  workflow_dispatch:
 
 jobs:
-  uv-build:
-    name: python
+  docker-build-test:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/${{ github.repository_owner }}/pkmnrlarena/ci-image:latest  
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Install the project
-        run: uv pip install . -v
+      - name: Build Docker image
+        run: docker build -t pokemon-rl .
 
-      - name: Run tests
-        run: uv run pytest tests/*
+      - name: Run tests in Docker
+        run: |
+          docker run --rm pokemon-rl pytest tests/

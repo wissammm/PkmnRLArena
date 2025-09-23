@@ -1,15 +1,17 @@
 import os
 import numpy as np
 from ..base import Exporter
+from pkmn_rl_arena.paths import PATHS
 
 class ExportParameters(Exporter):
     """Class for exporting 1D numpy array parameters to C header files."""
 
-    def __init__(self, template_path: str,
+    def __init__(self,
                  array_data: np.ndarray,
                  array_name: str,
                  memory_region: str = "",
                  datatype: str = "int8_t",
+                 template_path: str=PATHS["PARAMETERS"],
                  output_path: str = "array_names.h"):
         """
         Initialize with the path to a Jinja template and parameters for exporting an array.

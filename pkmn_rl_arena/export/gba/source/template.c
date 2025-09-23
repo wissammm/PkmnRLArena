@@ -10,10 +10,8 @@
 
 #include <gba.h>
 
-
-
-// #include "forward.h"
-#include "input_data.h"
+#include "forward.h"
+// #include "input_data.h"
 // #include "_matmul_2_matmuladdfusion_fused_weights.h"
 
 #include <stdio.h>
@@ -21,6 +19,8 @@
 
 #define IN_EWRAM __attribute__((section(".ewram")))
 #define IN_IWRAM __attribute__((section(".iwram")))
+
+#define TESTS_DMA 0
 
 volatile u16 stopWriteData IN_EWRAM;
 volatile u16 stopReadData IN_EWRAM;
@@ -35,7 +35,10 @@ int main(void)
 
     iprintf("\x1b[10;10HInference begin!\n");
     stopWriteData = 1;
-    all_tests();
+    if(TESTS_DMA)
+        all_tests();
+    else
+        forward(input, output);
     // forward(input, output);
     stopReadData = 1;
 
