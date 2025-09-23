@@ -2,6 +2,7 @@ from typing import Dict, List
 from dataclasses import dataclass
 from numpy import typing as npt
 from pkmn_rl_arena.paths import PATHS
+from pkmn_rl_arena.env.pkmn_team_factory import DataSize 
 
 from pkmn_rl_arena.env.battle_core import BattleCore
 from pkmn_rl_arena.env.pkmn_team_factory import PkmnTeamFactory
@@ -27,13 +28,12 @@ class Observation:
 
     _o: Dict[str, AgentObs]
 
-    @property
-    def agent(self, a: str):
-        if a not in self.o.keys():
+    def agent(self, a: str) -> npt.NDArray[int]:
+        if a not in self._o.keys():
             raise ValueError(
                 f"Invalid agent name, must be in {self.o.keys()}, got {a}."
             )
-        self.o[a]
+        return self._o[a]
 
     def get_agent_data(self, agent: str) -> AgentObs:
         """Get the full observation array for an agent"""
@@ -48,7 +48,7 @@ class Observation:
         
         raw_data = self._o[agent].copy()
         
-        pokemon_data = np.split(raw_data, 6)
+        pokemon_data = np.split(raw_data, DataSize.PARTY_SIZE)
         normalized_team = []
         
         MAX_SPECIES = 411
@@ -142,7 +142,7 @@ class Observation:
         
         for agent in self._o:
             agent_data = self._o[agent]
-            pokemon_data = np.split(agent_data, 6)
+            pokemon_data = np.split(agent_data, DataSize.PARTY_SIZE)
             
             for pkmn in pokemon_data:
                 stats = pkmn[ObsIdx.RAW_DATA["stats_begin"]:ObsIdx.RAW_DATA["stats_end"]].tolist()
