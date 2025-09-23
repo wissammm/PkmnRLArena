@@ -54,10 +54,15 @@ class BattleCore:
 
         self.state = BattleState()
         if setup:
-            # filled in fctn below
-            self.memory_addrs = {}  
-            self.stop_addrs = [] 
-            self.stop_ids = {} 
+            ## all variables initialized here are filled in fctns below
+             
+            # Memory addresses that needs to be stored, they are listed by name as static attr of this class
+            self.memory_addrs = {} 
+            # list of tuples containing all the data required to create a stop address
+            # see add_stop_addr method to understand the tuple
+            self.stop_addrs  : List[Tuple[int,int,bool,str,int]]= []
+            # For each stop address id, associate a TurnType to it
+            self.stop_ids = {}
             self.memory_addrs = self.setup_addresses()
             self.setup_stops()
 
@@ -77,11 +82,13 @@ class BattleCore:
 
         return self.memory_addrs
 
-    def setup_stops(self, init = True):
+    def setup_stops(self, init=True):
         """Setup stop addresses for turn handling"""
-        if init :
-            # Store stop IDs for different turn types
-            self.stop_addrs = [(self.memory_addrs[address_name], 1, True, address_name, i) for i, address_name in enumerate(self.stop_address_names)]
+        if init:
+            self.stop_addrs = [
+                (self.memory_addrs[address_name], 1, True, address_name, i)
+                for i, address_name in enumerate(self.stop_address_names)
+            ]
             self.stop_ids = {
                 0: TurnType.CREATE_TEAM,
                 1: TurnType.GENERAL,
@@ -92,7 +99,7 @@ class BattleCore:
 
         self.gba.add_stop_addrs(self.stop_addrs)
 
-    def add_stop_addrs(self, addrs : list[Tuple[ int,  int,  bool,  str,  int]]):
+    def add_stop_addrs(self, addrs: list[Tuple[int, int, bool, str, int]]):
         """Add a stop address to the GBA emulator"""
         self.gba.add_stop_addrs(addrs)
 
@@ -192,9 +199,7 @@ class BattleCore:
         self.gba.save_savestate(save_path)
         return save_path
 
-    def load_savestate(
-        self, name: str, init: bool = False
-    ) -> Optional[BattleState]:
+    def load_savestate(self, name: str, init: bool = False) -> Optional[BattleState]:
         """Load a saved state
         Args :
             name : str = Save state name.
@@ -206,10 +211,7 @@ class BattleCore:
             return None
 
         log.info(f"Loading following save state : {save_path}")
-        self.gba.load_savestate(save_path, PATHS["BIOS"], PATHS["ROM"])
-        if init:
-            self.setup_addresses()
-        self.setup_stops(init = init)
+        self.gba.load_savestate(save_path, PATHS["BIOS"], PATHS["ROM"], self.stop_addrs)
 
         self.state = BattleStateFactory.from_save_path(save_path)
         log.debug(f"Successfully loaded save state, current state is now {self.state}.")

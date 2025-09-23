@@ -140,6 +140,12 @@ class BattleArena(ParallelEnv):
             self.save_state_manager.battle_core = self.core
         else:
             returned_state = self.save_state_manager.load_state(options["save_state"])
+            self.core = self.save_state_manager.core
+            self.observation_factory.core = self.save_state_manager.core 
+            self.action_manager.core = self.save_state_manager.core 
+            self.team_factory.core = self.save_state_manager.core 
+            self.reward_manager.core = self.save_state_manager.core 
+            self.save_state_manager.core = self.save_state_manager.core 
             if returned_state is None:
                 raise RuntimeError(
                     f"Failed to load save state {options.get('save_state')}"
