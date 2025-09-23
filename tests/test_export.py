@@ -34,27 +34,10 @@ from onnx import shape_inference
 from onnx import numpy_helper
 import torch.nn.functional as F
 
-import gc
-
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 sys.path.insert(0, project_root)
 
 torch.manual_seed(132) 
-
-def tearDownModule():
-    """Cleanup test_export_data after all tests in this module."""
-    gc.collect()  
-    test_export_data_dir = os.path.join(os.path.dirname(__file__), "test_export_data")
-    if os.path.exists(test_export_data_dir):
-        for filename in os.listdir(test_export_data_dir):
-            file_path = os.path.join(test_export_data_dir, filename)
-            try:
-                if os.path.isdir(file_path):
-                    shutil.rmtree(file_path)
-                else:
-                    os.remove(file_path)
-            except Exception as e:
-                print(f"Failed to delete {file_path}: {e}")
 
 def launch_makefile():
     makefile_path = os.path.join(
@@ -614,6 +597,18 @@ class TestExportForward(unittest.TestCase):
             print(f"Differences: {diff}")
         self.assertTrue(float_match, "Outputs don't match even after dequantization")
 
+    def tearDown(self):
+        test_export_data_dir = os.path.join(os.path.dirname(__file__), "test_export_data")
+        if os.path.exists(test_export_data_dir):
+            for filename in os.listdir(test_export_data_dir):
+                file_path = os.path.join(test_export_data_dir, filename)
+                try:
+                    if os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                    else:
+                        os.remove(file_path)
+                except Exception as e:
+                    print(f"Failed to delete {file_path}: {e}")
 
 if __name__ == "__main__":
-    unittest.main(exit=False)
+    unittest.main()
