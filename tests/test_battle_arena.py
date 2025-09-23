@@ -2,7 +2,7 @@ import pkmn_rl_arena
 from pkmn_rl_arena.paths import PATHS
 from pkmn_rl_arena import log
 from pkmn_rl_arena.env.battle_core import BattleCore
-from pkmn_rl_arena.env.battle_state import  BattleState
+from pkmn_rl_arena.env.battle_state import BattleState
 from pkmn_rl_arena.env.battle_arena import BattleArena
 from pkmn_rl_arena.env.pkmn_team_factory import DataSize
 from pkmn_rl_arena.data import pokemon_data
@@ -29,35 +29,52 @@ class TestArena(unittest.TestCase):
     def test_reset(self):
         observations, infos = self.arena.reset()
         self.assertEqual(
-            self.arena.core.state, BattleState(id=0, step=2, turn=TurnType.GENERAL)
+            self.arena.core.state, BattleState(id=0, step=0, turn=TurnType.GENERAL)
         )
         for agent, value in self.arena.terminations.items():
             self.assertFalse(
                 value,
-                f"Wrong value after env reset, expected {False} for env.termination, got {self.arena.terminations}",
+                f"Wrong value after env reset, expected {False} for env.termination, got {self.arena.terminations}.",
             )
         for agent, value in self.arena.truncations.items():
             self.assertFalse(
                 value,
-                f"Wrong value after env reset, expected {False} for env.truncations, got {self.arena.truncations}",
+                f"Wrong value after env reset, expected {False} for env.truncations, got {self.arena.truncations}.",
             )
 
         for agent, value in self.arena.rewards.items():
             self.assertEqual(value, 0.0)
         for agent, value in self.arena._cumulative_rewards.items():
             self.assertEqual(value, 0.0)
+        self.assertEqual(
+            len(self.arena.reward_manager.obs),
+            1,
+            f"Length of observation list of the reward manager after reset should be 1, got {len(self.arena.reward_manager.obs)}.",
+        )
 
     def test_step(self):
         observations, infos = self.arena.reset()
 
         for i in range(20):
             actions = {
-                agent: random.choice(self.arena.action_manager.get_valid_action_ids(agent))
+                agent: random.choice(
+                    self.arena.action_manager.get_valid_action_ids(agent)
+                )
                 for agent in self.arena.core.get_required_agents()
             }
 
             observations, rewards, terminations, truncations, infos = self.arena.step(
                 actions
+            )
+            self.assertEqual(
+                self.arena.core.state.step,
+                i + 1,
+                f"Invalid step number, step amount should be {i} (current step) + 1 (step executed in the current loop)  = {i + 2}, got {self.arena.core.state.step}.",
+            )
+            self.assertEqual(
+                len(self.arena.reward_manager.obs),
+                i + 2,
+                f"Invalid length of observation state : observation should be i + 1(initial observation) + 1(step completed in the current loop) = {i + 1}, got {len(self.arena.reward_manager.obs)}.",
             )
 
     # def test_render(self):
@@ -104,13 +121,11 @@ class TestResetOptions(unittest.TestCase):
         Ground Truth :
             - Team generated with team_factory
         """
-        options = {
-            "save_state": "boot_state",
-        }
+        options = {"save_state": "boot_state", "teams": None}
         self.arena.reset(options=options)
         # state id of 0 means that BattleStateFactory.build() hasn't been called & has not created a new state
         self.assertEqual(
-            self.arena.core.state, BattleState(id=0, step=2, turn=TurnType.GENERAL)
+            self.arena.core.state, BattleState(id=0, step=0, turn=TurnType.GENERAL)
         )
         return
 
@@ -185,7 +200,7 @@ class TestResetOptions(unittest.TestCase):
         self.assertEqual(
             str(context_manager.exception), 'Invalid reset param : "team".'
         )
-    
+
 
 class TestFightUnfold(unittest.TestCase):
     """
@@ -203,7 +218,6 @@ class TestFightUnfold(unittest.TestCase):
 
     def tearDown(self):
         self.arena.close()
-
 
     def test_enemy_lost(self):
         # pikachu lvl 99 using shock wave (86) with 100% accyracy
@@ -235,7 +249,7 @@ class TestFightUnfold(unittest.TestCase):
             },
         }
 
-        self.arena.reset(options = options)
+        self.arena.reset(options=options)
 
         self.arena.step(actions={"player": 0, "enemy": 0})
 
@@ -244,8 +258,8 @@ class TestFightUnfold(unittest.TestCase):
         log.debug(pokemon_data.to_pandas_team_dump_data(player_team_dump_data))
         enemy_team_dump_data = self.arena.core.read_team_data("enemy")
         log.debug(pokemon_data.to_pandas_team_dump_data(enemy_team_dump_data))
-        
-        log.debug(f'terminations = {self.arena.terminations}')
+
+        log.debug(f"terminations = {self.arena.terminations}")
 
         for agent in self.arena.possible_agents:
             self.assertTrue(self.arena.terminations[agent])
@@ -287,7 +301,7 @@ class TestFightUnfold(unittest.TestCase):
             },
         }
 
-        self.arena.reset(seed=None,options=options)
+        self.arena.reset(seed=None, options=options)
 
         player_action = 0  # use move defense curl
         enemy_action = 5  #
@@ -362,7 +376,7 @@ class TestFightUnfold(unittest.TestCase):
 
         self.arena.core.advance_to_next_turn()
         self.assertEqual(
-            self.arena.core.state, BattleState(id=0, step=3, turn=TurnType.PLAYER)
+            self.arena.core.state, BattleState(id=0, step=1, turn=TurnType.PLAYER)
         )
         player_action = 4
         actions = {"player": 4}  # Switch with the [1] mon (Raichu)
@@ -441,16 +455,30 @@ class TestFightUnfold(unittest.TestCase):
             26,
             "The active Pokémon in the player team should have ID 26.",
         )
-    
+
     def test_stats_change(self):
         options = {
             "save_state": "boot_state",
             "teams": {
                 "player": [
-                    1, 99, 45, 45, 45, 45, 10, 0,
+                    1,
+                    99,
+                    45,
+                    45,
+                    45,
+                    45,
+                    10,
+                    0,
                 ],
                 "enemy": [
-                    1, 99, 45, 45, 45, 45, 100, 0,
+                    1,
+                    99,
+                    45,
+                    45,
+                    45,
+                    45,
+                    100,
+                    0,
                 ],
             },
         }

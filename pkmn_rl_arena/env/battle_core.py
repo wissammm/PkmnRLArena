@@ -1,59 +1,14 @@
-import rustboyadvance_py
 from pkmn_rl_arena.paths import PATHS
 from pkmn_rl_arena import log
 import pkmn_rl_arena.data.parser
 import pkmn_rl_arena.data.pokemon_data
 from pkmn_rl_arena.env.turn_type import TurnType
-from dataclasses import dataclass
+from pkmn_rl_arena.env.battle_state import BattleState, BattleStateFactory
+
+import rustboyadvance_py
+
 import os
-from typing import Dict, List
-
-
-@dataclass
-class BattleState:
-    """
-    Represents the current state of the battle
-    NOTE :
-        DO NOTE USE THIS CLASS CONSTRUCTOR.
-        STATES MUST ONLY BE MANUFACTURED THROUGH StateFactory
-    """
-
-    id: int = 0  # unique id for this run
-    step: int = 0  # nb step in this run
-    turn: TurnType = TurnType.CREATE_TEAM  # current battle turntype
-
-    def __eq__(self, other) -> bool:
-        """This is a helper for tests, it doesn't tests the id voluntarly ad it is unique."""
-        return self.step == other.step and self.turn == other.turn
-
-
-class BattleStateFactory:
-    id_gen: int = 0  # unique episode id  generator
-    id: int = 0  # unique id for this run
-
-    def build(self, current_turn=TurnType.CREATE_TEAM, step=0) -> BattleState:
-        if step < 0:
-            raise ValueError(
-                f"Attempting to create a step with negative step, step value must be strictly > 0, got {step}"
-            )
-        id = BattleStateFactory.id_gen
-        BattleStateFactory.id_gen += 1
-        return BattleState(id=id, step=step, turn=current_turn)
-
-    @staticmethod
-    def from_save_path(save_path: str) -> BattleState:
-        """
-        Creates state from save path, assuming save path is of shape :
-        {save_name}_turntype:{turntype.value}_step:{step}_id:{id}.savestate
-        """
-        log.debug(f"Creating battlestate from {save_path}")
-        data = save_path.split(".")[-2].split("_")[-3:]
-
-        turntype = TurnType(int(data[0][data[0].find(":") + 1 :]))
-        step = int(data[1][data[1].find(":") + 1 :])
-        id = int(data[2][data[2].find(":") + 1 :])
-
-        return BattleState(id, step, turntype)
+from typing import Dict, List, Optional, Tuple
 
 
 class BattleCore:
@@ -62,6 +17,23 @@ class BattleCore:
     Handles GBA emulator, memory operations, and stop conditions.
     """
 
+    stop_address_names = [
+        "stopHandleTurnCreateTeam",
+        "stopHandleTurn",
+        "stopHandleTurnPlayer",
+        "stopHandleTurnEnemy",
+        "stopHandleTurnEnd",
+    ]
+    data_address_names = ["monDataPlayer", "monDataEnemy"]
+    team_address_names = ["playerTeam", "enemyTeam"]
+    legal_actions_address_names = [
+        "legalMoveActionsPlayer",
+        "legalMoveActionsEnemy",
+        "legalSwitchActionsPlayer",
+        "legalSwitchActionsEnemy",
+    ]
+    action_done_address_names = ["actionDonePlayer", "actionDoneEnemy"]
+
     def __init__(
         self,
         rom_path: str,
@@ -69,6 +41,7 @@ class BattleCore:
         map_path: str,
         steps: int = 32000,
         setup: bool = True,
+        run_until_first_stop=True,
     ):
         self.rom_path = rom_path
         self.bios_path = bios_path
@@ -81,88 +54,66 @@ class BattleCore:
 
         self.state = BattleState()
         if setup:
-            self.addrs = {}  # filled in fctn below
-            self.addrs = self.setup_addresses()
-            self.stop_ids = {}  # filled in fctn below
+            ## all variables initialized here are filled in fctns below
+             
+            # Memory addresses that needs to be stored, they are listed by name as static attr of this class
+            self.mem_addrs = {} 
+            # list of tuples containing all the data required to create a stop address
+            # see add_stop_addr method to understand the tuple
+            self.stop_addrs  : List[Tuple[int,int,bool,str,int]]= []
+            # For each stop address id, associate a TurnType to it
+            self.stop_ids = {}
+            self.mem_addrs = self.setup_addresses()
             self.setup_stops()
+
+        if run_until_first_stop:
+            self.advance_to_next_turn(count_step=False)
 
     def setup_addresses(self):
         """Setup memory addresses from the map file"""
-        self.addrs = {
-            "stopHandleTurnCreateTeam": int(
-                self.parser.get_address("stopHandleTurnCreateTeam"), 16
-            ),
-            "stopHandleTurn": int(self.parser.get_address("stopHandleTurn"), 16),
-            "stopHandleTurnPlayer": int(
-                self.parser.get_address("stopHandleTurnPlayer"), 16
-            ),
-            "stopHandleTurnEnemy": int(
-                self.parser.get_address("stopHandleTurnEnemy"), 16
-            ),
-            "stopHandleTurnEnd": int(self.parser.get_address("stopHandleTurnEnd"), 16),
-            "monDataPlayer": int(self.parser.get_address("monDataPlayer"), 16),
-            "monDataEnemy": int(self.parser.get_address("monDataEnemy"), 16),
-            "playerTeam": int(self.parser.get_address("playerTeam"), 16),
-            "enemyTeam": int(self.parser.get_address("enemyTeam"), 16),
-            "legalMoveActionsPlayer": int(
-                self.parser.get_address("legalMoveActionsPlayer"), 16
-            ),
-            "legalMoveActionsEnemy": int(
-                self.parser.get_address("legalMoveActionsEnemy"), 16
-            ),
-            "legalSwitchActionsPlayer": int(
-                self.parser.get_address("legalSwitchActionsPlayer"), 16
-            ),
-            "legalSwitchActionsEnemy": int(
-                self.parser.get_address("legalSwitchActionsEnemy"), 16
-            ),
-            "actionDonePlayer": int(self.parser.get_address("actionDonePlayer"), 16),
-            "actionDoneEnemy": int(self.parser.get_address("actionDoneEnemy"), 16),
+        self.mem_addrs = {
+            addr_names: int(self.parser.get_address(addr_names), 16)
+            for addr_names in self.stop_address_names
+            + self.data_address_names
+            + self.team_address_names
+            + self.legal_actions_address_names
+            + self.action_done_address_names
         }
-        return self.addrs
 
-    def setup_stops(self):
+        return self.mem_addrs
+
+    def setup_stops(self, init=True):
         """Setup stop addresses for turn handling"""
-        self.gba.add_stop_addr(
-            self.addrs["stopHandleTurnCreateTeam"],
-            1,
-            True,
-            "stopHandleTurnCreateTeam",
-            0,
-        )
-        self.gba.add_stop_addr(
-            self.addrs["stopHandleTurn"], 1, True, "stopHandleTurn", 1
-        )
-        self.gba.add_stop_addr(
-            self.addrs["stopHandleTurnPlayer"], 1, True, "stopHandleTurnPlayer", 2
-        )
-        self.gba.add_stop_addr(
-            self.addrs["stopHandleTurnEnemy"], 1, True, "stopHandleTurnEnemy", 3
-        )
-        self.gba.add_stop_addr(
-            self.addrs["stopHandleTurnEnd"], 1, True, "stopHandleTurnEnd", 4
-        )
+        if init:
+            self.stop_addrs = [
+                (self.mem_addrs[address_name], 1, True, address_name, i)
+                for i, address_name in enumerate(self.stop_address_names)
+            ]
+            self.stop_ids = {
+                0: TurnType.CREATE_TEAM,
+                1: TurnType.GENERAL,
+                2: TurnType.PLAYER,
+                3: TurnType.ENEMY,
+                4: TurnType.DONE,
+            }
 
-        # Store stop IDs for different turn types
-        self.stop_ids = {
-            0: TurnType.CREATE_TEAM,
-            1: TurnType.GENERAL,
-            2: TurnType.PLAYER,
-            3: TurnType.ENEMY,
-            4: TurnType.DONE,
-        }
+        self.gba.add_stop_addrs(self.stop_addrs)
 
-    def add_stop_addr(self, addr: int, size: int, read: bool, name: str, stop_id: int):
+    def add_stop_addrs(self, addrs: list[Tuple[int, int, bool, str, int]]):
         """Add a stop address to the GBA emulator"""
-        self.gba.add_stop_addr(addr, size, read, name, stop_id)
+        self.gba.add_stop_addrs(addrs)
 
-    def run_to_next_stop(self, max_steps=2000000) -> int:
+    def add_stop_addr(self, addr : int, value : int, is_active : bool, name : str, id : int):
+        """Add a stop address to the GBA emulator"""
+        self.gba.add_stop_addrs(addr , value , is_active , name , id  )
+
+    def run_to_next_stop(self, max_steps=2000000, count_step=True) -> int:
         """
         Run the emulator until we hit a stop condition and updates game state.
         Args:
             max_steps : number of steps to run in the gba before timeout
         Return:
-            stop_id : -1 if uncatched error, 
+            stop_id : -1 if uncatched error,
         Raises :
             TimeOutError : if max steps < nb of steps executed to run to next stop
         """
@@ -177,15 +128,18 @@ class BattleCore:
                 )
             stop_id = self.gba.run_to_next_stop(self.steps)
 
+        # update state
         self.state.turn = self.stop_ids[stop_id]
-        self.state.step += 1
+        if count_step:
+            self.state.step += 1
+
         return stop_id
 
-    def advance_to_next_turn(self) -> TurnType:
+    def advance_to_next_turn(self, count_step=True) -> TurnType:
         """Advance to the next turn and return current TurnType"""
-        turntype = self.stop_ids[self.run_to_next_stop()]
-        self._clear_stop_condition(turntype)
-        return turntype
+        self.run_to_next_stop(count_step=count_step)
+        self._clear_stop_condition(self.state.turn)
+        return self.state.turn
 
     def get_turn_type(self, stop_id: int) -> TurnType:
         """Convert stop ID to turn type"""
@@ -195,9 +149,11 @@ class BattleCore:
         """Read team data for specified agent"""
         match agent:
             case "player":
-                return self.gba.read_u32_list(self.addrs["monDataPlayer"], 28 * 6)
+                return self.gba.read_u32_list(
+                    self.mem_addrs["monDataPlayer"], 28 * 6
+                )
             case "enemy":
-                return self.gba.read_u32_list(self.addrs["monDataEnemy"], 28 * 6)
+                return self.gba.read_u32_list(self.mem_addrs["monDataEnemy"], 28 * 6)
             case _:
                 raise ValueError(f"Unknown agent: {agent}")
 
@@ -205,9 +161,9 @@ class BattleCore:
         """Write action for specified agent"""
         match agent:
             case "player":
-                self.gba.write_u16(self.addrs["actionDonePlayer"], action)
+                self.gba.write_u16(self.mem_addrs["actionDonePlayer"], action)
             case "enemy":
-                self.gba.write_u16(self.addrs["actionDoneEnemy"], action)
+                self.gba.write_u16(self.mem_addrs["actionDoneEnemy"], action)
             case _:
                 raise ValueError(f"Unknown agent: {agent}")
 
@@ -215,15 +171,15 @@ class BattleCore:
         """Clear stop condition to continue execution"""
         match turn_type:
             case TurnType.CREATE_TEAM:
-                self.gba.write_u16(self.addrs["stopHandleTurnCreateTeam"], 0)
+                self.gba.write_u16(self.mem_addrs["stopHandleTurnCreateTeam"], 0)
             case TurnType.GENERAL:
-                self.gba.write_u16(self.addrs["stopHandleTurn"], 0)
+                self.gba.write_u16(self.mem_addrs["stopHandleTurn"], 0)
             case TurnType.PLAYER:
-                self.gba.write_u16(self.addrs["stopHandleTurnPlayer"], 0)
+                self.gba.write_u16(self.mem_addrs["stopHandleTurnPlayer"], 0)
             case TurnType.ENEMY:
-                self.gba.write_u16(self.addrs["stopHandleTurnEnemy"], 0)
+                self.gba.write_u16(self.mem_addrs["stopHandleTurnEnemy"], 0)
             case TurnType.DONE:
-                self.gba.write_u16(self.addrs["stopHandleTurnEnd"], 0)
+                self.gba.write_u16(self.mem_addrs["stopHandleTurnEnd"], 0)
             case _:
                 raise ValueError(f"Unknown turntype : {turn_type}")
 
@@ -235,17 +191,17 @@ class BattleCore:
                 raise ValueError(
                     f'Error: write_team_data : Invalid agent, expected either {authorized_agents}, got "{agent}".'
                 )
-            self.gba.write_u32_list(self.addrs[f"{agent}Team"], team)
+            self.gba.write_u32_list(self.mem_addrs[f"{agent}Team"], team)
         return
 
-    def save_savestate(self, ave_path: str) -> str:
+    def save_savestate(self, save_path: str) -> str:
         """Save the current state of the emulator in PATHS["SAVE"]"""
         os.makedirs(PATHS["SAVE"], exist_ok=True)
-        save_path = os.path.join(PATHS["SAVE"], f"{ave_path}")
+        save_path = os.path.join(PATHS["SAVE"], f"{save_path}")
         self.gba.save_savestate(save_path)
         return save_path
 
-    def load_savestate(self, name: str) -> bool:
+    def load_savestate(self, name: str, init: bool = False) -> Optional[BattleState]:
         """Load a saved state
         Args :
             name : str = Save state name.
@@ -254,14 +210,14 @@ class BattleCore:
         save_path = os.path.join(PATHS["SAVE"], name)
         if not os.path.exists(save_path):
             print(f"Save state {save_path} does not exist.")
-            return False
+            return None
 
         log.info(f"Loading following save state : {save_path}")
-        self.gba.load_savestate(save_path, PATHS["BIOS"], PATHS["ROM"])
-        self.setup_addresses()
-        self.setup_stops()
+        self.gba.load_savestate(save_path, PATHS["BIOS"], PATHS["ROM"], self.stop_addrs)
+
         self.state = BattleStateFactory.from_save_path(save_path)
-        return True
+        log.debug(f"Successfully loaded save state, current state is now {self.state}.")
+        return self.state
 
     def is_episode_done(self) -> bool:
         """Check if battle is finished"""

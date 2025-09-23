@@ -4,8 +4,8 @@ from pkmn_rl_arena.logging import log
 from .battle_core import BattleState, BattleCore
 
 import os
-
 import re
+from typing import Optional
 
 
 class SaveStateManager:
@@ -37,12 +37,15 @@ class SaveStateManager:
                 name = boot_state
                 state = { turntype = Turntype.CREATE_TEAM , episode_steps = 0}
                 final name = boot_state_turntype:Turntype.CREATE_TEAM_step:0.savestate"
+        Return:
+            save_path of save_state
         """
         save_path = SaveStateManager.buid_save_path(name, self.core.state)
         self.save_states.append(save_path)
         self.core.save_savestate(save_path)
+        return save_path
 
-    def load_state(self, name: str | None) -> bool:
+    def load_state(self, name: str | None) -> Optional[BattleState]:
         """
         Loads a saved state specified via name argument.
         extension : _turntype:<turn>_step:<nb_step>.savestate
@@ -66,8 +69,7 @@ class SaveStateManager:
             if len(self.save_states) == 0:
                 log.fatal("No save state available to load. Exiting.")
                 exit(1)
-            return self.core.load_savestate(self.save_states[0])
-
+            return self.core.load_savestate(self.save_states[0], init=False)
         # case 2
         if not re.match(SaveStateManager.regex_file_ext, name):
             log.debug(
@@ -75,12 +77,12 @@ class SaveStateManager:
             )
             for save in self.save_states:
                 if re.match(f"{name}.+", save):
-                    return self.core.load_savestate(save)
+                    return self.core.load_savestate(save, init=False)
             if name not in self.save_states:
                 raise ValueError(f"Save state not found at path : {name} exiting.")
         # case 3
         else:
-            return self.core.load_savestate(name)
+            return self.core.load_savestate(name, init=False)
 
     def remove_save_states(self):
         """Delete all save states."""

@@ -1,26 +1,26 @@
 from pkmn_rl_arena.env.pkmn_team_factory import DataSize
-from pkmn_rl_arena.env.reward_manager import RewardManager
 from .action import ActionManager, ACTION_SPACE_SIZE
 from .battle_core import BattleCore
-from .battle_state import TurnType, BattleState
-from .observation import ObservationFactory, ObsIdx
+from .battle_state import TurnType
+from .observation import Observation, ObservationFactory, ObsIdx
 from .pkmn_team_factory import PkmnTeamFactory
+from .reward.manager import RewardManager
+from .reward.functions import reward_functions
 from .save_state import SaveStateManager
 from pkmn_rl_arena.paths import PATHS
 
 from pkmn_rl_arena.logging import log
 
+from collections.abc import Callable
 from enum import Enum
 from typing import Any, Dict, Optional
 import functools
-
 
 import numpy as np
 
 from gymnasium.spaces import Discrete
 
 from pettingzoo import ParallelEnv
-from pettingzoo.utils import AgentSelector
 
 from rich.console import Console
 from rich.table import Table
@@ -78,6 +78,9 @@ class BattleArena(ParallelEnv):
     def __init__(
         self,
         battle_core: BattleCore,
+        reward_function: Callable[[str, list[Observation]], float] = reward_functions[
+            0
+        ],
         max_steps_per_episode: int = 1000,
         render_mode: RenderMode = RenderMode.DISABLED,
     ):
@@ -86,7 +89,7 @@ class BattleArena(ParallelEnv):
         self.observation_factory = ObservationFactory(self.core)
         self.action_manager = ActionManager(self.core)
         self.team_factory = PkmnTeamFactory(PATHS["POKEMON_CSV"], PATHS["MOVES_CSV"])
-        self.reward_manager = RewardManager()
+        self.reward_manager = RewardManager(reward_function)
         self.save_state_manager = SaveStateManager(self.core)
 
         # Environment configuration
@@ -107,11 +110,11 @@ class BattleArena(ParallelEnv):
         # render console
         self.console = Console()
 
-        current_turn = self.core.advance_to_next_turn()
         if self.core.state.turn != TurnType.CREATE_TEAM:
             raise RuntimeError(
                 f"Env creation : Upon creating BattleCore and calling advance_to_next_turn(), turntype should be {TurnType.CREATE_TEAM}. Got {self.core.state.turn}."
             )
+        log.debug(f"CURRENT STATE = {self.core.state}")
         self.save_state_manager.save_state("boot_state")
         log.info(f"Created save_state : {self.save_state_manager.save_states}")
 
@@ -135,13 +138,25 @@ class BattleArena(ParallelEnv):
             self.observation_factory.battle_core = self.core
             self.team_factory.battle_core = self.core
             self.save_state_manager.battle_core = self.core
-
-            self.core.advance_to_next_turn()
-            return
-
-        loaded = self.save_state_manager.load_state(options.get("save_state"))
-        if not loaded:
-            raise RuntimeError(f"Failed to load save state {options.get('save_state')}")
+        else:
+            returned_state = self.save_state_manager.load_state(options["save_state"])
+            self.core = self.save_state_manager.core
+            self.observation_factory.core = self.save_state_manager.core 
+            self.action_manager.core = self.save_state_manager.core 
+            self.team_factory.core = self.save_state_manager.core 
+            self.reward_manager.core = self.save_state_manager.core 
+            self.save_state_manager.core = self.save_state_manager.core 
+            if returned_state is None:
+                raise RuntimeError(
+                    f"Failed to load save state {options.get('save_state')}"
+                )
+            if options["save_state"] == "boot_state":
+                assert self.core.state.step == 0, (
+                    f'Loaded "boot_state", expected state\'s step number to be 0, got following state: : {self.core.state}.'
+                )
+        assert self.core.state.turn == TurnType.CREATE_TEAM, (
+            f"Its required to reset with a state whose turntype value is {TurnType.CREATE_TEAM}, got {self.core.state.turn}."
+        )
         return
 
     def create_teams(self, options: Dict[str, Any]) -> Dict[str, list[int]]:
@@ -210,15 +225,11 @@ class BattleArena(ParallelEnv):
         ##### reset battle
         # Load save state if provided otherwise creates a new battlecore
         self.load_save_state(options)
+
         # create new teams
         teams = self.create_teams(options)
         self.core.write_team_data(teams)
-
-        # Advance to first turn to  get initial observations
-        self.core.advance_to_next_turn()
-        assert self.core.state.turn == TurnType.GENERAL, (
-            f"Expected turntype.GENERAL, got {self.core.state.current_turn}"
-        )
+        self.core.advance_to_next_turn(count_step=False)
 
         observations = self.observation_factory.from_game()
         self.observations = {
@@ -231,8 +242,9 @@ class BattleArena(ParallelEnv):
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }
-    
-        self.reward_manager.update_observation(observations)
+
+        self.reward_manager.reset()
+        self.reward_manager.add_observation(observations)
 
         # clean rendering
         self.console.clear()
@@ -241,7 +253,7 @@ class BattleArena(ParallelEnv):
         self.infos = {a: {} for a in self.agents}
 
         return self.observations, self.infos
-    
+
     def _was_dead_step(self, actions):
         # No agents left after episode ends
         # We can improve this method by keeping the last valid observation, reward, info
@@ -301,22 +313,17 @@ class BattleArena(ParallelEnv):
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }
-    
-        self.reward_manager.update_observation(observation)
+
+        self.reward_manager.add_observation(observation)
+
+        for agent, observation in self.observations.items():
+            self.rewards[agent] = self.reward_manager.compute_reward(agent)
+            self._cumulative_rewards[agent] += self.rewards[agent]
 
         if self.core.is_episode_done():
             self.terminations = {agent: True for agent in self.agents}
-            # PLACEHOLDER
-            # winner = observation.who_won()
-            winner = "player"
-            self.rewards[winner] = 1.0  # placeholder
         elif self.max_steps_per_episode < self.core.state.step:
             self.truncations = {agent: True for agent in self.agents}
-
-        # Calculate rewards (placeholder)
-        for agent, observation in self.observations.items():
-            self.rewards[agent] = 0.0
-            self._cumulative_rewards[agent] += self.rewards[agent]
 
         self.infos = {}
 
