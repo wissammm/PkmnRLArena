@@ -8,6 +8,7 @@ from .reward.manager import RewardManager
 from .reward.functions import reward_functions
 from .save_state import SaveStateManager
 from pkmn_rl_arena.paths import PATHS
+from pkmn_rl_arena.env.rendering import GameRendering
 
 from pkmn_rl_arena.logging import log
 
@@ -22,8 +23,6 @@ from gymnasium.spaces import Discrete
 
 from pettingzoo import ParallelEnv
 
-from rich.console import Console
-from rich.table import Table
 
 class RenderMode(Enum):
     """Enumeration for different rendering mode"""
@@ -87,7 +86,7 @@ class BattleArena(ParallelEnv):
         self.infos = {}
 
         # render console
-        self.console = Console()
+        self.game_renderer = GameRendering(self.team_factory, self.agents)
 
         if self.core.state.turn != TurnType.CREATE_TEAM:
             raise RuntimeError(
@@ -226,7 +225,7 @@ class BattleArena(ParallelEnv):
         self.reward_manager.add_observation(observations)
 
         # clean rendering
-        self.console.clear()
+        self.game_renderer.console.clear()
 
         # Get dummy infos. Necessary for proper parallel_to_aec conversion
         self.infos = {a: {} for a in self.agents}
@@ -279,23 +278,21 @@ class BattleArena(ParallelEnv):
         self.core.advance_to_next_turn()
 
         # Get observations
-        observation = self.observation_factory.from_game()
-
-        observation = self.observation_factory.from_game()
+        observations = self.observation_factory.from_game()
         self.observations = {
             "player": {
-                "observation": observation.get_normalized_agent_data("player"),  # FIXED: use () not []
+                "observation": observations.get_normalized_agent_data("player"),  # FIXED: use () not []
                 "action_mask": self.action_manager.get_action_mask("player"),
             },
             "enemy": {
-                "observation": observation.get_normalized_agent_data("enemy"),  # FIXED: use () not []
+                "observation": observations.get_normalized_agent_data("enemy"),  # FIXED: use () not []
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }
 
-        self.reward_manager.add_observation(observation)
+        self.reward_manager.add_observation(observations)
 
-        for agent, observation in self.observations.items():
+        for agent, obs in self.observations.items():
             self.rewards[agent] = self.reward_manager.compute_reward(agent)
             self._cumulative_rewards[agent] += self.rewards[agent]
 
@@ -303,6 +300,8 @@ class BattleArena(ParallelEnv):
             self.terminations = {agent: True for agent in self.agents}
         elif self.max_steps_per_episode < self.core.state.step:
             self.truncations = {agent: True for agent in self.agents}
+
+        self.render(observations, self.rewards)
 
         self.infos = {}
 
@@ -320,22 +319,11 @@ class BattleArena(ParallelEnv):
     #
     ##########################################################################
 
-    def render(self):
+    def render(self, observation : Observation , reward : Dict[str,float]):
         """
         Render the current state of the battle using the rich library.
-
-        Args:
-            observations: Dictionary containing observation DataFrames for 'player' and 'enemy'.
-            csv_path: Path to the CSV file containing Pokémon data.
         """
-        # Rendering : 3 options :
-        # 1. print images of the game
-        #    check Example in project root to see use of gba display and have a nice render
-        # 2. Just printing status of each party
-        # 3. No redering for faster computation
-
-        # Create a table with two columns: Player and Enemy
-        pass
+        self.game_renderer.refresh(observation,reward)
 
     def _get_observations(self):
         obs = self.observation_factory.from_game()
