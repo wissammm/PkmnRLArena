@@ -58,10 +58,10 @@ class ActionManager:
             [0,1,2,3,4,5,6,7,8,9]
         """
         legal_moves = self.battle_core.gba.read_u16_list(
-            self.battle_core.memory_addrs[f"legalMoveActions{agent.capitalize()}"], 4
+            self.battle_core.mem_addrs[f"legalMoveActions{agent.capitalize()}"], 4
         )
         legal_switches = self.battle_core.gba.read_u16_list(
-            self.battle_core.memory_addrs[f"legalSwitchActions{agent.capitalize()}"], 6
+            self.battle_core.mem_addrs[f"legalSwitchActions{agent.capitalize()}"], 6
         )
 
         valid_moves = [i for i, move in enumerate(legal_moves) if move]
