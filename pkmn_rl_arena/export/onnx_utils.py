@@ -1,4 +1,5 @@
 from onnx import numpy_helper
+import re
 
 class OnnxUtils:
     @staticmethod
@@ -46,3 +47,23 @@ class OnnxUtils:
                 if scale_value is not None and zero_point_value is not None:
                     return scale_value, zero_point_value
         return None, None
+    
+    @staticmethod
+    def sanitize_name(name):
+        return re.sub(r'[^a-zA-Z0-9_]', '_', name)
+    
+    @staticmethod
+    def sanitize_graph_names(graph):
+        for node in graph.node:
+            node.name = OnnxUtils.sanitize_name(node.name)
+            node.op_type = OnnxUtils.sanitize_name(node.op_type)
+            node.output[:] = [OnnxUtils.sanitize_name(out) for out in node.output]
+            node.input[:] = [OnnxUtils.sanitize_name(inp) for inp in node.input]
+        for tensor in graph.initializer:
+            tensor.name = OnnxUtils.sanitize_name(tensor.name)
+        for vi in graph.value_info:
+            vi.name = OnnxUtils.sanitize_name(vi.name)
+        for inp in graph.input:
+            inp.name = OnnxUtils.sanitize_name(inp.name)
+        for out in graph.output:
+            out.name = OnnxUtils.sanitize_name(out.name)
