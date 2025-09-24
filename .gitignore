@@ -30,5 +30,5 @@ tests/test_export_data/include/_matmul_*
 tests/test_export_data/include/forward.h
 tests/test_export_data/source/forward.c
 
-example/gba
+examples/gba
 
