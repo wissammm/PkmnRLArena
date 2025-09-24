@@ -120,11 +120,11 @@ class BattleArena(ParallelEnv):
         else:
             returned_state = self.save_state_manager.load_state(options["save_state"])
             self.core = self.save_state_manager.core
-            self.observation_factory.core = self.save_state_manager.core 
-            self.action_manager.core = self.save_state_manager.core 
-            self.team_factory.core = self.save_state_manager.core 
-            self.reward_manager.core = self.save_state_manager.core 
-            self.save_state_manager.core = self.save_state_manager.core 
+            self.observation_factory.core = self.save_state_manager.core
+            self.action_manager.core = self.save_state_manager.core
+            self.team_factory.core = self.save_state_manager.core
+            self.reward_manager.core = self.save_state_manager.core
+            self.save_state_manager.core = self.save_state_manager.core
             if returned_state is None:
                 raise RuntimeError(
                     f"Failed to load save state {options.get('save_state')}"
@@ -216,11 +216,11 @@ class BattleArena(ParallelEnv):
         observations = self.observation_factory.from_game()
         self.observations = {
             "player": {
-                "observation": observations.get_normalized_agent_data("player"),  
+                "observation": observations.get_normalized_agent_data("player"),
                 "action_mask": self.action_manager.get_action_mask("player"),
             },
             "enemy": {
-                "observation": observations.get_normalized_agent_data("enemy"), 
+                "observation": observations.get_normalized_agent_data("enemy"),
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }
@@ -295,11 +295,11 @@ class BattleArena(ParallelEnv):
         observations = self.observation_factory.from_game()
         self.observations = {
             "player": {
-                "observation": observations.get_normalized_agent_data("player"),  # FIXED: use () not []
+                "observation": observations.get_normalized_agent_data("player"),
                 "action_mask": self.action_manager.get_action_mask("player"),
             },
             "enemy": {
-                "observation": observations.get_normalized_agent_data("enemy"),  # FIXED: use () not []
+                "observation": observations.get_normalized_agent_data("enemy"),
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }
@@ -333,11 +333,11 @@ class BattleArena(ParallelEnv):
     #
     ##########################################################################
 
-    def render(self, observation : Observation , reward : Dict[str,float]):
+    def render(self, observation: Observation, reward: Dict[str, float]):
         """
         Render the current state of the battle using the rich library.
         """
-        self.game_renderer.refresh(observation,reward)
+        self.game_renderer.refresh(observation, reward)
 
     def _get_observations(self):
         obs = self.observation_factory.from_game()
