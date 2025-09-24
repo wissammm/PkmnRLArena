@@ -63,10 +63,16 @@ class TestArena(unittest.TestCase):
             },
         }
 
-        self.arena.reset(seed=None, options=options)
+        observations, infos = self.arena.reset(seed=None, options=options)
 
-        actions = {
-            agent: random.choice(self.arena.action_manager.get_valid_action_ids(agent))
-            for agent in self.arena.core.get_required_agents()
-        }
-        self.arena.step(actions)
+        for i in range(5):
+            actions = {
+                agent: random.choice(
+                    self.arena.action_manager.get_valid_action_ids(agent)
+                )
+                for agent in self.arena.core.get_required_agents()
+            }
+
+            observations, rewards, terminations, truncations, infos = self.arena.step(
+                actions
+            )

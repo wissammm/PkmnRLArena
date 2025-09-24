@@ -31,11 +31,12 @@ class GameRendering:
         reward: Dict[str, float],
     ):
         table = Table()
-        for agent, table in self.agent_tables.items():
-            table.rows.clear()  # or rebuild contents
+        stats_changes = obs.stat_changes()
+        active_pkmn = obs.active_pkmn()
 
-            stats_changes = obs.stat_changes()
-            active_pkmn = obs.active_pkmn()
+        for agent in self.agents:
+            self.agent_tables[agent] = Table()
+            table = self.agent_tables[agent]
 
             for i, pkmn in enumerate(np.split(obs.agent(agent), DataSize.PARTY_SIZE)):
                 # Left column
@@ -60,8 +61,10 @@ class GameRendering:
                 # right column
                 max_hp = int(pkmn[ObsIdx.RAW_DATA["max_HP"]])
                 hp = int(pkmn[ObsIdx.RAW_DATA["HP"]])
-                hp_bar = ProgressBar(total=max_hp, completed=hp, width=20, style="green")
-                right_renderables  = [hp_bar]
+                hp_bar = ProgressBar(
+                    total=max_hp, completed=hp, width=20, style="green"
+                )
+                right_renderables = [hp_bar]
                 for move_offset in range(
                     ObsIdx.RAW_DATA["moves_begin"],
                     ObsIdx.NB_DATA_PKMN,
@@ -73,17 +76,14 @@ class GameRendering:
                     type = pkmn[move_offset + ObsIdx.RAW_DATA["type_offset"]]
                     pp = pkmn[move_offset + ObsIdx.RAW_DATA["pp_offset"]]
 
-                    right_renderables.append(
-                        Text(f"{name}\t\t{type}\t\tpp : {pp}")
-                    )
+                    right_renderables.append(Text(f"{name}\t\t{type}\t\tpp : {pp}"))
                 right_col = Group(*right_renderables)
                 table.add_row(
-                    left_col, right_col,
+                    left_col,
+                    right_col,
                 )
 
-        self.main_table.add_row(
-            self.agent_tables["player"], self.agent_tables["enemy"]
-        )
+        self.main_table.add_row(self.agent_tables["player"], self.agent_tables["enemy"])
 
         self.console.print(self.main_table)
 

@@ -224,11 +224,13 @@ class BattleArena(ParallelEnv):
         self.reward_manager.reset()
         self.reward_manager.add_observation(observations)
 
-        # clean rendering
-        self.game_renderer.console.clear()
-
         # Get dummy infos. Necessary for proper parallel_to_aec conversion
         self.infos = {a: {} for a in self.agents}
+        self.reward = {a: 0 for a in self.agents}
+
+        # create new rendering
+        self.game_renderer.console.clear()
+        self.render(observations, self.reward)
 
         return self.observations, self.infos
 
