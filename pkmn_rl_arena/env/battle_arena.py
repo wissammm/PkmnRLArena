@@ -14,10 +14,11 @@ from pkmn_rl_arena.logging import log
 
 from collections.abc import Callable
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 import functools
 
 import numpy as np
+from numpy import typing as npt
 
 from gymnasium.spaces import Discrete
 
@@ -172,7 +173,10 @@ class BattleArena(ParallelEnv):
         self,
         seed: int | None = None,
         options: Dict[str, Any] | None = {"save_state": "boot_state", "teams": None},
-    ):
+    ) -> Tuple[
+        Dict[str, Dict[str, npt.NDArray[int]]],  # observations
+        Dict[str, Any],  # infos
+    ]:
         """
         Reset needs to initialize the following attributes
         - agents
@@ -245,7 +249,15 @@ class BattleArena(ParallelEnv):
     # STEP
     #
     ##########################################################################
-    def step(self, actions: Optional[Dict[str, int]]):
+    def step(
+        self, actions: Optional[Dict[str, int]]
+    ) -> Tuple[
+        Dict[str, Dict[str, npt.NDArray[int]]],  # observations
+        Dict[str, float],  # rewards
+        Dict[str, bool],  # terminations
+        Dict[str, bool],  # truncations
+        Dict[str, Any],  # infos
+    ]:
         """
         step(action) takes in an action for all agents and needs to update
         - rewards
