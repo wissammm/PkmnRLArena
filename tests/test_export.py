@@ -1,7 +1,18 @@
+import os
+import sys
 import shutil
-from pkmn_rl_arena.export.passes.fusion_pass import (
-    GemmQuantDequantFusionPass,
-)
+import unittest
+
+import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+import onnx
+import onnxruntime as ort
+from onnx import shape_inference, numpy_helper
+
+from pkmn_rl_arena.export.passes.fusion_pass import GemmQuantDequantFusionPass
 from pkmn_rl_arena.export.passes.delete_pass import (
     DeleteFirstInputQDQPass,
     DeleteQuantizePass,
@@ -9,33 +20,17 @@ from pkmn_rl_arena.export.passes.delete_pass import (
 )
 from pkmn_rl_arena.export.exporters.parameters import ExportParameters
 from pkmn_rl_arena.export.onnx_exporter import ONNXExporter
-
 from pkmn_rl_arena.quantize.quantize import FullQuantizer
-
 from pkmn_rl_arena.data.parser import MapAnalyzer
 from pkmn_rl_arena.export.base import ExportBaseGba
-
+from pkmn_rl_arena.export.onnx_utils import OnnxUtils
 from pkmn_rl_arena.paths import PATHS
 
 import rustboyadvance_py
 
-import sys
-import os
-import unittest
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+TEST_DATA_DIR = os.path.join(PROJECT_ROOT, "tests", "test_export_data")
 
-import numpy as np
-
-import onnx
-import onnxruntime as ort
-
-import torch
-import torch.nn as nn
-from onnx import shape_inference
-from onnx import numpy_helper
-import torch.nn.functional as F
-
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
-sys.path.insert(0, project_root)
 
 torch.manual_seed(132) 
 
@@ -58,12 +53,10 @@ def setup_stop_addr(parser, gba):
 
 
 def export_model_to_onnx(model, dummy_input, onnx_filename, opset_version=11):
-    """Export a PyTorch model to ONNX format."""
     model.eval()
-    export_dir = os.path.join(os.path.dirname(__file__), "test_export_data")
-    if not os.path.exists(export_dir):
-        os.makedirs(export_dir)
-    onnx_path = os.path.join(export_dir, onnx_filename)
+    if not os.path.exists(TEST_DATA_DIR):
+        os.makedirs(TEST_DATA_DIR)
+    onnx_path = os.path.join(TEST_DATA_DIR, onnx_filename)
     torch.onnx.export(
         model,
         dummy_input,
@@ -160,52 +153,6 @@ def run_gba_inference(
     return np.array(output_read, dtype=np.int8).reshape(-1)
 
 
-def get_last_qdq_scaling_factor(graph):
-    """
-    Get the actual scale and zero_point value of the last DequantizeLinear node before output.
-    Returns (scale_value, zero_point_value)
-    """
-    for node in reversed(graph.node):
-        if node.op_type == "DequantizeLinear":
-            # Find scale and zero_point names
-            scale_name = node.input[1]
-            zero_point_name = node.input[2]
-            scale_value = None
-            zero_point_value = None
-            # Search initializers for actual values
-            for init in graph.initializer:
-                if init.name == scale_name:
-                    scale_value = float(numpy_helper.to_array(init))
-                if init.name == zero_point_name:
-                    zero_point_value = int(numpy_helper.to_array(init))
-            if scale_value is not None and zero_point_value is not None:
-                return scale_value, zero_point_value
-    return None, None
-
-
-def get_first_qdq_scaling_factor(graph):
-    """
-    Get the actual scale and zero_point value of the first QuantizeLinear node after input.
-    Returns (scale_value, zero_point_value)
-    """
-    for node in graph.node:
-        if node.op_type == "QuantizeLinear":
-            # Find scale and zero_point names
-            scale_name = node.input[1]
-            zero_point_name = node.input[2]
-            scale_value = None
-            zero_point_value = None
-            # Search initializers for actual values
-            for init in graph.initializer:
-                if init.name == scale_name:
-                    scale_value = float(numpy_helper.to_array(init))
-                if init.name == zero_point_name:
-                    zero_point_value = int(numpy_helper.to_array(init))
-            if scale_value is not None and zero_point_value is not None:
-                return scale_value, zero_point_value
-    return None, None
-
-
 def run_onnx_inference(onnx_path, input_data):
     """Run inference on ONNX model and return int8 results."""
     ort_session = ort.InferenceSession(onnx_path)
@@ -217,11 +164,7 @@ def run_onnx_inference(onnx_path, input_data):
 
 class TestExportParameters(unittest.TestCase):
     def setUp(self):
-        self.template_path = os.path.join(
-            os.path.dirname(__file__),
-            "../pkmn_rl_arena/export/templates/parameters.jinja",
-        )
-        self.template_path = os.path.abspath(self.template_path)
+        pass
 
     def test_export_array(self):
         array_data = [1, 2, 3, 4, 5]
@@ -254,16 +197,10 @@ class TestExportParameters(unittest.TestCase):
 
 class TestExportForward(unittest.TestCase):
     def setUp(self):
-        ExportBaseGba.copy_gba_folder(os.path.join(
-            os.path.dirname(__file__), "./test_export_data/"
-        ))
-        self.rom_path = os.path.join(
-            os.path.dirname(__file__), "./test_export_data/gba/gba.elf"
-        )
-        self.map_path = os.path.join(
-            os.path.dirname(__file__), "./test_export_data/gba/build/gba.map"
-        )
-        self.onnx_path = os.path.join('./test_export_data')
+        ExportBaseGba.copy_gba_folder(TEST_DATA_DIR)
+        self.rom_path = os.path.join(TEST_DATA_DIR, "gba", "gba.elf")
+        self.map_path = os.path.join(TEST_DATA_DIR, "gba", "build", "gba.map")
+        self.onnx_path = TEST_DATA_DIR
         
     def _test_model_inference(
         self,
@@ -276,7 +213,7 @@ class TestExportForward(unittest.TestCase):
     ):
         """Helper method to test model inference comparison between ONNX and GBA."""
         dummy_input = torch.randn(*input_shape)
-        onnx_path = onnx_filename
+        onnx_path = os.path.join(TEST_DATA_DIR, onnx_filename)
 
         export_model_to_onnx(model, dummy_input, onnx_path, opset_version)
 
@@ -285,7 +222,7 @@ class TestExportForward(unittest.TestCase):
 
         exporter = ONNXExporter(onnx_path)
         exporter.export(
-            output_dir=os.path.join(os.path.dirname(__file__), "test_export_data/gba")
+            output_dir=os.path.join(TEST_DATA_DIR, "gba")
         )
         launch_makefile()
 
@@ -356,21 +293,20 @@ class TestExportForward(unittest.TestCase):
 
         model = FCQuant()
         dummy_input = torch.randn(1, 10)
-        onnx_path = "fc.onnx"
-        quantized_onnx_path = "fc_quant.onnx"
-        fused_path = "fused_gemm_model.onnx"
+        onnx_path = os.path.join(TEST_DATA_DIR, "fc.onnx")
+        quantized_onnx_path = os.path.join(TEST_DATA_DIR, "fc_quant.onnx")
+        fused_path = os.path.join(TEST_DATA_DIR, "fused_gemm_model.onnx")
 
         export_model_to_onnx(model, dummy_input, onnx_path, opset_version=13)
         quantize_onnx_model(onnx_path, quantized_onnx_path)
 
         quantized_model = onnx.load(quantized_onnx_path)
 
-        output_scale = get_last_qdq_scaling_factor(quantized_model.graph)[0]
+        output_scale = OnnxUtils.get_last_qdq_scaling_factor(quantized_model.graph)[0]
 
         if output_scale is None:
             raise ValueError("Could not find output DQ node scale and zero point")
 
-        # Random input in float range between -1 and 1
         input_random = np.random.uniform(-1, 1, (1, 10)).astype(np.float32)
 
         ort_session = ort.InferenceSession(quantized_onnx_path)
@@ -389,12 +325,12 @@ class TestExportForward(unittest.TestCase):
                         use_delete_first_pass=False, use_delete_first_last_pass=False)
 
         exporter = ONNXExporter(fused_path)
-        exporter.export(output_dir=os.path.join(os.path.dirname(__file__), "test_export_data/gba"))
+        exporter.export(output_dir=os.path.join(TEST_DATA_DIR, "gba"))
         launch_makefile()
 
         gba, parser, addr_write, addr_read, output_addr, input_addr = setup_gba_environment(
             self.rom_path, self.map_path)
-        input_scale = get_first_qdq_scaling_factor(quantized_model.graph)[0]
+        input_scale = OnnxUtils.get_first_qdq_scaling_factor(quantized_model.graph)[0]
 
         input_gba = np.round(input_random / input_scale).astype(np.int8)
         gba_output = run_gba_inference(gba, addr_write, input_addr, output_addr,
@@ -415,8 +351,6 @@ class TestExportForward(unittest.TestCase):
             print("Dequantized outputs match within tolerance!")
         else:
             print(" Dequantized outputs don't match")
-
-            # Print detailed differences
             diff = np.abs(onnx_float - gba_float)
             max_diff = np.max(diff)
             avg_diff = np.mean(diff)
@@ -445,14 +379,14 @@ class TestExportForward(unittest.TestCase):
 
         model = TwoFCQuantRelu()
         dummy_input = torch.randn(1, 10)
-        onnx_path = "fc2.onnx"
-        quantized_onnx_path = "fc2_quant.onnx"
-        fused_path = "fused_gemm_relu_model.onnx"
+        onnx_path = os.path.join(TEST_DATA_DIR, "fc2.onnx")
+        quantized_onnx_path = os.path.join(TEST_DATA_DIR, "fc2_quant.onnx")
+        fused_path = os.path.join(TEST_DATA_DIR, "fused_gemm_relu_model.onnx")
 
         export_model_to_onnx(model, dummy_input, onnx_path, opset_version=13)
         quantize_onnx_model(onnx_path, quantized_onnx_path)
         quantized_model = onnx.load(quantized_onnx_path)
-        output_scale = get_last_qdq_scaling_factor(quantized_model.graph)[0]
+        output_scale = OnnxUtils.get_last_qdq_scaling_factor(quantized_model.graph)[0]
         if output_scale is None:
             raise ValueError("Could not find output DQ node scale and zero point")
         input_random = np.random.uniform(-1, 1, (1, 10)).astype(np.float32)
@@ -468,11 +402,11 @@ class TestExportForward(unittest.TestCase):
                             use_gemm_fusion=True, use_delete_pass=True, 
                             use_delete_first_pass=False, use_delete_first_last_pass=False)
         exporter = ONNXExporter(fused_path)
-        exporter.export(output_dir=os.path.join(os.path.dirname(__file__), "test_export_data/gba"))
+        exporter.export(output_dir=os.path.join(TEST_DATA_DIR, "gba"))
         launch_makefile()
         gba, parser, addr_write, addr_read, output_addr, input_addr = setup_gba_environment(
             self.rom_path, self.map_path)
-        input_scale = get_first_qdq_scaling_factor(quantized_model.graph)[0]
+        input_scale = OnnxUtils.get_first_qdq_scaling_factor(quantized_model.graph)[0]
         input_gba = np.round(input_random / input_scale).astype(np.int8)
         gba_output = run_gba_inference(gba, addr_write, input_addr, output_addr, 
                                     input_gba, 5)
@@ -532,14 +466,14 @@ class TestExportForward(unittest.TestCase):
         model = LargeFourFC()
         print("Model total params:", sum(p.numel() for p in model.parameters()))
         dummy_input = torch.randn(1, 1024)
-        onnx_path = "fc4_large.onnx"
-        quantized_onnx_path = "fc4_large_quant.onnx"
-        fused_path = "fused_gemm_relu_model.onnx"
+        onnx_path = os.path.join(TEST_DATA_DIR, "fc4_large.onnx")
+        quantized_onnx_path = os.path.join(TEST_DATA_DIR, "fc4_large_quant.onnx")
+        fused_path = os.path.join(TEST_DATA_DIR, "fused_gemm_relu_model.onnx")
 
         export_model_to_onnx(model, dummy_input, onnx_path, opset_version=13)
         quantize_onnx_model(onnx_path, quantized_onnx_path)
         quantized_model = onnx.load(quantized_onnx_path)
-        output_scale = get_last_qdq_scaling_factor(quantized_model.graph)[0]
+        output_scale = OnnxUtils.get_last_qdq_scaling_factor(quantized_model.graph)[0]
         if output_scale is None:
             raise ValueError("Could not find output DQ node scale and zero point")
         
@@ -565,13 +499,13 @@ class TestExportForward(unittest.TestCase):
         )
         exporter = ONNXExporter(fused_path)
         exporter.export(
-            output_dir=os.path.join(os.path.dirname(__file__), "test_export_data/gba")
+            output_dir=os.path.join(TEST_DATA_DIR, "gba")
         )
         launch_makefile()
         gba, parser, addr_write, addr_read, output_addr, input_addr = (
             setup_gba_environment(self.rom_path, self.map_path)
         )
-        input_scale = get_first_qdq_scaling_factor(quantized_model.graph)[0]
+        input_scale = OnnxUtils.get_first_qdq_scaling_factor(quantized_model.graph)[0]
         input_gba = np.round(input_random / input_scale).astype(np.int8)
 
         output_size = 5
@@ -598,10 +532,9 @@ class TestExportForward(unittest.TestCase):
         self.assertTrue(float_match, "Outputs don't match even after dequantization")
 
     def tearDown(self):
-        test_export_data_dir = os.path.join(os.path.dirname(__file__), "test_export_data")
-        if os.path.exists(test_export_data_dir):
-            for filename in os.listdir(test_export_data_dir):
-                file_path = os.path.join(test_export_data_dir, filename)
+        if os.path.exists(TEST_DATA_DIR):
+            for filename in os.listdir(TEST_DATA_DIR):
+                file_path = os.path.join(TEST_DATA_DIR, filename)
                 try:
                     if os.path.isdir(file_path):
                         shutil.rmtree(file_path)

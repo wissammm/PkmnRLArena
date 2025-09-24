@@ -81,7 +81,8 @@ class ExportBaseGba:
         self.output_dir = output_dir
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
-    
+            
+    @staticmethod
     def copy_gba_folder(destination_dir):
         """
         Copy the gba folder to the specified destination directory.
