@@ -132,10 +132,10 @@ class Observation:
                 
         return result
 
-    def stat_changes(self) -> Dict[str, List[List[int]]]:
+    def stats(self) -> Dict[str, List[List[int]]]:
         """
         Return current stat values for all Pokémon in each team
-        Returns a dictionary with agents as keys, and values as lists of stat arrays
+        Returns a dictionary with agents as keys, and values a stat array for each pkmn
         Each stat array contains [ATK, DEF, SPEED, SPATK, SPDEF]
         """
         result = {"player": [], "enemy": []}
