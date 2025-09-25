@@ -149,11 +149,19 @@ cd ..
 ./run_rom.sh
 ```
 
-## Results and observations
+### Results and observations
+## Optimization
 With the graphics optimization, we are 2000 times faster, reducing bottlenecks.
 ![ezgif-88fc76070d989c](https://github.com/user-attachments/assets/cf5e3ef2-1603-4af7-b740-3617784c1241)
 
 (same battle for the two simulations)
+
+## Benchmarks on GBA
+Here's a proof that our neural network runs on GBA, in this examples we use the ONNX from the tutorial.
+
+![proof](https://github.com/user-attachments/assets/aaa7e152-5d57-4f35-9c24-48d4755f44c3)
+
+With a larger model of 5 million parameters, inference takes 35 seconds.
 
 ## License
 This project is licensed under the MIT License. NOT FOR "pret/pokeemerald" SCIENTIFIC USE ONLY
