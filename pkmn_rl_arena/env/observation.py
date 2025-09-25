@@ -236,6 +236,7 @@ class ObservationFactory:
 
     def __init__(self, battle_core: BattleCore):
         self.battle_core = battle_core
+        self.moves_df = pd.read_csv(PATHS["MOVES_CSV"])
 
     def from_game(self) -> Observation:
         """
@@ -245,10 +246,9 @@ class ObservationFactory:
           2. For each move: include id, pp info, and extra move stats.
           3. Concatenate into a flat observation array for the agent.
         """
-        moves_df = pd.read_csv(PATHS["MOVES_CSV"])
     
         move_attrs = {}
-        for _, row in moves_df.iterrows():
+        for _, row in self.moves_df.iterrows():
             move_id = int(row['id'])
             move_attrs[move_id] = {
                 'effect': int(row['effect']),
