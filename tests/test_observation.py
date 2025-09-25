@@ -1,3 +1,4 @@
+from pkmn_rl_arena.env.rendering import TYPES_ID
 import unittest
 import numpy as np
 import picologging as logging
@@ -107,6 +108,16 @@ class TestObservation(unittest.TestCase):
         # power for Thunder Shock expected 40 in observation representation
         self.assertEqual(player_obs[player_active_idx + power_offset], 40)
 
+        self.assertEqual(
+            int(player_obs[ObsIdx.RAW_DATA["type_1"]]),
+            14,
+            "Pikachu type 1 should be ELECTRIK (14)",
+        )
+        self.assertEqual(
+            int(player_obs[ObsIdx.RAW_DATA["type_2"]]),
+            0,
+            "Pikachu type 2 should be None (0)",
+        )
         for i in range(2, 6):  # Pokémon 3 to 6
             pkmn_start = i * ObsIdx.NB_DATA_PKMN
             self.assertEqual(
