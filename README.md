@@ -14,10 +14,11 @@ Reinforcement learning environment and tools for Pokémon Emerald :
 - Export 
 
 ## Tutorials 
-Two tutorials are available inside the folder example :
+Two tutorials are available inside the folder examples :
 - training.ipynb : a simple introduction to the MARL on the project
 - export.ipynb : to run your first inference on the GBA !
 
+There's also a wiki !
 ## Project structure
 ```
 pkmn_rl_arena/
