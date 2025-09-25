@@ -233,8 +233,8 @@ class BattleArena(ParallelEnv):
         self.reward = {a: 0 for a in self.agents}
 
         # create new rendering
-        self.game_renderer.console.clear()
-        self.render(observations, self.reward)
+        self.game_renderer.stop()
+        self.game_renderer.start(observations, self.reward)
 
         return self.observations, self.infos
 
@@ -336,7 +336,7 @@ class BattleArena(ParallelEnv):
         """
         Render the current state of the battle using the rich library.
         """
-        self.game_renderer.refresh(observation, reward)
+        self.game_renderer.refresh(observation, reward, self.core.state)
 
     def _get_observations(self):
         obs = self.observation_factory.from_game()

@@ -1,23 +1,18 @@
-import pkmn_rl_arena
 from pkmn_rl_arena.paths import PATHS
 from pkmn_rl_arena import log
 from pkmn_rl_arena.env.battle_core import BattleCore
-from pkmn_rl_arena.test_utils import advance_turn
-from pkmn_rl_arena.env.battle_arena import BattleArena, RenderMode
-from pkmn_rl_arena.env.pkmn_team_factory import DataSize
-from pkmn_rl_arena.data import pokemon_data
 from pkmn_rl_arena.env.turn_type import TurnType
+from pkmn_rl_arena.env.battle_arena import BattleArena, RenderMode
 
-
-from pettingzoo.test import parallel_api_test
-
-import unittest
 import picologging as logging
+import numpy as np
 
 import random
+from time import sleep
+import unittest
 
 
-class TestArena(unittest.TestCase):
+class TestRendering(unittest.TestCase):
     def setUp(self):
         log.setLevel(logging.DEBUG)
         core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
@@ -39,6 +34,51 @@ class TestArena(unittest.TestCase):
                     150,
                     100,  # 100% hp
                     0,
+                    # Bulbasaur
+                    1,
+                    15,
+                    14,
+                    34,
+                    38,
+                    102,
+                    50,
+                    0,
+                    # Snorlax
+                    143,
+                    60,
+                    118,
+                    157,
+                    164,
+                    223,
+                    95,
+                    0,
+                    # Ditto
+                    132,
+                    100,
+                    144,
+                    0,
+                    0,
+                    0,
+                    100,
+                    0,
+                    # METAGROSS
+                    400,
+                    164,
+                    223,
+                    205,
+                    244,
+                    207,
+                    60,
+                    0,
+                    # Rayquaza
+                    406,
+                    2,
+                    157,
+                    164,
+                    244,
+                    173,
+                    1,
+                    0,
                 ],
                 "enemy": [
                     # Squirtle
@@ -59,13 +99,23 @@ class TestArena(unittest.TestCase):
                     5,  # MEGAPUNCH
                     11,
                     0,
+                    # TYPHLOSION
+                    157,
+                    40,
+                    52,
+                    98,
+                    172,
+                    53,
+                    0,
+                    178,
                 ],
             },
         }
 
         observations, infos = self.arena.reset(seed=None, options=options)
+        self.assertEqual(self.arena.core.state.turn, TurnType.GENERAL)
 
-        for i in range(5):
+        for i in range(80):
             actions = {
                 agent: random.choice(
                     self.arena.action_manager.get_valid_action_ids(agent)
@@ -76,3 +126,6 @@ class TestArena(unittest.TestCase):
             observations, rewards, terminations, truncations, infos = self.arena.step(
                 actions
             )
+            sleep(0.2)
+            if self.arena.core.state.turn == TurnType.DONE:
+                break
