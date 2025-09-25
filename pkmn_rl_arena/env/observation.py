@@ -127,6 +127,7 @@ class Observation:
             pokemon_data = np.split(agent_data, 6)
             for pkmn in pokemon_data:
                 result[agent].append(int(pkmn[ObsIdx.RAW_DATA["HP"]]))
+
         return result
 
     def lvl(self) -> Dict[str, List[int]]:
@@ -134,6 +135,7 @@ class Observation:
 
         for agent, data in self._o.items():
             pokemon_data = np.split(data, DataSize.PARTY_SIZE)
+
             for pkmn in pokemon_data:
                 result[agent].append(int(pkmn[ObsIdx.RAW_DATA["level"]]))
 
@@ -169,9 +171,7 @@ class Observation:
             pokemon_data = np.split(agent_data, DataSize.PARTY_SIZE)
             
             for pkmn in pokemon_data:
-                hp_value = int(pkmn[ObsIdx.RAW_DATA["HP"]])
-                result[agent].append(hp_value == 0)
-                
+                result[agent].append(int(pkmn[ObsIdx.RAW_DATA["HP"]]) == 0)
         return result
     def who_won(self) -> str | None:
         for agent, has_won in {
