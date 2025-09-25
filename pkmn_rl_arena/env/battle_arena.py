@@ -276,7 +276,6 @@ class BattleArena(ParallelEnv):
             done: Whether the episode is finished
             info: Additional information
         """
-        log.debug(f"{self.core.state}")
         # If a user passes in actions with no agents, then just return empty observations, etc.
         if not actions:
             self.agents = []
