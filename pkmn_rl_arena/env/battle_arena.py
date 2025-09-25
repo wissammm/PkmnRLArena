@@ -155,9 +155,9 @@ class BattleArena(ParallelEnv):
 
             if len(team) % DataSize.PKMN != 0:
                 raise ValueError(
-                    f"Pkmn team creation : Incorrect param count."
+                    f"Pkmn team creation : Incorrect param count for {agent}\'s team"
                     f"\nA pkmn takes {DataSize.PKMN} params to be created, but received  {len(team)} params."
-                    f"\nWhich accounts for : {int(len(team) / DataSize.PKMN)} pkmns and {len(team) / DataSize.PKMN} leftover params."
+                    f"\nWhich accounts for : {int(len(team) / DataSize.PKMN)} pkmns and {len(team) % DataSize.PKMN} leftover params."
                 )
 
             while len(team) / DataSize.PKMN < DataSize.PARTY_SIZE:
