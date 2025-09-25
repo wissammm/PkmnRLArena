@@ -125,11 +125,18 @@ class Observation:
         for agent in self._o:
             agent_data = self._o[agent]
             pokemon_data = np.split(agent_data, 6)
-            
             for pkmn in pokemon_data:
-                hp_value = int(pkmn[ObsIdx.RAW_DATA["HP"]])
-                result[agent].append(hp_value)
-                
+                result[agent].append(int(pkmn[ObsIdx.RAW_DATA["HP"]]))
+        return result
+
+    def lvl(self) -> Dict[str, List[int]]:
+        result = {"player": [], "enemy": []}
+
+        for agent, data in self._o.items():
+            pokemon_data = np.split(data, DataSize.PARTY_SIZE)
+            for pkmn in pokemon_data:
+                result[agent].append(int(pkmn[ObsIdx.RAW_DATA["level"]]))
+
         return result
 
     def stats(self) -> Dict[str, List[List[int]]]:
@@ -159,13 +166,23 @@ class Observation:
         
         for agent in self._o:
             agent_data = self._o[agent]
-            pokemon_data = np.split(agent_data, 6)
+            pokemon_data = np.split(agent_data, DataSize.PARTY_SIZE)
             
             for pkmn in pokemon_data:
                 hp_value = int(pkmn[ObsIdx.RAW_DATA["HP"]])
                 result[agent].append(hp_value == 0)
                 
         return result
+    def who_won(self) -> str | None:
+        for agent, has_won in {
+            agent: not all( ko == 1 for ko in pkmn_ko) for agent, pkmn_ko in self.pkmn_ko().items()
+        }.items():
+            if has_won:
+                return agent
+        return None
+
+            
+
 
 
 @dataclass(frozen=True)

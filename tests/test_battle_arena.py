@@ -255,10 +255,10 @@ class TestFightUnfold(unittest.TestCase):
                 "player": [
                     25,
                     99,
-                    84,
-                    84,
-                    84,
-                    84,
+                    84,  # THUNDERSHOCK
+                    0,
+                    0,
+                    0,
                     100,
                     0,
                 ],
@@ -266,10 +266,10 @@ class TestFightUnfold(unittest.TestCase):
                 "enemy": [
                     129,
                     10,
-                    150,
-                    150,
-                    150,
-                    150,
+                    150,  # SPLASH
+                    0,
+                    0,
+                    0,
                     10,
                     0,
                 ],
@@ -278,17 +278,29 @@ class TestFightUnfold(unittest.TestCase):
 
         self.arena.reset(options=options)
 
-        self.arena.step(actions={"player": 0, "enemy": 0})
+        obs, rewards, terminations, truncations, infos = self.arena.step(
+            actions={"player": 0, "enemy": 0}
+        )
 
-        player_team_dump_data = self.arena.core.read_team_data("player")
-        log.debug(pokemon_data.to_pandas_team_dump_data(player_team_dump_data))
-        enemy_team_dump_data = self.arena.core.read_team_data("enemy")
-        log.debug(pokemon_data.to_pandas_team_dump_data(enemy_team_dump_data))
-
-        log.debug(f"terminations = {self.arena.terminations}")
-
-        for agent in self.arena.possible_agents:
+        for agent, term in terminations.items():
             self.assertTrue(self.arena.terminations[agent])
+            self.assertEqual(
+                self.arena.terminations[agent],
+                term,
+                "returned termination value is {term} not identical to self.arena.terminations[{agent}] = {self.arena.terminations[agent]}",
+            )
+
+        obs = self.arena.observation_factory.from_game()
+        self.assertEqual(
+            obs.who_won(),
+            "player",
+            f'should have returned "player" as enemy has no HP left. HP left for each pkmn : {obs.hp()}',
+        )
+        self.assertEqual(
+            self.arena.core.state.turn,
+            TurnType.DONE,
+            "TurnType should be done as fight is over.",
+        )
 
     def test_switch_pokemon(self):
         options = {
