@@ -181,10 +181,7 @@ class Observation:
                 return agent
         return None
 
-            
-
-
-
+        
 @dataclass(frozen=True)
 class ObsIdx:
 
@@ -259,11 +256,11 @@ class ObservationFactory:
         """
         For both agents, build an observation vector from raw game data.
         Steps:
-          1. Extract relevant Pokémon attributes (active flag, stats, ability → status).
-          2. For each move: include id, pp info, and extra move stats.
-          3. Concatenate into a flat observation array for the agent.
+        1. Extract relevant Pokémon attributes (active flag, stats, ability → status).
+        2. For each move: include id, pp info, and extra move stats.
+        3. Concatenate into a flat observation array for the agent.
         """
-    
+        # Load move attributes from CSV
         move_attrs = {}
         for _, row in self.moves_df.iterrows():
             move_id = int(row['id'])
@@ -272,7 +269,7 @@ class ObservationFactory:
                 'power': int(row['power']),
                 'type': int(row['type']),
                 'accuracy': int(row['accuracy']),
-                'pp': int(row['pp']),  # This is max PP, not current PP
+                'pp': int(row['pp']),  # This is max PP from the moves data
                 'priority': int(row['priority']),
                 'secondaryEffectChance': int(row['secondaryEffectChance']),
                 'target': int(row['target']),
@@ -283,7 +280,7 @@ class ObservationFactory:
         for agent in ["player", "enemy"]:
             raw_team_data = self.battle_core.read_team_data(agent)
             raw_data_list = np.split(
-                np.array(raw_team_data, dtype=int),  # force int dtype
+                np.array(raw_team_data, dtype=int),
                 indices_or_sections=6,
             )
             
@@ -292,13 +289,13 @@ class ObservationFactory:
                 pkmn_obs = list(pkmn_data[:20])
                 
                 for i in range(0, ObsIdx.MAX_PKMN_MOVES):
-                    move_idx = 20 + (i * 2)  # 20, 22, 24, 26 (move indices in raw data)
-                    pp_idx = move_idx + 1     # 21, 23, 25, 27 (PP indices in raw data)
+                    move_idx = 20 + (i * 2)      # 20, 22, 24, 26
+                    pp_idx = move_idx + 1        # 21, 23, 25, 27
                     
                     move_id = pkmn_data[move_idx]
-                    pp = pkmn_data[pp_idx]
+                    current_pp = pkmn_data[pp_idx]
                     
-                    move_obs = [move_id, pp]
+                    move_obs = [move_id, current_pp]
                     
                     if move_id > 0 and move_id in move_attrs:
                         attrs = move_attrs[move_id]
