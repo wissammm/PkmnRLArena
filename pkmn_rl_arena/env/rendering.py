@@ -49,12 +49,18 @@ class GameRendering:
         self.live = None
 
     def _build_table(self, obs: Observation, reward: Dict[str, float]) -> Table:
-        main_table = Table(expand=True)
-        main_table.add_column("Player", justify="center", header_style="Red")
-        main_table.add_column("Enemy", justify="center", header_style="Blue")
+        main_table = Table(expand=True, padding=(0, 1))
+        main_table.add_column(f"Player\tReward {reward["player"]}", justify="center", header_style="Red")
+        main_table.add_column(f"Enemy\tReward : {reward["enemy"]}", justify="center", header_style="Blue")
 
         agent_tables = {
-            a: Table(expand=True, show_header=False, show_edge=False, show_lines=True)
+            a: Table(
+                expand=True,
+                show_header=False,
+                show_edge=False,
+                show_lines=True,
+                padding=(0, 1),
+            )
             for a in self.agents
         }
 
@@ -125,6 +131,9 @@ class GameRendering:
 
         return main_table
 
+    def _build_state_panel(self, state: BattleState):
+        return Panel(Text(f"{state.id} step : {state.step} turn type : {state.turn}"))
+
     def start(self, obs, reward):
         """Start live rendering once"""
         self.live = Live(
@@ -145,5 +154,7 @@ class GameRendering:
         """Trigger manual refresh"""
         if self.live:
             # Panel(Text("state : {}"))
-            self.live.update(self._build_table(obs, reward))
+            self.live.update(
+                Group(self._build_state_panel(state), self._build_table(obs, reward))
+            )
             self.live.refresh()
