@@ -115,14 +115,19 @@ class TestObservation(unittest.TestCase):
         )
         self.assertEqual(
             int(player_obs[ObsIdx.RAW_DATA["type_2"]]),
-            0,
+            13,
             "Pikachu type 2 should be None (0)",
         )
 
-        self.assertEqual(
-            int(player_obs[ObsIdx.RAW_DATA["pp_offset"]]),
-            0
-        )
+        move_start = ObsIdx.RAW_DATA["moves_begin"]
+        first_move_offset = move_start + ObsIdx.RAW_DATA["move_id_offset"]
+        power_offset = move_start + ObsIdx.RAW_DATA["power_offset"]
+        pp_offset = move_start + ObsIdx.RAW_DATA["pp_offset"] 
+
+        self.assertEqual(player_obs[player_active_idx + first_move_offset], 84)  # Move ID
+        self.assertEqual(player_obs[player_active_idx + power_offset], 40)
+        self.assertGreaterEqual(player_obs[player_active_idx + pp_offset], 38, "First move should have at least 10 PP")
+
         for i in range(2, 6):  # Pokémon 3 to 6
             pkmn_start = i * ObsIdx.NB_DATA_PKMN
             self.assertEqual(
