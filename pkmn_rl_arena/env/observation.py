@@ -2,6 +2,7 @@ from typing import Dict, List
 from dataclasses import dataclass
 from numpy import typing as npt
 from pkmn_rl_arena.paths import PATHS
+from pkmn_rl_arena.env.pkmn_team_factory import DataSize 
 
 from pkmn_rl_arena.env.battle_core import BattleCore
 from pkmn_rl_arena.env.pkmn_team_factory import PkmnTeamFactory
@@ -27,13 +28,12 @@ class Observation:
 
     _o: Dict[str, AgentObs]
 
-    @property
-    def agent(self, a: str):
-        if a not in self.o.keys():
+    def agent(self, a: str) -> npt.NDArray[int]:
+        if a not in self._o.keys():
             raise ValueError(
                 f"Invalid agent name, must be in {self.o.keys()}, got {a}."
             )
-        self.o[a]
+        return self._o[a]
 
     def get_agent_data(self, agent: str) -> AgentObs:
         """Get the full observation array for an agent"""
@@ -48,7 +48,7 @@ class Observation:
         
         raw_data = self._o[agent].copy()
         
-        pokemon_data = np.split(raw_data, 6)
+        pokemon_data = np.split(raw_data, DataSize.PARTY_SIZE)
         normalized_team = []
         
         MAX_SPECIES = 411
@@ -125,24 +125,33 @@ class Observation:
         for agent in self._o:
             agent_data = self._o[agent]
             pokemon_data = np.split(agent_data, 6)
-            
             for pkmn in pokemon_data:
-                hp_value = int(pkmn[ObsIdx.RAW_DATA["HP"]])
-                result[agent].append(hp_value)
-                
+                result[agent].append(int(pkmn[ObsIdx.RAW_DATA["HP"]]))
+
         return result
 
-    def stat_changes(self) -> Dict[str, List[List[int]]]:
+    def lvl(self) -> Dict[str, List[int]]:
+        result = {"player": [], "enemy": []}
+
+        for agent, data in self._o.items():
+            pokemon_data = np.split(data, DataSize.PARTY_SIZE)
+
+            for pkmn in pokemon_data:
+                result[agent].append(int(pkmn[ObsIdx.RAW_DATA["level"]]))
+
+        return result
+
+    def stats(self) -> Dict[str, List[List[int]]]:
         """
         Return current stat values for all Pokémon in each team
-        Returns a dictionary with agents as keys, and values as lists of stat arrays
+        Returns a dictionary with agents as keys, and values a stat array for each pkmn
         Each stat array contains [ATK, DEF, SPEED, SPATK, SPDEF]
         """
         result = {"player": [], "enemy": []}
         
         for agent in self._o:
             agent_data = self._o[agent]
-            pokemon_data = np.split(agent_data, 6)
+            pokemon_data = np.split(agent_data, DataSize.PARTY_SIZE)
             
             for pkmn in pokemon_data:
                 stats = pkmn[ObsIdx.RAW_DATA["stats_begin"]:ObsIdx.RAW_DATA["stats_end"]].tolist()
@@ -159,13 +168,21 @@ class Observation:
         
         for agent in self._o:
             agent_data = self._o[agent]
-            pokemon_data = np.split(agent_data, 6)
+            pokemon_data = np.split(agent_data, DataSize.PARTY_SIZE)
             
             for pkmn in pokemon_data:
-                hp_value = int(pkmn[ObsIdx.RAW_DATA["HP"]])
-                result[agent].append(hp_value == 0)
-                
+                result[agent].append(int(pkmn[ObsIdx.RAW_DATA["HP"]]) == 0)
         return result
+    def who_won(self) -> str | None:
+        for agent, has_won in {
+            agent: not all( ko == 1 for ko in pkmn_ko) for agent, pkmn_ko in self.pkmn_ko().items()
+        }.items():
+            if has_won:
+                return agent
+        return None
+
+            
+
 
 
 @dataclass(frozen=True)
@@ -236,6 +253,7 @@ class ObservationFactory:
 
     def __init__(self, battle_core: BattleCore):
         self.battle_core = battle_core
+        self.moves_df = pd.read_csv(PATHS["MOVES_CSV"])
 
     def from_game(self) -> Observation:
         """
@@ -245,10 +263,9 @@ class ObservationFactory:
           2. For each move: include id, pp info, and extra move stats.
           3. Concatenate into a flat observation array for the agent.
         """
-        moves_df = pd.read_csv(PATHS["MOVES_CSV"])
     
         move_attrs = {}
-        for _, row in moves_df.iterrows():
+        for _, row in self.moves_df.iterrows():
             move_id = int(row['id'])
             move_attrs[move_id] = {
                 'effect': int(row['effect']),

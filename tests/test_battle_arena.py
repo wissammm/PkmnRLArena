@@ -1,4 +1,3 @@
-import pkmn_rl_arena
 from pkmn_rl_arena.paths import PATHS
 from pkmn_rl_arena import log
 from pkmn_rl_arena.env.battle_core import BattleCore
@@ -10,11 +9,12 @@ from pkmn_rl_arena.env.turn_type import TurnType
 
 
 from pettingzoo.test import parallel_api_test
-
-import unittest
+import numpy as np
 import picologging as logging
 
+import copy
 import random
+import unittest
 
 
 class TestArena(unittest.TestCase):
@@ -54,6 +54,8 @@ class TestArena(unittest.TestCase):
 
     def test_step(self):
         observations, infos = self.arena.reset()
+        previous_observations = observations
+        states = [self.arena.core.state]
 
         for i in range(20):
             actions = {
@@ -66,6 +68,7 @@ class TestArena(unittest.TestCase):
             observations, rewards, terminations, truncations, infos = self.arena.step(
                 actions
             )
+            states.append(copy.deepcopy(self.arena.core.state))
             self.assertEqual(
                 self.arena.core.state.step,
                 i + 1,
@@ -76,6 +79,30 @@ class TestArena(unittest.TestCase):
                 i + 2,
                 f"Invalid length of observation state : observation should be i + 1(initial observation) + 1(step completed in the current loop) = {i + 1}, got {len(self.arena.reward_manager.obs)}.",
             )
+
+            if not (
+                (
+                    previous_observations["player"]["observation"]
+                    == observations["player"]["observation"]
+                ).all()
+                and (
+                    previous_observations["enemy"]["observation"]
+                    == observations["enemy"]["observation"]
+                ).all()
+            ):
+                log.fatal(
+                    f"No observation was updated for at step {self.arena.core.state.step}, at least one must be updated(if not both). For debugging : previous state : {states[-2]}, Current state : {states[-1]}."
+                )
+                for agent in self.arena.agents:
+                    log.fatal(
+                        f"\nCurrent observation for {agent}:\n {observations[agent]['observation']}\nPrevious observation :\n {previous_observations[agent]['observation']}"
+                    )
+                self.assertFalse(
+                    True,
+                    f"No observation was updated for at turn {i}, at least one must be updated(if not both). For debugging : previous state : {states[-2]}, Current state : {states[-1]}.",
+                )
+
+            previous_observations = observations
 
     # def test_render(self):
     #     self.arena.reset(seed=42)
@@ -228,10 +255,10 @@ class TestFightUnfold(unittest.TestCase):
                 "player": [
                     25,
                     99,
-                    84,
-                    84,
-                    84,
-                    84,
+                    84,  # THUNDERSHOCK
+                    0,
+                    0,
+                    0,
                     100,
                     0,
                 ],
@@ -239,10 +266,10 @@ class TestFightUnfold(unittest.TestCase):
                 "enemy": [
                     129,
                     10,
-                    150,
-                    150,
-                    150,
-                    150,
+                    150,  # SPLASH
+                    0,
+                    0,
+                    0,
                     10,
                     0,
                 ],
@@ -251,18 +278,29 @@ class TestFightUnfold(unittest.TestCase):
 
         self.arena.reset(options=options)
 
-        self.arena.step(actions={"player": 0, "enemy": 0})
+        obs, rewards, terminations, truncations, infos = self.arena.step(
+            actions={"player": 0, "enemy": 0}
+        )
 
-        log.debug(f"state = {self.arena.core.state}")
-        player_team_dump_data = self.arena.core.read_team_data("player")
-        log.debug(pokemon_data.to_pandas_team_dump_data(player_team_dump_data))
-        enemy_team_dump_data = self.arena.core.read_team_data("enemy")
-        log.debug(pokemon_data.to_pandas_team_dump_data(enemy_team_dump_data))
-
-        log.debug(f"terminations = {self.arena.terminations}")
-
-        for agent in self.arena.possible_agents:
+        for agent, term in terminations.items():
             self.assertTrue(self.arena.terminations[agent])
+            self.assertEqual(
+                self.arena.terminations[agent],
+                term,
+                "returned termination value is {term} not identical to self.arena.terminations[{agent}] = {self.arena.terminations[agent]}",
+            )
+
+        obs = self.arena.observation_factory.from_game()
+        self.assertEqual(
+            obs.who_won(),
+            "player",
+            f'should have returned "player" as enemy has no HP left. HP left for each pkmn : {obs.hp()}',
+        )
+        self.assertEqual(
+            self.arena.core.state.turn,
+            TurnType.DONE,
+            "TurnType should be done as fight is over.",
+        )
 
     def test_switch_pokemon(self):
         options = {

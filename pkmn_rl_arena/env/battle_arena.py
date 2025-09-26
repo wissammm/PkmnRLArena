@@ -8,43 +8,22 @@ from .reward.manager import RewardManager
 from .reward.functions import reward_functions
 from .save_state import SaveStateManager
 from pkmn_rl_arena.paths import PATHS
+from pkmn_rl_arena.env.rendering import GameRendering
 
 from pkmn_rl_arena.logging import log
 
 from collections.abc import Callable
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 import functools
 
 import numpy as np
+from numpy import typing as npt
 
 from gymnasium.spaces import Discrete
 
 from pettingzoo import ParallelEnv
 
-from rich.console import Console
-from rich.table import Table
-
-class ReplayBuffer:
-    """A simple replay buffer for storing transitions."""
-    def __init__(self, capacity=10000):
-        self.capacity = capacity
-        self.buffer = []
-        self.position = 0
-
-    def push(self, transition):
-        if len(self.buffer) < self.capacity:
-            self.buffer.append(None)
-        self.buffer[self.position] = transition
-        self.position = (self.position + 1) % self.capacity
-
-    def sample(self, batch_size):
-        import random
-        batch = random.sample(self.buffer, batch_size)
-        return batch
-
-    def __len__(self):
-        return len(self.buffer)
 
 class RenderMode(Enum):
     """Enumeration for different rendering mode"""
@@ -108,7 +87,7 @@ class BattleArena(ParallelEnv):
         self.infos = {}
 
         # render console
-        self.console = Console()
+        self.game_renderer = GameRendering(self.team_factory, self.agents)
 
         if self.core.state.turn != TurnType.CREATE_TEAM:
             raise RuntimeError(
@@ -141,11 +120,11 @@ class BattleArena(ParallelEnv):
         else:
             returned_state = self.save_state_manager.load_state(options["save_state"])
             self.core = self.save_state_manager.core
-            self.observation_factory.core = self.save_state_manager.core 
-            self.action_manager.core = self.save_state_manager.core 
-            self.team_factory.core = self.save_state_manager.core 
-            self.reward_manager.core = self.save_state_manager.core 
-            self.save_state_manager.core = self.save_state_manager.core 
+            self.observation_factory.core = self.save_state_manager.core
+            self.action_manager.core = self.save_state_manager.core
+            self.team_factory.core = self.save_state_manager.core
+            self.reward_manager.core = self.save_state_manager.core
+            self.save_state_manager.core = self.save_state_manager.core
             if returned_state is None:
                 raise RuntimeError(
                     f"Failed to load save state {options.get('save_state')}"
@@ -176,9 +155,9 @@ class BattleArena(ParallelEnv):
 
             if len(team) % DataSize.PKMN != 0:
                 raise ValueError(
-                    f"Pkmn team creation : Incorrect param count."
+                    f"Pkmn team creation : Incorrect param count for {agent}\'s team"
                     f"\nA pkmn takes {DataSize.PKMN} params to be created, but received  {len(team)} params."
-                    f"\nWhich accounts for : {int(len(team) / DataSize.PKMN)} pkmns and {len(team) / DataSize.PKMN} leftover params."
+                    f"\nWhich accounts for : {int(len(team) / DataSize.PKMN)} pkmns and {len(team) % DataSize.PKMN} leftover params."
                 )
 
             while len(team) / DataSize.PKMN < DataSize.PARTY_SIZE:
@@ -194,7 +173,10 @@ class BattleArena(ParallelEnv):
         self,
         seed: int | None = None,
         options: Dict[str, Any] | None = {"save_state": "boot_state", "teams": None},
-    ):
+    ) -> Tuple[
+        Dict[str, Dict[str, npt.NDArray[int]]],  # observations
+        Dict[str, Any],  # infos
+    ]:
         """
         Reset needs to initialize the following attributes
         - agents
@@ -234,11 +216,11 @@ class BattleArena(ParallelEnv):
         observations = self.observation_factory.from_game()
         self.observations = {
             "player": {
-                "observation": observations.get_normalized_agent_data("player"),  
+                "observation": observations.get_normalized_agent_data("player"),
                 "action_mask": self.action_manager.get_action_mask("player"),
             },
             "enemy": {
-                "observation": observations.get_normalized_agent_data("enemy"), 
+                "observation": observations.get_normalized_agent_data("enemy"),
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }
@@ -246,11 +228,13 @@ class BattleArena(ParallelEnv):
         self.reward_manager.reset()
         self.reward_manager.add_observation(observations)
 
-        # clean rendering
-        self.console.clear()
-
         # Get dummy infos. Necessary for proper parallel_to_aec conversion
         self.infos = {a: {} for a in self.agents}
+        self.reward = {a: 0 for a in self.agents}
+
+        # create new rendering
+        self.game_renderer.stop()
+        self.game_renderer.start(observations, self.reward)
 
         return self.observations, self.infos
 
@@ -265,7 +249,15 @@ class BattleArena(ParallelEnv):
     # STEP
     #
     ##########################################################################
-    def step(self, actions: Optional[Dict[str, int]]):
+    def step(
+        self, actions: Optional[Dict[str, int]]
+    ) -> Tuple[
+        Dict[str, Dict[str, npt.NDArray[int]]],  # observations
+        Dict[str, float],  # rewards
+        Dict[str, bool],  # terminations
+        Dict[str, bool],  # truncations
+        Dict[str, Any],  # infos
+    ]:
         """
         step(action) takes in an action for all agents and needs to update
         - rewards
@@ -284,7 +276,6 @@ class BattleArena(ParallelEnv):
             done: Whether the episode is finished
             info: Additional information
         """
-        log.debug(f"{self.core.state}")
         # If a user passes in actions with no agents, then just return empty observations, etc.
         if not actions:
             self.agents = []
@@ -300,23 +291,21 @@ class BattleArena(ParallelEnv):
         self.core.advance_to_next_turn()
 
         # Get observations
-        observation = self.observation_factory.from_game()
-
-        observation = self.observation_factory.from_game()
+        observations = self.observation_factory.from_game()
         self.observations = {
             "player": {
-                "observation": observation.get_normalized_agent_data("player"),  # FIXED: use () not []
+                "observation": observations.get_normalized_agent_data("player"),
                 "action_mask": self.action_manager.get_action_mask("player"),
             },
             "enemy": {
-                "observation": observation.get_normalized_agent_data("enemy"),  # FIXED: use () not []
+                "observation": observations.get_normalized_agent_data("enemy"),
                 "action_mask": self.action_manager.get_action_mask("enemy"),
             },
         }
 
-        self.reward_manager.add_observation(observation)
+        self.reward_manager.add_observation(observations)
 
-        for agent, observation in self.observations.items():
+        for agent, obs in self.observations.items():
             self.rewards[agent] = self.reward_manager.compute_reward(agent)
             self._cumulative_rewards[agent] += self.rewards[agent]
 
@@ -324,6 +313,8 @@ class BattleArena(ParallelEnv):
             self.terminations = {agent: True for agent in self.agents}
         elif self.max_steps_per_episode < self.core.state.step:
             self.truncations = {agent: True for agent in self.agents}
+
+        self.render(observations, self.rewards)
 
         self.infos = {}
 
@@ -341,22 +332,11 @@ class BattleArena(ParallelEnv):
     #
     ##########################################################################
 
-    def render(self):
+    def render(self, observation: Observation, reward: Dict[str, float]):
         """
         Render the current state of the battle using the rich library.
-
-        Args:
-            observations: Dictionary containing observation DataFrames for 'player' and 'enemy'.
-            csv_path: Path to the CSV file containing Pokémon data.
         """
-        # Rendering : 3 options :
-        # 1. print images of the game
-        #    check Example in project root to see use of gba display and have a nice render
-        # 2. Just printing status of each party
-        # 3. No redering for faster computation
-
-        # Create a table with two columns: Player and Enemy
-        pass
+        self.game_renderer.refresh(observation, reward, self.core.state)
 
     def _get_observations(self):
         obs = self.observation_factory.from_game()
