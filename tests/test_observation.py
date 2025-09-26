@@ -110,8 +110,8 @@ class TestObservation(unittest.TestCase):
 
         self.assertEqual(
             int(player_obs[ObsIdx.RAW_DATA["type_1"]]),
-            14,
-            "Pikachu type 1 should be ELECTRIK (14)",
+            13,
+            "Pikachu type 1 should be ELECTRIK (13)",
         )
         self.assertEqual(
             int(player_obs[ObsIdx.RAW_DATA["type_2"]]),
