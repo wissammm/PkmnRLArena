@@ -15,6 +15,7 @@ import unittest
 class TestRendering(unittest.TestCase):
     def setUp(self):
         log.setLevel(logging.DEBUG)
+        log.debug(f"Current random seed : {random.seed()}")
         core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
         self.arena = BattleArena(core, render_mode=RenderMode.TURN_TERMINAL)
 
