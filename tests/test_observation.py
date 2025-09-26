@@ -126,7 +126,7 @@ class TestObservation(unittest.TestCase):
 
         self.assertEqual(player_obs[player_active_idx + first_move_offset], 84)  # Move ID
         self.assertEqual(player_obs[player_active_idx + power_offset], 40)
-        self.assertGreaterEqual(player_obs[player_active_idx + pp_offset], 38, "First move should have at least 10 PP")
+        self.assertGreaterEqual(player_obs[player_active_idx + pp_offset], 29, "First move should have at least 29 PP, thundershock=30pp")
 
         for i in range(2, 6):  # Pokémon 3 to 6
             pkmn_start = i * ObsIdx.NB_DATA_PKMN
