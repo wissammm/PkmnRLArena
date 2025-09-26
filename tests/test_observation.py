@@ -118,6 +118,11 @@ class TestObservation(unittest.TestCase):
             0,
             "Pikachu type 2 should be None (0)",
         )
+
+        self.assertEqual(
+            int(player_obs[ObsIdx.RAW_DATA["pp_offset"]]),
+            0
+        )
         for i in range(2, 6):  # Pokémon 3 to 6
             pkmn_start = i * ObsIdx.NB_DATA_PKMN
             self.assertEqual(
