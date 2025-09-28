@@ -54,6 +54,7 @@ RUN ./build.sh
 RUN ./install.sh ../pokeemerald_ai_rl
 
 WORKDIR /app/pokeemerald_ai_rl
+# TODO make it configurable
 RUN make modern DINFO=1 DOBSERVED_DATA=1 DSKIP_TEXT=1 DSKIP_GRAPHICS=1 NO_DEBUG_PRINT=1 -j
 
 WORKDIR /app
