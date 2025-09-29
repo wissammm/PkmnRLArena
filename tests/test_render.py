@@ -11,11 +11,18 @@ import random
 from time import sleep
 import unittest
 
+def init_rng(seed=None):
+    """Initialize the global RNG and remember the seed."""
+    if seed is None:
+        seed = random.randrange(2**32)   # pick a random 32‑bit seed
+    random.seed(seed)
+    return seed
 
 class TestRendering(unittest.TestCase):
     def setUp(self):
         log.setLevel(logging.DEBUG)
-        log.debug(f"Current random seed : {random.seed()}")
+        seed_used = init_rng()
+        log.debug(f"Current random seed : {seed_used}")
         core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
         self.arena = BattleArena(core, render_mode=RenderMode.TURN_TERMINAL)
 
