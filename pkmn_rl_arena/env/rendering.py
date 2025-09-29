@@ -51,10 +51,10 @@ class GameRendering:
     def _build_table(self, obs: Observation, reward: Dict[str, float]) -> Table:
         main_table = Table(expand=True, padding=(0, 1))
         main_table.add_column(
-            f"Player\tReward {reward['player']}", justify="center", header_style="Red"
+            f"Player\tReward {reward['player']:.3f}", justify="center", header_style="Red"
         )
         main_table.add_column(
-            f"Enemy\tReward : {reward['enemy']}", justify="center", header_style="Blue"
+            f"Enemy\tReward : {reward['enemy']:.3f}", justify="center", header_style="Blue"
         )
 
         agent_tables = {
@@ -123,7 +123,9 @@ class GameRendering:
 
                 ############################
                 # Stats
-                stats_table = Table(show_edge=False,show_footer=False,show_lines=False,box=None)
+                stats_table = Table(
+                    show_edge=False, show_footer=False, show_lines=False, box=None
+                )
                 stats_table.add_column(header="Atk")
                 stats_table.add_column(header="Def")
                 stats_table.add_column(header="Speed")
@@ -190,10 +192,10 @@ class GameRendering:
     def _build_state_panel(self, state: BattleState):
         return Panel(Text(f"{state.id} step : {state.step} turn type : {state.turn}"))
 
-    def start(self, obs, reward):
+    def start(self, obs, reward, state):
         """Start live rendering once"""
         self.live = Live(
-            self._build_table(obs, reward),
+            Group(self._build_state_panel(state), self._build_table(obs, reward)),
             console=self.console,
             auto_refresh=False,
             transient=False,

@@ -234,7 +234,7 @@ class BattleArena(ParallelEnv):
 
         # create new rendering
         self.game_renderer.stop()
-        self.game_renderer.start(observations, self.reward)
+        self.game_renderer.start(observations, self.reward, self.core.state)
 
         return self.observations, self.infos
 
