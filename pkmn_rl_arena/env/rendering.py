@@ -123,9 +123,13 @@ class GameRendering:
 
                 ############################
                 # Stats
-                stats_txt = Text(
-                    f"Atk : {str(stats[agent][i][0]):<6}Def : {str(stats[agent][i][1]):<6}Spd : {str(stats[agent][i][2]):<6}Sp.Atk : {str(stats[agent][i][3]):<6}Sp.Def : {str(stats[agent][i][4]):<6}"
-                )
+                stats_table = Table(show_edge=False,show_footer=False,show_lines=False,box=None)
+                stats_table.add_column(header="Atk")
+                stats_table.add_column(header="Def")
+                stats_table.add_column(header="Speed")
+                stats_table.add_column(header="Sp.atk")
+                stats_table.add_column(header="Sp.Def")
+                stats_table.add_row(*[f"{str(stat):<4}" for stat in stats[agent][i]])
                 pkmn_table.add_row(
                     Group(
                         active_indicator
@@ -133,7 +137,7 @@ class GameRendering:
                             f"{name:<12}{types_str} Lvl {str(lvls[agent][i]):<5}",
                             style="bold",
                         ),
-                        stats_txt,
+                        stats_table,
                         hp_bar,
                     )
                 )
