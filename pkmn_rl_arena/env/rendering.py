@@ -66,6 +66,7 @@ class GameRendering:
 
         stats = obs.stats()
         lvls = obs.lvl()
+        active_pkmn = obs.active_pkmn()
 
         for agent, table in agent_tables.items():
             table.add_column("Pokémon", justify="left", ratio=4, no_wrap=False)
@@ -76,20 +77,28 @@ class GameRendering:
                 if pkmn_id == 0:
                     continue
 
-                # name + types + status
+                is_active = True if i == active_pkmn[agent] else False
+                active_indicator = Text("● ", style="red" if is_active else "grey50")
+ 
                 name = self.team_factory.get_pkmn_name_from(pkmn_id)
                 types = (
-                    TYPES_ID[int(pkmn[ObsIdx.RAW_DATA["type_1"]])],
-                    TYPES_ID[int(pkmn[ObsIdx.RAW_DATA["type_2"]])],
+                    int(pkmn[ObsIdx.RAW_DATA["type_1"]]),
+                    int(pkmn[ObsIdx.RAW_DATA["type_2"]]),
                 )
+                if types[0] != types[1]:
+                    types = (TYPES_ID[type] for type in types)
+                else:
+                    types = (TYPES_ID[types[0]],)
+                types_str = ", ".join(types)
 
-                status_str = " ".join(str(stats[agent][i]))
+                stats_str = f"ATK : {stats[agent][i][0]}\nDEF : {stats[agent][i][1]}\nSPD : {stats[agent][i][2]}\nSPA : {stats[agent][i][3]}\nSPD : {stats[agent][i][4]}"
                 left_col = Group(
-                    Text(f"{name} LVL: {lvls[agent][i]}", style="bold"),
-                    Text(f"{types[0]}, {types[1]}"),
-                    Text(status_str),
+                    active_indicator + Text(f"{name} LVL: {lvls[agent][i]}", style="bold"),
+                    Text(f"{types_str}"),
+                    Text(stats_str),
                 )
 
+                ############################
                 # HP bar + moves
                 max_hp = int(pkmn[ObsIdx.RAW_DATA["max_HP"]])
                 hp = int(pkmn[ObsIdx.RAW_DATA["HP"]])
