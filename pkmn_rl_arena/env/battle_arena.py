@@ -138,11 +138,11 @@ class BattleArena(ParallelEnv):
         )
         return
 
-    def create_teams(self, options: Dict[str, Any]) -> Dict[str, list[int]]:
+    def create_teams(self, options: Dict[str, Any], team_size: int = 6) -> Dict[str, list[int]]:
         if options.get("teams") is None:
             log.debug('No team provided in options["teams"], creating random teams.')
             return {
-                agent: self.team_factory.create_random_team() for agent in self.agents
+                agent: self.team_factory.create_random_team(size_of_team=team_size) for agent in self.agents
             }
 
         teams = options["teams"]
@@ -150,7 +150,7 @@ class BattleArena(ParallelEnv):
             log.info(f"Creating {agent} team.")
             if team is None:
                 log.info(f"No team provided for {agent}, creating a random one.")
-                teams[agent] = self.team_factory.create_random_team()
+                teams[agent] = self.team_factory.create_random_team(size_of_team=team_size)
                 continue
 
             if len(team) % DataSize.PKMN != 0:
@@ -161,7 +161,7 @@ class BattleArena(ParallelEnv):
                 )
 
             while len(team) / DataSize.PKMN < DataSize.PARTY_SIZE:
-                team.extend([0, 0, 0, 0, 0, 0, 0, 0])  # Empty pkmn slot
+                team.extend([0, 0, 0, 0, 0, 0, 0, 0])
             if not self.team_factory.is_team_valid(np.array(team)):
                 raise ValueError('Invalid reset param : "team".')
 
@@ -172,7 +172,7 @@ class BattleArena(ParallelEnv):
     def reset(
         self,
         seed: int | None = None,
-        options: Dict[str, Any] | None = {"save_state": "boot_state", "teams": None},
+        options: Dict[str, Any] | None = {"save_state": "boot_state", "teams": None, "team_size": 6},
     ) -> Tuple[
         Dict[str, Dict[str, npt.NDArray[int]]],  # observations
         Dict[str, Any],  # infos
@@ -191,12 +191,20 @@ class BattleArena(ParallelEnv):
         Here it sets up the state dictionary which is used by step() and the observations dictionary which is used by step() and observe()
 
         args:
-            seed : to generate teams
-            options : Dictionnary : "save_state" : path to save state
+            seed: to generate teams
+            options: Dictionary with configuration options:
+                - "save_state": path to save state
+                - "teams": predefined teams to use
+                - "team_size": number of Pokémon in each team (1-6)
         """
         # TODO Implement seed args
 
         log.debug(f"Resetting env with options {options}")
+
+        team_size = options.get("team_size", 6)
+        
+        if not 1 <= team_size <= 6:
+            raise ValueError(f"Team size must be between 1 and 6, got {team_size}")
 
         # Reset managers
         self.agents = self.possible_agents
@@ -209,7 +217,7 @@ class BattleArena(ParallelEnv):
         self.load_save_state(options)
 
         # create new teams
-        teams = self.create_teams(options)
+        teams = self.create_teams(options, team_size)
         self.core.write_team_data(teams)
         self.core.advance_to_next_turn(count_step=False)
 

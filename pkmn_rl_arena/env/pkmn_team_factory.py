@@ -53,19 +53,19 @@ class PkmnTeamFactory:
 
         self.seed = seed
 
-    def create_random_team(self) -> List[int]:
+    def create_random_team(self, size_of_team : int = 6) -> List[int]:
         """
         Create a random team from the provided CSV files.
 
-        Note : All created pkmn will be lvl 10
+        Note : All created pkmn will be lvl 50
 
         Returns:
             List[Pkmn]: A flat list of pkmns representing the team in the format:
 
                     [id, level, move0, move1, move2, move3, ...]
         """
-        chosen_species = self.pkmns.sample(n=6)
-        LVL = 10
+        chosen_species = self.pkmns.sample(n=size_of_team)
+        LVL = 50
 
         team: List[int] = []
 
