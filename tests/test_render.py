@@ -5,7 +5,6 @@ from pkmn_rl_arena.env.turn_type import TurnType
 from pkmn_rl_arena.env.battle_arena import BattleArena, RenderMode
 
 import picologging as logging
-import numpy as np
 
 import random
 from time import sleep

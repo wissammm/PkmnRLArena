@@ -3,13 +3,12 @@ from pkmn_rl_arena import log
 from pkmn_rl_arena.env.battle_core import BattleCore
 from pkmn_rl_arena.env.battle_state import BattleState
 from pkmn_rl_arena.env.battle_arena import BattleArena
-from pkmn_rl_arena.env.pkmn_team_factory import DataSize
 from pkmn_rl_arena.data import pokemon_data
 from pkmn_rl_arena.env.turn_type import TurnType
 
+from pkmn_rl_arena.data.pkmn_params import GenParamsSize
 
 from pettingzoo.test import parallel_api_test
-import numpy as np
 import picologging as logging
 
 import copy
@@ -189,7 +188,7 @@ class TestResetOptions(unittest.TestCase):
             gba_read_team_df = pokemon_data.to_pandas_team_dump_data(gba_read_team_data)
 
             for i in range(6):
-                start = i * DataSize.PKMN
+                start = i * GenParamsSize.PKMN
                 self.assertEqual(
                     gba_read_team_df.iloc[i]["id"],
                     ground_truth_team_params[start],
