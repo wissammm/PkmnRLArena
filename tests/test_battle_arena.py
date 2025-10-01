@@ -68,6 +68,8 @@ class TestArena(unittest.TestCase):
             observations, rewards, terminations, truncations, infos = self.arena.step(
                 actions
             )
+            log.debug(f"Stepping into turn {i}.")
+
             states.append(copy.deepcopy(self.arena.core.state))
             self.assertEqual(
                 self.arena.core.state.step,
@@ -80,29 +82,22 @@ class TestArena(unittest.TestCase):
                 f"Invalid length of observation state : observation should be i + 1(initial observation) + 1(step completed in the current loop) = {i + 1}, got {len(self.arena.reward_manager.obs)}.",
             )
 
-            if not (
-                (
-                    previous_observations["player"]["observation"]
-                    == observations["player"]["observation"]
-                ).all()
-                and (
-                    previous_observations["enemy"]["observation"]
-                    == observations["enemy"]["observation"]
-                ).all()
-            ):
+            player_changed = not (previous_observations["player"]["observation"] == observations["player"]["observation"]).all()
+            enemy_changed = not (previous_observations["enemy"]["observation"] == observations["enemy"]["observation"]).all()
+
+            # Here i use OR and not AND bc when a mon faint/switch, the pp are updated after reading the observation
+            if i > 3 and not (player_changed or enemy_changed):
+
                 log.fatal(
                     f"No observation was updated for at step {self.arena.core.state.step}, at least one must be updated(if not both). For debugging : previous state : {states[-2]}, Current state : {states[-1]}."
                 )
-                for agent in self.arena.agents:
-                    log.fatal(
-                        f"\nCurrent observation for {agent}:\n {observations[agent]['observation']}\nPrevious observation :\n {previous_observations[agent]['observation']}"
-                    )
+
                 self.assertFalse(
                     True,
                     f"No observation was updated for at turn {i}, at least one must be updated(if not both). For debugging : previous state : {states[-2]}, Current state : {states[-1]}.",
                 )
 
-            previous_observations = observations
+            previous_observations = copy.deepcopy(observations)
 
     # def test_render(self):
     #     self.arena.reset(seed=42)
