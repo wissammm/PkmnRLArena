@@ -1,11 +1,12 @@
-from pkmn_rl_arena import log
 from pkmn_rl_arena.env.battle_state import BattleState
 from pkmn_rl_arena.env.observation import Observation, ObsIdx
-from pkmn_rl_arena.env.pkmn_team_factory import DataSize, PkmnTeamFactory
+from pkmn_rl_arena.env.pkmn_team_factory import PkmnTeamFactory
+
+from pkmn_rl_arena.data.pkmn_params import TYPES_ID,GenParamsSize
 
 import numpy as np
-from rich.console import Console, RenderHook, Group
-from rich.progress import track, Progress, ProgressBar
+from rich.console import Console, Group
+from rich.progress import ProgressBar
 from rich.table import Table
 from rich.panel import Panel
 
@@ -13,32 +14,8 @@ from rich.text import Text
 
 
 from typing import Dict
-from numpy import typing as npt
 
 from rich.live import Live
-
-TYPES_ID = {
-    255: "NONE",
-    0: "NORM",
-    1: "FIGHT",
-    2: "FLY",
-    3: "PSN",
-    4: "GRND",
-    5: "ROCK",
-    6: "BUG",
-    7: "GHOST",
-    8: "STEEL",
-    9: "MYSTERY",
-    10: "FIRE",
-    11: "WTR",
-    12: "GRASS",
-    13: "ELEK",
-    14: "PSY",
-    15: "ICE",
-    16: "DRAGON",
-    17: "DARK",
-    18: "NUMBER_OF_MON_TYPES",
-}
 
 
 class GameRendering:
@@ -76,7 +53,7 @@ class GameRendering:
             # table.add_column("Pokémon", justify="left", ratio=4, no_wrap=False)
             # table.add_column("Stats / Moves", justify="left", ratio=5, no_wrap=False)
 
-            for i, pkmn in enumerate(np.split(obs.agent(agent), DataSize.PARTY_SIZE)):
+            for i, pkmn in enumerate(np.split(obs.agent(agent), GenParamsSize.PARTY_SIZE)):
                 pkmn_id = pkmn[ObsIdx.RAW_DATA["species"]]
                 if pkmn_id == 0:
                     continue

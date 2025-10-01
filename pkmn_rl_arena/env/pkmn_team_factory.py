@@ -1,38 +1,16 @@
 from pkmn_rl_arena.paths import PATHS
-from .battle_core import BattleCore
 from pkmn_rl_arena import log
 
 import ast
-from dataclasses import dataclass
 from typing import List
 import random
+
+from pkmn_rl_arena.data.pkmn_params import Ranges,GenParamsSize
+
 
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
-
-
-@dataclass(frozen=True)
-class DataSize:
-    ID = 1
-    LEVEL = 1
-    MOVES = 4
-    HP_PERCENT = 1
-    ITEM = 1
-    PARTY_SIZE = 6
-    PKMN = ID + LEVEL + MOVES + HP_PERCENT + ITEM
-    TEAM = PARTY_SIZE * PKMN
-
-
-@dataclass(frozen=True)
-class Ranges:
-    ITEM_1 = [178, 225]
-    ITEM_2 = [132, 175]
-    ALL_ITEMS = list(range(ITEM_1[1], ITEM_1[0], -1)) + list(
-        range(ITEM_2[1], ITEM_2[0], -1)
-    )
-    PKMN_ID_BOUNDS = [0, 411]
-
 
 class PkmnTeamFactory:
     def __init__(
@@ -101,9 +79,9 @@ class PkmnTeamFactory:
 
     @staticmethod
     def is_valid_id(id: int):
-        if not Ranges.PKMN_ID_BOUNDS[0] <= id <= Ranges.PKMN_ID_BOUNDS[1]:
+        if not Ranges.SPECIES_ID[0] <= id <= Ranges.SPECIES_ID[1]:
             log.error(
-                f"Trying to create a pokemon with invalid id. Authorized range [{Ranges.PKMN_ID_BOUNDS[0]},{Ranges.PKMN_ID_BOUNDS[1]}], got {id}."
+                f"Trying to create a pokemon with invalid id. Authorized range [{Ranges.SPECIES_ID[0]},{Ranges.SPECIES_ID[1]}], got {id}."
             )
             return False
         return True
@@ -157,15 +135,15 @@ class PkmnTeamFactory:
         )
 
     def is_team_valid(self, team: npt.NDArray) -> bool:
-        if len(team) != DataSize.TEAM:
+        if len(team) != GenParamsSize.TEAM:
             raise ValueError(
                 "Wrong input length :\n"
-                f"\tA team can only be generated with an array of size {DataSize.TEAM}.\n"
+                f"\tA team can only be generated with an array of size {GenParamsSize.TEAM}.\n"
                 f"\tGot {len(team)} data points : {team}."
             )
 
         log.debug("Creating a pkmn team with following pkmn:")
-        team_pkmns = np.split(team, DataSize.PARTY_SIZE)
+        team_pkmns = np.split(team, GenParamsSize.PARTY_SIZE)
         for i, pkmn in enumerate(team_pkmns):
             if np.all(pkmn == 0):
                 log.debug(f"PKMN {i} : Empty slot")
