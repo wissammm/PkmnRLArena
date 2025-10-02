@@ -5,21 +5,31 @@ from pkmn_rl_arena.env.battle_arena import BattleArena
 import random
 
 @pytest.fixture
-def arena():
-    core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
-    env = BattleArena(core)
-    env.reset()
-    yield env
-    env.close()
+def core():
+    return BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
 
-@pytest.mark.parametrize("step", range(20))
-def test_env_step_benchmark_env_step(benchmark, arena, step):
-    def run_step():
-        actions = {
-            agent: random.choice(arena.action_manager.get_valid_action_ids(agent))
-            for agent in arena.core.get_required_agents()
-        }
-        arena.step(actions)
+@pytest.fixture
+def env(core):
+    arena = BattleArena(core)
+    arena.reset()
+    yield arena
+    arena.close()
+
+def test_gba_step(benchmark, core):
+    def run_gba_step():
+        id = core.run_to_next_stop()
+        if id == 4:
+            raise StopIteration("Reached id == 4, stopping benchmark.")
+        core.clear_stop_condition_id(id)
+    benchmark(run_gba_step)
+    print(f"Time for GBA step: {benchmark.stats['mean']:.8f} seconds")
     
-    benchmark(run_step)
-    print(f"Time for step {step + 1}: {benchmark.stats['mean']:.8f} seconds")
+def test_env_step(benchmark, env):
+    def run_env_step():
+        actions = {
+            agent: random.choice(env.action_manager.get_valid_action_ids(agent))
+            for agent in env.core.get_required_agents()
+        }
+        env.step(actions)
+    benchmark(run_env_step)
+    print(f"Time for env step: {benchmark.stats['mean']:.8f} seconds")
