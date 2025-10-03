@@ -46,7 +46,7 @@ class Observation:
         if agent not in self._o:
             raise ValueError(f"Invalid agent name, must be in {self._o.keys()}, got {agent}.")
         
-        raw_data = self._o[agent].copy()
+        raw_data = self._o[agent].copy().astype(float)
         
         pokemon_data = np.split(raw_data, DataSize.PARTY_SIZE)
         normalized_team = []
@@ -115,7 +115,33 @@ class Observation:
                 result[agent] = None
                 
         return result
+    def get_pp(self) -> Dict[str, List[int]]:
+        """
+        Return current PP values for all moves of the active Pokémon in each team
+        """
+        result = {"player": [], "enemy": []}
+        
+        for agent in self._o:
+            agent_data = self._o[agent]
+            pokemon_data = np.split(agent_data, 6)
+            
+            active_pkmn = None
+            for pkmn in pokemon_data:
+                if pkmn[ObsIdx.RAW_DATA["is_active"]] == 1:
+                    active_pkmn = pkmn
+                    break
+            
+            if active_pkmn is not None:
+                for i in range(ObsIdx.MAX_PKMN_MOVES):
+                    move_start = ObsIdx.RAW_DATA["moves_begin"] + (i * ObsIdx.RAW_DATA["move_slot_stride"])
+                    pp = active_pkmn[move_start + ObsIdx.RAW_DATA["pp_offset"]]
+                    result[agent].append(pp)
+            else:
+                result[agent] = [0] * ObsIdx.MAX_PKMN_MOVES  # No active Pokémon, return 0 PP for all moves
+                
+        return result
 
+    
     def hp(self) -> Dict[str, List[int]]:
         """
         Return current HP values for all Pokémon in each team

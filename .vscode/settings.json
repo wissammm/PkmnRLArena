@@ -65,7 +65,8 @@
         "utility": "c",
         "battle_moves.h": "c",
         "text.h": "c",
-        "battle_anim.h": "c"
+        "battle_anim.h": "c",
+        "map_types.h": "c"
     },
     "terminal.integrated.shell.linux": "/bin/bash",
     "files.watcherExclude": {
