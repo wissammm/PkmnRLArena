@@ -182,6 +182,19 @@ class BattleCore:
                 self.gba.write_u16(self.mem_addrs["stopHandleTurnEnd"], 0)
             case _:
                 raise ValueError(f"Unknown turntype : {turn_type}")
+    
+    def clear_stop_condition_id(self, id: int):
+        """Clear stop condition with id to continue execution"""
+        if id in self.stop_ids:
+            addr_name = self.stop_address_names[id]
+            self.gba.write_u16(self.mem_addrs[addr_name], 0)
+        else:
+            raise ValueError(f"Unknown stop id : {id}")
+    
+    def clear_all_stop_conditions(self):
+        """Clear all stop conditions to continue execution"""
+        for addr_name in self.stop_address_names:
+            self.gba.write_u16(self.mem_addrs[addr_name], 0)
 
     def write_team_data(self, teams_data: Dict[str, List[int]]):
         """Write team data for specified agent"""
