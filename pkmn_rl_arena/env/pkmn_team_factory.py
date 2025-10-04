@@ -64,6 +64,9 @@ class PkmnTeamFactory:
 
                     [id, level, move0, move1, move2, move3, ...]
         """
+        if not 1 <= size_of_team <= 6:
+            raise ValueError(f"Team size must be between 1 and 6, got {size_of_team}")
+        
         chosen_species = self.pkmns.sample(n=size_of_team)
         LVL = 50
 

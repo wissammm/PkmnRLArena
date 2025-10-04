@@ -269,7 +269,7 @@ class TestResetOptions(unittest.TestCase):
                 empty_slots = team_df[team_df["id"] == 0]
                 self.assertEqual(
                     len(empty_slots), 
-                    6 - team_size,
+                    DataSize.PARTY_SIZE - team_size,
                     f"Expected {6 - team_size} empty slots in {agent}'s team, got {len(empty_slots)}"
                 )
                     
@@ -278,7 +278,7 @@ class TestResetOptions(unittest.TestCase):
                 self.assertIsInstance(obs, np.ndarray)
                 self.assertEqual(
                     obs.shape[0], 
-                    6 * ObsIdx.NB_DATA_PKMN,
+                    DataSize.PARTY_SIZE * ObsIdx.NB_DATA_PKMN,
                     f"Observation shape should always be 6*NB_DATA_PKMN regardless of team size"
                 )
 
