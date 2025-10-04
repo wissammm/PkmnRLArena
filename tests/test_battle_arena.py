@@ -1,3 +1,4 @@
+from pkmn_rl_arena.env.observation import ObsIdx
 from pkmn_rl_arena.paths import PATHS
 from pkmn_rl_arena import log
 from pkmn_rl_arena.env.battle_core import BattleCore
@@ -220,8 +221,61 @@ class TestResetOptions(unittest.TestCase):
         with self.assertRaises(ValueError) as context_manager:
             self.arena.reset(options=options)
         self.assertEqual(
-            str(context_manager.exception), 'Invalid reset param : "team".'
-        )
+            str(context_manager.exception), 'Invalid reset param : "team".')
+    
+    def test_team_size(self):
+        """
+        Test that teams can be created with different sizes (1-6 Pokémon).
+        Verifies:
+        1. Team creation with different sizes
+        2. Correct number of active Pokémon in the team
+        3. Empty slots are properly filled
+        4. Only one Pokémon is active per team
+        """
+        
+        for team_size in range(1, 7):
+            options = {
+                "save_state": "boot_state", 
+                "teams": None,
+                "team_size": team_size
+            }
+            
+            observations, infos = self.arena.reset(options=options)
+            self.assertEqual(self.arena.core.state.turn, TurnType.GENERAL)
+            
+            for agent in self.arena.possible_agents:
+                team_data = self.arena.core.read_team_data(agent)
+                team_df = pokemon_data.to_pandas_team_dump_data(team_data)
+                
+                active_pokemon_count = len(team_df[team_df["isActive"] == 1])
+                self.assertEqual(
+                    active_pokemon_count, 
+                    1,
+                    f"Expected exactly 1 active Pokémon in {agent}'s team, got {active_pokemon_count}"
+                )
+                
+                non_empty_pokemon = team_df[team_df["id"] > 0]
+                self.assertEqual(
+                    len(non_empty_pokemon), 
+                    team_size,
+                    f"Expected {team_size} Pokémon in {agent}'s team, got {len(non_empty_pokemon)}"
+                )
+                
+                empty_slots = team_df[team_df["id"] == 0]
+                self.assertEqual(
+                    len(empty_slots), 
+                    DataSize.PARTY_SIZE - team_size,
+                    f"Expected {6 - team_size} empty slots in {agent}'s team, got {len(empty_slots)}"
+                )
+                    
+            for agent in self.arena.agents:
+                obs = observations[agent]["observation"]
+                self.assertIsInstance(obs, np.ndarray)
+                self.assertEqual(
+                    obs.shape[0], 
+                    DataSize.PARTY_SIZE * ObsIdx.NB_DATA_PKMN,
+                    f"Observation shape should always be 6*NB_DATA_PKMN regardless of team size"
+                )
 
 
 class TestFightUnfold(unittest.TestCase):
