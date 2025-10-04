@@ -88,6 +88,7 @@ class BattleArena(ParallelEnv):
 
         # render console
         self.game_renderer = GameRendering(self.team_factory, self.agents)
+        self.render_mode = render_mode
 
         if self.core.state.turn != TurnType.CREATE_TEAM:
             raise RuntimeError(
@@ -241,8 +242,9 @@ class BattleArena(ParallelEnv):
         self.reward = {a: 0 for a in self.agents}
 
         # create new rendering
-        self.game_renderer.stop()
-        self.game_renderer.start(observations, self.reward, self.core.state)
+        if self.render_mode != RenderMode.DISABLED:
+            self.game_renderer.stop()
+            self.game_renderer.start(observations, self.reward, self.core.state)
 
         return self.observations, self.infos
 
@@ -344,6 +346,8 @@ class BattleArena(ParallelEnv):
         """
         Render the current state of the battle using the rich library.
         """
+        if self.render_mode == RenderMode.DISABLED:
+            return
         self.game_renderer.refresh(observation, reward, self.core.state)
 
     def _get_observations(self):
