@@ -46,7 +46,7 @@ class ELOSystem:
 
     def get_rating(self, player):
         with self.lock:
-            return self.ratings.get(player, self.conf.initial_elo)
+            return self.ratings.get(player, list(self.ratings.values())[0])
     
     def get_all_ratings(self):
         with self.lock:

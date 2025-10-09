@@ -2,6 +2,7 @@ from collections import deque
 import threading
 import time
 import numpy as np
+import pkmn_rl_arena.logging as logging
 
 class StatsTracker:
     """Track and display training statistics with configurable history recording"""
@@ -106,7 +107,7 @@ class StatsTracker:
 
     @staticmethod
     def print_stats(stats, epsilon=None, elo_system=None, buffer_size=None):
-        """Print formatted training statistics
+        """Print formatted training statistics using logging
         
         Args:
             stats: Dictionary of statistics from StatsTracker.get_stats()
@@ -117,32 +118,33 @@ class StatsTracker:
         if stats is None:
             return
         
-        print("\n" + "="*90)
-        print(f"{'TRAINING STATISTICS':^90}")
-        print("="*90)
+        log = logging.getLogger("pkmn_rl.training")
         
-        print(f"Episodes: {stats['episodes']:>8}  |  Total Steps: {stats['steps']:>10}")
+        log.info("\n" + "="*90)
+        log.info(f"{'TRAINING STATISTICS':^90}")
+        log.info("="*90)
+        
+        log.info(f"Episodes: {stats['episodes']:>8}  |  Total Steps: {stats['steps']:>10}")
         
         if epsilon is not None:
-            print(f"Epsilon:  {epsilon:>8.4f}", end="")
+            epsilon_str = f"Epsilon:  {epsilon:>8.4f}"
             if buffer_size is not None:
-                print(f"  |  Buffer Size: {buffer_size:>10}")
-            else:
-                print()
+                epsilon_str += f"  |  Buffer Size: {buffer_size:>10}"
+            log.info(epsilon_str)
         
-        print("-"*90)
-        print(f"Avg Reward:      {stats['avg_reward']:>8.2f}  |  Win Rate:     {stats['win_rate']:>6.1%}")
-        print(f"Avg Length:      {stats['avg_length']:>8.1f}  |  Avg Loss:     {stats['avg_loss']:>8.4f}")
-        print(f"Episodes/sec:    {stats['eps_per_sec']:>8.2f}  |  Steps/sec:    {stats['steps_per_sec']:>8.1f}")
+        log.info("-"*90)
+        log.info(f"Avg Reward:      {stats['avg_reward']:>8.2f}  |  Win Rate:     {stats['win_rate']:>6.1%}")
+        log.info(f"Avg Length:      {stats['avg_length']:>8.1f}  |  Avg Loss:     {stats['avg_loss']:>8.4f}")
+        log.info(f"Episodes/sec:    {stats['eps_per_sec']:>8.2f}  |  Steps/sec:    {stats['steps_per_sec']:>8.1f}")
         
         if elo_system is not None:
             elos = elo_system.get_all_ratings()
-            print("-"*90)
-            print(f"ELO Ratings: Agent={elos.get('agent', 0):.0f} | Random={elos.get('random', 0):.0f} | Baseline={elos.get('baseline', 0):.0f}")
+            log.info("-"*90)
+            log.info(f"ELO Ratings: Agent={elos.get('agent', 0):.0f} | Random={elos.get('random', 0):.0f} | Baseline={elos.get('baseline', 0):.0f}")
         
-        print("-"*90)
-        print(f"Training Time: {stats['elapsed']:.1f}s ({stats['elapsed']/60:.1f}m)")
-        print("="*90)
+        log.info("-"*90)
+        log.info(f"Training Time: {stats['elapsed']:.1f}s ({stats['elapsed']/60:.1f}m)")
+        log.info("="*90)
 
 class LogObsRewards:
     def add_observation():

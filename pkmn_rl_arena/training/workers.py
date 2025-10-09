@@ -110,6 +110,9 @@ class Worker:
             epsilon = self.get_epsilon(self.config.epsilon_end)
             self.run_episode(epsilon)
             self.episode_count += 1
-
-        print(f"[Worker {self.id}] stopped after {self.episode_count} episodes")
+    
+    def play_against():
+        """Play a single episode against a model for evaluation"""
+        pass 
+        
     
