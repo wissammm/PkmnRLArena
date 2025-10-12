@@ -96,6 +96,68 @@ class Observation:
             normalized_team.append(normalized_pkmn)
 
         return np.concatenate(normalized_team)
+    
+    def get_reduced_agent_data(self, agent: str) -> AgentObs:
+        """
+        Return a reduced version of the observation array for an agent.
+        - Removes useless identifiers (species, move_id, personality, etc.)
+        - Keeps only meaningful numerical + categorical features.
+
+        Returns:
+            np.ndarray: Flattened vector of selected features for the entire team.
+        """
+        if agent not in self._o:
+            raise ValueError(f"Invalid agent name, must be in {self._o.keys()}, got {agent}.")
+        
+        raw_data = self._o[agent]
+        pokemon_data = np.split(raw_data, DataSize.PARTY_SIZE)
+        reduced_team = []
+
+        for pkmn in pokemon_data:
+            reduced = []
+
+            reduced.append(pkmn[ObsIdx.RAW_DATA["is_active"]]) 
+            reduced.extend(pkmn[ObsIdx.RAW_DATA["stats_begin"]:ObsIdx.RAW_DATA["stats_end"]])
+
+            #Embedding for that 
+            reduced.append(pkmn[ObsIdx.RAW_DATA["ability"]])
+            reduced.append(pkmn[ObsIdx.RAW_DATA["type_1"]])
+            reduced.append(pkmn[ObsIdx.RAW_DATA["type_2"]])
+
+
+            reduced.append(pkmn[ObsIdx.RAW_DATA["HP"]])
+            reduced.append(pkmn[ObsIdx.RAW_DATA["max_HP"]])
+            reduced.append(pkmn[ObsIdx.RAW_DATA["level"]])
+            reduced.append(pkmn[ObsIdx.RAW_DATA["friendship"]])
+
+            # Embedding for that 
+            reduced.append(pkmn[ObsIdx.RAW_DATA["held_item"]])
+            reduced.append(pkmn[ObsIdx.RAW_DATA["status"]])
+
+            for i in range(ObsIdx.MAX_PKMN_MOVES):
+                move_start = ObsIdx.RAW_DATA["moves_begin"] + (i * ObsIdx.RAW_DATA["move_slot_stride"])
+                move = []
+
+                move.append(pkmn[move_start + ObsIdx.RAW_DATA["pp_offset"]])
+                move.append(pkmn[move_start + ObsIdx.RAW_DATA["power_offset"]])
+                move.append(pkmn[move_start + ObsIdx.RAW_DATA["accuracy_offset"]])
+                move.append(pkmn[move_start + ObsIdx.RAW_DATA["priority_offset"]])
+                move.append(pkmn[move_start + ObsIdx.RAW_DATA["secondaryEffectChance_offset"]])
+
+                # Embedding for that 
+                move.append(pkmn[move_start + ObsIdx.RAW_DATA["effect_offset"]])
+                move.append(pkmn[move_start + ObsIdx.RAW_DATA["type_offset"]])
+
+                # Usefull ? 
+                move.append(pkmn[move_start + ObsIdx.RAW_DATA["target_offset"]])
+                move.append(pkmn[move_start + ObsIdx.RAW_DATA["flags_offset"]])
+
+                reduced.extend(move)
+
+            reduced_team.append(np.array(reduced, dtype=float))
+
+        return np.concatenate(reduced_team)
+
 
     def active_pkmn(self) -> Dict[str, int]:
         """
