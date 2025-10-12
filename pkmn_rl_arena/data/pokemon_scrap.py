@@ -75,10 +75,3 @@ def parse_moves_file(path):
             data.append(current)
     df = pd.DataFrame(data)
     return df
-
-# main make csv from /home/wboussella/Documents/rl_new_pokemon_ai/rl_new_pokemon_ai/data/data_scrap_from_mgba
-if __name__ == "__main__":
-    base_path = "/home/wboussella/Documents/rl_new_pokemon_ai/rl_new_pokemon_ai/data"
-    file_path = os.path.join(base_path, "data_scrap_from_mgba")
-    pokemon_df = parse_pokemon_scrap(file_path)
-    pokemon_df.to_csv(os.path.join(base_path, "pokemon_data.csv"), index=False)
