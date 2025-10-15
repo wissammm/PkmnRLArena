@@ -3,19 +3,13 @@ from pkmn_rl_arena import log
 from pkmn_rl_arena.env.battle_core import BattleCore
 from pkmn_rl_arena.env.turn_type import TurnType
 from pkmn_rl_arena.env.battle_arena import BattleArena, RenderMode
+from pkmn_rl_arena.test_utils import init_rng
 
 import picologging as logging
 
 import random
 from time import sleep
 import unittest
-
-def init_rng(seed=None):
-    """Initialize the global RNG and remember the seed."""
-    if seed is None:
-        seed = random.randrange(2**32)   # pick a random 32‑bit seed
-    random.seed(seed)
-    return seed
 
 class TestRendering(unittest.TestCase):
     def setUp(self):

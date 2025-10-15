@@ -18,4 +18,10 @@ def advance_turn(core: BattleCore, action_manager: ActionManager):
     core.advance_to_next_turn()
     return
 
+def init_rng(seed=None):
+    """Initialize the global RNG and remember the seed."""
+    if seed is None:
+        seed = random.randrange(2**32)   # pick a random 32‑bit seed
+    random.seed(seed)
+    return seed
 

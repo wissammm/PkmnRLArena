@@ -8,6 +8,7 @@ from pkmn_rl_arena.data import pokemon_data
 from pkmn_rl_arena.env.turn_type import TurnType
 
 from pkmn_rl_arena.data.pkmn_params import GenParamsSize
+from pkmn_rl_arena.test_utils import init_rng
 
 from pettingzoo.test import parallel_api_test
 import picologging as logging
@@ -21,6 +22,8 @@ import numpy as np
 class TestArena(unittest.TestCase):
     def setUp(self):
         log.setLevel(logging.DEBUG)
+        seed_used = init_rng()
+        log.debug(f"Current random seed : {seed_used}")
         core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
         self.arena = BattleArena(core)
 
