@@ -36,6 +36,10 @@ def parse_pokemon_scrap(path):
             current['type0'] = int(line.split(":", 1)[1].strip())
         elif line.startswith("type1:"):
             current['type1'] = int(line.split(":", 1)[1].strip())
+        elif line.startswith("ability0:"):
+            current['ability0'] = int(line.split(":", 1)[1].strip())
+        elif line.startswith("ability1:"):
+            current['ability1'] = int(line.split(":", 1)[1].strip())
         elif re.search(r"move\d+:\s*(\d+)", line):
             m = re.search(r"move\d+:\s*(\d+)", line)
             move_id = int(m.group(1))

@@ -9,6 +9,8 @@ baseSpAttack: 0
 baseSpDefense: 0
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -43,6 +45,8 @@ baseSpAttack: 65
 baseSpDefense: 65
 type0: 12
 type1: 3
+ability0: 65
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -101,6 +105,8 @@ baseSpAttack: 80
 baseSpDefense: 80
 type0: 12
 type1: 3
+ability0: 65
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -159,6 +165,8 @@ baseSpAttack: 100
 baseSpDefense: 100
 type0: 12
 type1: 3
+ability0: 65
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -217,6 +225,8 @@ baseSpAttack: 60
 baseSpDefense: 50
 type0: 10
 type1: 10
+ability0: 66
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -289,6 +299,8 @@ baseSpAttack: 80
 baseSpDefense: 65
 type0: 10
 type1: 10
+ability0: 66
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -361,6 +373,8 @@ baseSpAttack: 109
 baseSpDefense: 85
 type0: 10
 type1: 2
+ability0: 66
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -435,6 +449,8 @@ baseSpAttack: 50
 baseSpDefense: 64
 type0: 11
 type1: 11
+ability0: 67
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -505,6 +521,8 @@ baseSpAttack: 65
 baseSpDefense: 80
 type0: 11
 type1: 11
+ability0: 67
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -575,6 +593,8 @@ baseSpAttack: 85
 baseSpDefense: 105
 type0: 11
 type1: 11
+ability0: 67
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -645,6 +665,8 @@ baseSpAttack: 20
 baseSpDefense: 20
 type0: 6
 type1: 6
+ability0: 19
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -661,6 +683,8 @@ baseSpAttack: 25
 baseSpDefense: 25
 type0: 6
 type1: 6
+ability0: 61
+ability1: 0
 
 [INFO] GBA Debug: move0: 106
 
@@ -675,6 +699,8 @@ baseSpAttack: 80
 baseSpDefense: 80
 type0: 6
 type1: 2
+ability0: 14
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -725,6 +751,8 @@ baseSpAttack: 20
 baseSpDefense: 20
 type0: 6
 type1: 3
+ability0: 19
+ability1: 0
 
 [INFO] GBA Debug: move0: 40
 
@@ -741,6 +769,8 @@ baseSpAttack: 25
 baseSpDefense: 25
 type0: 6
 type1: 3
+ability0: 61
+ability1: 0
 
 [INFO] GBA Debug: move0: 106
 
@@ -755,6 +785,8 @@ baseSpAttack: 45
 baseSpDefense: 80
 type0: 6
 type1: 3
+ability0: 68
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -803,6 +835,8 @@ baseSpAttack: 35
 baseSpDefense: 35
 type0: 0
 type1: 2
+ability0: 51
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -851,6 +885,8 @@ baseSpAttack: 50
 baseSpDefense: 50
 type0: 0
 type1: 2
+ability0: 51
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -899,6 +935,8 @@ baseSpAttack: 70
 baseSpDefense: 70
 type0: 0
 type1: 2
+ability0: 51
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -947,6 +985,8 @@ baseSpAttack: 25
 baseSpDefense: 35
 type0: 0
 type1: 0
+ability0: 50
+ability1: 62
 
 [INFO] GBA Debug: move0: 34
 
@@ -1003,6 +1043,8 @@ baseSpAttack: 50
 baseSpDefense: 70
 type0: 0
 type1: 0
+ability0: 50
+ability1: 62
 
 [INFO] GBA Debug: move0: 34
 
@@ -1059,6 +1101,8 @@ baseSpAttack: 31
 baseSpDefense: 31
 type0: 0
 type1: 2
+ability0: 51
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -1107,6 +1151,8 @@ baseSpAttack: 61
 baseSpDefense: 61
 type0: 0
 type1: 2
+ability0: 51
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -1153,6 +1199,8 @@ baseSpAttack: 40
 baseSpDefense: 54
 type0: 3
 type1: 3
+ability0: 22
+ability1: 61
 
 [INFO] GBA Debug: move0: 34
 
@@ -1205,6 +1253,8 @@ baseSpAttack: 65
 baseSpDefense: 79
 type0: 3
 type1: 3
+ability0: 22
+ability1: 61
 
 [INFO] GBA Debug: move0: 34
 
@@ -1257,6 +1307,8 @@ baseSpAttack: 50
 baseSpDefense: 40
 type0: 13
 type1: 13
+ability0: 9
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -1327,6 +1379,8 @@ baseSpAttack: 90
 baseSpDefense: 80
 type0: 13
 type1: 13
+ability0: 9
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -1385,6 +1439,8 @@ baseSpAttack: 20
 baseSpDefense: 30
 type0: 4
 type1: 4
+ability0: 8
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -1447,6 +1503,8 @@ baseSpAttack: 45
 baseSpDefense: 55
 type0: 4
 type1: 4
+ability0: 8
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -1509,6 +1567,8 @@ baseSpAttack: 40
 baseSpDefense: 40
 type0: 3
 type1: 3
+ability0: 38
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -1563,6 +1623,8 @@ baseSpAttack: 55
 baseSpDefense: 55
 type0: 3
 type1: 3
+ability0: 38
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -1617,6 +1679,8 @@ baseSpAttack: 75
 baseSpDefense: 85
 type0: 3
 type1: 4
+ability0: 38
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -1679,6 +1743,8 @@ baseSpAttack: 40
 baseSpDefense: 40
 type0: 3
 type1: 3
+ability0: 38
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -1733,6 +1799,8 @@ baseSpAttack: 55
 baseSpDefense: 55
 type0: 3
 type1: 3
+ability0: 38
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -1787,6 +1855,8 @@ baseSpAttack: 85
 baseSpDefense: 75
 type0: 3
 type1: 4
+ability0: 38
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -1851,6 +1921,8 @@ baseSpAttack: 60
 baseSpDefense: 65
 type0: 0
 type1: 0
+ability0: 56
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -1933,6 +2005,8 @@ baseSpAttack: 85
 baseSpDefense: 90
 type0: 0
 type1: 0
+ability0: 56
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -1999,6 +2073,8 @@ baseSpAttack: 50
 baseSpDefense: 65
 type0: 10
 type1: 10
+ability0: 18
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -2051,6 +2127,8 @@ baseSpAttack: 81
 baseSpDefense: 100
 type0: 10
 type1: 10
+ability0: 18
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -2091,6 +2169,8 @@ baseSpAttack: 45
 baseSpDefense: 25
 type0: 0
 type1: 0
+ability0: 56
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -2159,6 +2239,8 @@ baseSpAttack: 75
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 56
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -2221,6 +2303,8 @@ baseSpAttack: 30
 baseSpDefense: 40
 type0: 3
 type1: 2
+ability0: 39
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -2269,6 +2353,8 @@ baseSpAttack: 65
 baseSpDefense: 75
 type0: 3
 type1: 2
+ability0: 39
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -2319,6 +2405,8 @@ baseSpAttack: 75
 baseSpDefense: 65
 type0: 12
 type1: 3
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -2363,6 +2451,8 @@ baseSpAttack: 85
 baseSpDefense: 75
 type0: 12
 type1: 3
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -2407,6 +2497,8 @@ baseSpAttack: 100
 baseSpDefense: 90
 type0: 12
 type1: 3
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -2447,6 +2539,8 @@ baseSpAttack: 45
 baseSpDefense: 55
 type0: 6
 type1: 12
+ability0: 27
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -2499,6 +2593,8 @@ baseSpAttack: 60
 baseSpDefense: 80
 type0: 6
 type1: 12
+ability0: 27
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -2551,6 +2647,8 @@ baseSpAttack: 40
 baseSpDefense: 55
 type0: 6
 type1: 3
+ability0: 14
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -2601,6 +2699,8 @@ baseSpAttack: 90
 baseSpDefense: 75
 type0: 6
 type1: 3
+ability0: 19
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -2655,6 +2755,8 @@ baseSpAttack: 35
 baseSpDefense: 45
 type0: 4
 type1: 4
+ability0: 8
+ability1: 71
 
 [INFO] GBA Debug: move0: 34
 
@@ -2703,6 +2805,8 @@ baseSpAttack: 50
 baseSpDefense: 70
 type0: 4
 type1: 4
+ability0: 8
+ability1: 71
 
 [INFO] GBA Debug: move0: 34
 
@@ -2755,6 +2859,8 @@ baseSpAttack: 40
 baseSpDefense: 40
 type0: 0
 type1: 0
+ability0: 53
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -2813,6 +2919,8 @@ baseSpAttack: 65
 baseSpDefense: 65
 type0: 0
 type1: 0
+ability0: 7
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -2871,6 +2979,8 @@ baseSpAttack: 65
 baseSpDefense: 50
 type0: 11
 type1: 11
+ability0: 6
+ability1: 13
 
 [INFO] GBA Debug: move0: 5
 
@@ -2935,6 +3045,8 @@ baseSpAttack: 95
 baseSpDefense: 80
 type0: 11
 type1: 11
+ability0: 6
+ability1: 13
 
 [INFO] GBA Debug: move0: 5
 
@@ -3001,6 +3113,8 @@ baseSpAttack: 35
 baseSpDefense: 45
 type0: 1
 type1: 1
+ability0: 72
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -3075,6 +3189,8 @@ baseSpAttack: 60
 baseSpDefense: 70
 type0: 1
 type1: 1
+ability0: 72
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -3151,6 +3267,8 @@ baseSpAttack: 70
 baseSpDefense: 50
 type0: 10
 type1: 10
+ability0: 22
+ability1: 18
 
 [INFO] GBA Debug: move0: 34
 
@@ -3201,6 +3319,8 @@ baseSpAttack: 100
 baseSpDefense: 80
 type0: 10
 type1: 10
+ability0: 22
+ability1: 18
 
 [INFO] GBA Debug: move0: 34
 
@@ -3241,6 +3361,8 @@ baseSpAttack: 40
 baseSpDefense: 40
 type0: 11
 type1: 11
+ability0: 11
+ability1: 6
 
 [INFO] GBA Debug: move0: 34
 
@@ -3287,6 +3409,8 @@ baseSpAttack: 50
 baseSpDefense: 50
 type0: 11
 type1: 11
+ability0: 11
+ability1: 6
 
 [INFO] GBA Debug: move0: 5
 
@@ -3347,6 +3471,8 @@ baseSpAttack: 70
 baseSpDefense: 90
 type0: 11
 type1: 1
+ability0: 11
+ability1: 6
 
 [INFO] GBA Debug: move0: 5
 
@@ -3405,6 +3531,8 @@ baseSpAttack: 105
 baseSpDefense: 55
 type0: 14
 type1: 14
+ability0: 28
+ability1: 39
 
 [INFO] GBA Debug: move0: 5
 
@@ -3459,6 +3587,8 @@ baseSpAttack: 120
 baseSpDefense: 70
 type0: 14
 type1: 14
+ability0: 28
+ability1: 39
 
 [INFO] GBA Debug: move0: 5
 
@@ -3533,6 +3663,8 @@ baseSpAttack: 135
 baseSpDefense: 85
 type0: 14
 type1: 14
+ability0: 28
+ability1: 39
 
 [INFO] GBA Debug: move0: 5
 
@@ -3607,6 +3739,8 @@ baseSpAttack: 35
 baseSpDefense: 35
 type0: 1
 type1: 1
+ability0: 62
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -3677,6 +3811,8 @@ baseSpAttack: 50
 baseSpDefense: 60
 type0: 1
 type1: 1
+ability0: 62
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -3747,6 +3883,8 @@ baseSpAttack: 65
 baseSpDefense: 85
 type0: 1
 type1: 1
+ability0: 62
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -3817,6 +3955,8 @@ baseSpAttack: 70
 baseSpDefense: 30
 type0: 12
 type1: 3
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -3865,6 +4005,8 @@ baseSpAttack: 85
 baseSpDefense: 45
 type0: 12
 type1: 3
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -3913,6 +4055,8 @@ baseSpAttack: 100
 baseSpDefense: 60
 type0: 12
 type1: 3
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -3951,6 +4095,8 @@ baseSpAttack: 50
 baseSpDefense: 100
 type0: 11
 type1: 3
+ability0: 29
+ability1: 64
 
 [INFO] GBA Debug: move0: 14
 
@@ -3999,6 +4145,8 @@ baseSpAttack: 80
 baseSpDefense: 120
 type0: 11
 type1: 3
+ability0: 29
+ability1: 64
 
 [INFO] GBA Debug: move0: 14
 
@@ -4047,6 +4195,8 @@ baseSpAttack: 30
 baseSpDefense: 30
 type0: 5
 type1: 4
+ability0: 69
+ability1: 5
 
 [INFO] GBA Debug: move0: 5
 
@@ -4111,6 +4261,8 @@ baseSpAttack: 45
 baseSpDefense: 45
 type0: 5
 type1: 4
+ability0: 69
+ability1: 5
 
 [INFO] GBA Debug: move0: 5
 
@@ -4175,6 +4327,8 @@ baseSpAttack: 55
 baseSpDefense: 65
 type0: 5
 type1: 4
+ability0: 69
+ability1: 5
 
 [INFO] GBA Debug: move0: 5
 
@@ -4243,6 +4397,8 @@ baseSpAttack: 65
 baseSpDefense: 65
 type0: 10
 type1: 10
+ability0: 50
+ability1: 18
 
 [INFO] GBA Debug: move0: 34
 
@@ -4293,6 +4449,8 @@ baseSpAttack: 80
 baseSpDefense: 80
 type0: 10
 type1: 10
+ability0: 50
+ability1: 18
 
 [INFO] GBA Debug: move0: 34
 
@@ -4345,6 +4503,8 @@ baseSpAttack: 40
 baseSpDefense: 40
 type0: 11
 type1: 14
+ability0: 12
+ability1: 20
 
 [INFO] GBA Debug: move0: 34
 
@@ -4405,6 +4565,8 @@ baseSpAttack: 100
 baseSpDefense: 80
 type0: 11
 type1: 14
+ability0: 12
+ability1: 20
 
 [INFO] GBA Debug: move0: 5
 
@@ -4481,6 +4643,8 @@ baseSpAttack: 95
 baseSpDefense: 55
 type0: 13
 type1: 8
+ability0: 42
+ability1: 5
 
 [INFO] GBA Debug: move0: 38
 
@@ -4531,6 +4695,8 @@ baseSpAttack: 120
 baseSpDefense: 70
 type0: 13
 type1: 8
+ability0: 42
+ability1: 5
 
 [INFO] GBA Debug: move0: 38
 
@@ -4583,6 +4749,8 @@ baseSpAttack: 58
 baseSpDefense: 62
 type0: 0
 type1: 2
+ability0: 51
+ability1: 39
 
 [INFO] GBA Debug: move0: 14
 
@@ -4637,6 +4805,8 @@ baseSpAttack: 35
 baseSpDefense: 35
 type0: 0
 type1: 2
+ability0: 50
+ability1: 48
 
 [INFO] GBA Debug: move0: 34
 
@@ -4687,6 +4857,8 @@ baseSpAttack: 60
 baseSpDefense: 60
 type0: 0
 type1: 2
+ability0: 50
+ability1: 48
 
 [INFO] GBA Debug: move0: 34
 
@@ -4737,6 +4909,8 @@ baseSpAttack: 45
 baseSpDefense: 70
 type0: 11
 type1: 11
+ability0: 47
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -4781,6 +4955,8 @@ baseSpAttack: 70
 baseSpDefense: 95
 type0: 11
 type1: 15
+ability0: 47
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -4827,6 +5003,8 @@ baseSpAttack: 40
 baseSpDefense: 50
 type0: 3
 type1: 3
+ability0: 1
+ability1: 60
 
 [INFO] GBA Debug: move0: 34
 
@@ -4885,6 +5063,8 @@ baseSpAttack: 65
 baseSpDefense: 100
 type0: 3
 type1: 3
+ability0: 1
+ability1: 60
 
 [INFO] GBA Debug: move0: 34
 
@@ -4943,6 +5123,8 @@ baseSpAttack: 45
 baseSpDefense: 25
 type0: 11
 type1: 11
+ability0: 75
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -4991,6 +5173,8 @@ baseSpAttack: 85
 baseSpDefense: 45
 type0: 11
 type1: 15
+ability0: 75
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -5035,6 +5219,8 @@ baseSpAttack: 100
 baseSpDefense: 35
 type0: 7
 type1: 3
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 102
 
@@ -5081,6 +5267,8 @@ baseSpAttack: 115
 baseSpDefense: 55
 type0: 7
 type1: 3
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 102
 
@@ -5129,6 +5317,8 @@ baseSpAttack: 130
 baseSpDefense: 75
 type0: 7
 type1: 3
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -5199,6 +5389,8 @@ baseSpAttack: 30
 baseSpDefense: 45
 type0: 5
 type1: 4
+ability0: 69
+ability1: 5
 
 [INFO] GBA Debug: move0: 34
 
@@ -5255,6 +5447,8 @@ baseSpAttack: 43
 baseSpDefense: 90
 type0: 14
 type1: 14
+ability0: 15
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -5325,6 +5519,8 @@ baseSpAttack: 73
 baseSpDefense: 115
 type0: 14
 type1: 14
+ability0: 15
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -5395,6 +5591,8 @@ baseSpAttack: 25
 baseSpDefense: 25
 type0: 11
 type1: 11
+ability0: 52
+ability1: 75
 
 [INFO] GBA Debug: move0: 14
 
@@ -5449,6 +5647,8 @@ baseSpAttack: 50
 baseSpDefense: 50
 type0: 11
 type1: 11
+ability0: 52
+ability1: 75
 
 [INFO] GBA Debug: move0: 14
 
@@ -5503,6 +5703,8 @@ baseSpAttack: 55
 baseSpDefense: 55
 type0: 13
 type1: 13
+ability0: 43
+ability1: 9
 
 [INFO] GBA Debug: move0: 102
 
@@ -5551,6 +5753,8 @@ baseSpAttack: 80
 baseSpDefense: 80
 type0: 13
 type1: 13
+ability0: 43
+ability1: 9
 
 [INFO] GBA Debug: move0: 102
 
@@ -5599,6 +5803,8 @@ baseSpAttack: 60
 baseSpDefense: 45
 type0: 12
 type1: 14
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -5653,6 +5859,8 @@ baseSpAttack: 125
 baseSpDefense: 65
 type0: 12
 type1: 14
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -5697,6 +5905,8 @@ baseSpAttack: 40
 baseSpDefense: 50
 type0: 4
 type1: 4
+ability0: 69
+ability1: 31
 
 [INFO] GBA Debug: move0: 5
 
@@ -5769,6 +5979,8 @@ baseSpAttack: 50
 baseSpDefense: 80
 type0: 4
 type1: 4
+ability0: 69
+ability1: 31
 
 [INFO] GBA Debug: move0: 5
 
@@ -5841,6 +6053,8 @@ baseSpAttack: 35
 baseSpDefense: 110
 type0: 1
 type1: 1
+ability0: 7
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -5909,6 +6123,8 @@ baseSpAttack: 35
 baseSpDefense: 110
 type0: 1
 type1: 1
+ability0: 51
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -5975,6 +6191,8 @@ baseSpAttack: 60
 baseSpDefense: 75
 type0: 0
 type1: 0
+ability0: 20
+ability1: 12
 
 [INFO] GBA Debug: move0: 5
 
@@ -6053,6 +6271,8 @@ baseSpAttack: 60
 baseSpDefense: 45
 type0: 3
 type1: 3
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 102
 
@@ -6099,6 +6319,8 @@ baseSpAttack: 85
 baseSpDefense: 70
 type0: 3
 type1: 3
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 102
 
@@ -6145,6 +6367,8 @@ baseSpAttack: 30
 baseSpDefense: 30
 type0: 4
 type1: 5
+ability0: 31
+ability1: 69
 
 [INFO] GBA Debug: move0: 14
 
@@ -6205,6 +6429,8 @@ baseSpAttack: 45
 baseSpDefense: 45
 type0: 4
 type1: 5
+ability0: 31
+ability1: 69
 
 [INFO] GBA Debug: move0: 5
 
@@ -6279,6 +6505,8 @@ baseSpAttack: 35
 baseSpDefense: 105
 type0: 0
 type1: 0
+ability0: 30
+ability1: 32
 
 [INFO] GBA Debug: move0: 5
 
@@ -6353,6 +6581,8 @@ baseSpAttack: 100
 baseSpDefense: 40
 type0: 12
 type1: 12
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -6409,6 +6639,8 @@ baseSpAttack: 40
 baseSpDefense: 80
 type0: 0
 type1: 0
+ability0: 48
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -6477,6 +6709,8 @@ baseSpAttack: 70
 baseSpDefense: 25
 type0: 11
 type1: 11
+ability0: 33
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -6523,6 +6757,8 @@ baseSpAttack: 95
 baseSpDefense: 45
 type0: 11
 type1: 11
+ability0: 38
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -6569,6 +6805,8 @@ baseSpAttack: 35
 baseSpDefense: 50
 type0: 11
 type1: 11
+ability0: 33
+ability1: 41
 
 [INFO] GBA Debug: move0: 38
 
@@ -6619,6 +6857,8 @@ baseSpAttack: 65
 baseSpDefense: 80
 type0: 11
 type1: 11
+ability0: 33
+ability1: 41
 
 [INFO] GBA Debug: move0: 38
 
@@ -6669,6 +6909,8 @@ baseSpAttack: 70
 baseSpDefense: 55
 type0: 11
 type1: 11
+ability0: 35
+ability1: 30
 
 [INFO] GBA Debug: move0: 38
 
@@ -6725,6 +6967,8 @@ baseSpAttack: 100
 baseSpDefense: 85
 type0: 11
 type1: 14
+ability0: 35
+ability1: 30
 
 [INFO] GBA Debug: move0: 38
 
@@ -6769,6 +7013,8 @@ baseSpAttack: 100
 baseSpDefense: 120
 type0: 14
 type1: 14
+ability0: 43
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -6849,6 +7095,8 @@ baseSpAttack: 55
 baseSpDefense: 80
 type0: 6
 type1: 2
+ability0: 68
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -6901,6 +7149,8 @@ baseSpAttack: 115
 baseSpDefense: 95
 type0: 15
 type1: 14
+ability0: 12
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -6969,6 +7219,8 @@ baseSpAttack: 95
 baseSpDefense: 85
 type0: 13
 type1: 13
+ability0: 9
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -7031,6 +7283,8 @@ baseSpAttack: 100
 baseSpDefense: 85
 type0: 10
 type1: 10
+ability0: 49
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -7091,6 +7345,8 @@ baseSpAttack: 55
 baseSpDefense: 70
 type0: 6
 type1: 6
+ability0: 52
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -7143,6 +7399,8 @@ baseSpAttack: 40
 baseSpDefense: 70
 type0: 0
 type1: 0
+ability0: 22
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -7191,6 +7449,8 @@ baseSpAttack: 15
 baseSpDefense: 20
 type0: 11
 type1: 11
+ability0: 33
+ability1: 0
 
 [INFO] GBA Debug: move0: 150
 
@@ -7209,6 +7469,8 @@ baseSpAttack: 60
 baseSpDefense: 100
 type0: 11
 type1: 2
+ability0: 22
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -7259,6 +7521,8 @@ baseSpAttack: 85
 baseSpDefense: 95
 type0: 11
 type1: 15
+ability0: 11
+ability1: 75
 
 [INFO] GBA Debug: move0: 34
 
@@ -7313,6 +7577,8 @@ baseSpAttack: 48
 baseSpDefense: 48
 type0: 0
 type1: 0
+ability0: 7
+ability1: 0
 
 [INFO] GBA Debug: move0: 144
 
@@ -7327,6 +7593,8 @@ baseSpAttack: 45
 baseSpDefense: 65
 type0: 0
 type1: 0
+ability0: 50
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -7377,6 +7645,8 @@ baseSpAttack: 110
 baseSpDefense: 95
 type0: 11
 type1: 11
+ability0: 11
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -7433,6 +7703,8 @@ baseSpAttack: 110
 baseSpDefense: 95
 type0: 13
 type1: 13
+ability0: 10
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -7487,6 +7759,8 @@ baseSpAttack: 95
 baseSpDefense: 110
 type0: 10
 type1: 10
+ability0: 18
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -7541,6 +7815,8 @@ baseSpAttack: 85
 baseSpDefense: 75
 type0: 0
 type1: 0
+ability0: 36
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -7599,6 +7875,8 @@ baseSpAttack: 90
 baseSpDefense: 55
 type0: 5
 type1: 11
+ability0: 33
+ability1: 75
 
 [INFO] GBA Debug: move0: 34
 
@@ -7653,6 +7931,8 @@ baseSpAttack: 115
 baseSpDefense: 70
 type0: 5
 type1: 11
+ability0: 33
+ability1: 75
 
 [INFO] GBA Debug: move0: 34
 
@@ -7711,6 +7991,8 @@ baseSpAttack: 55
 baseSpDefense: 45
 type0: 5
 type1: 11
+ability0: 33
+ability1: 4
 
 [INFO] GBA Debug: move0: 34
 
@@ -7763,6 +8045,8 @@ baseSpAttack: 65
 baseSpDefense: 70
 type0: 5
 type1: 11
+ability0: 33
+ability1: 4
 
 [INFO] GBA Debug: move0: 14
 
@@ -7825,6 +8109,8 @@ baseSpAttack: 60
 baseSpDefense: 75
 type0: 5
 type1: 2
+ability0: 69
+ability1: 46
 
 [INFO] GBA Debug: move0: 38
 
@@ -7871,6 +8157,8 @@ baseSpAttack: 65
 baseSpDefense: 110
 type0: 0
 type1: 0
+ability0: 17
+ability1: 47
 
 [INFO] GBA Debug: move0: 5
 
@@ -7947,6 +8235,8 @@ baseSpAttack: 95
 baseSpDefense: 125
 type0: 15
 type1: 2
+ability0: 46
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -7997,6 +8287,8 @@ baseSpAttack: 125
 baseSpDefense: 90
 type0: 13
 type1: 2
+ability0: 46
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -8045,6 +8337,8 @@ baseSpAttack: 125
 baseSpDefense: 85
 type0: 10
 type1: 2
+ability0: 46
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -8091,6 +8385,8 @@ baseSpAttack: 50
 baseSpDefense: 50
 type0: 16
 type1: 16
+ability0: 61
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -8143,6 +8439,8 @@ baseSpAttack: 70
 baseSpDefense: 70
 type0: 16
 type1: 16
+ability0: 61
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -8195,6 +8493,8 @@ baseSpAttack: 100
 baseSpDefense: 100
 type0: 16
 type1: 2
+ability0: 39
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -8261,6 +8561,8 @@ baseSpAttack: 154
 baseSpDefense: 90
 type0: 14
 type1: 14
+ability0: 46
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -8337,6 +8639,8 @@ baseSpAttack: 100
 baseSpDefense: 100
 type0: 14
 type1: 14
+ability0: 28
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -8417,6 +8721,8 @@ baseSpAttack: 49
 baseSpDefense: 65
 type0: 12
 type1: 12
+ability0: 65
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -8469,6 +8775,8 @@ baseSpAttack: 63
 baseSpDefense: 80
 type0: 12
 type1: 12
+ability0: 65
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -8523,6 +8831,8 @@ baseSpAttack: 83
 baseSpDefense: 100
 type0: 12
 type1: 12
+ability0: 65
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -8577,6 +8887,8 @@ baseSpAttack: 60
 baseSpDefense: 50
 type0: 10
 type1: 10
+ability0: 66
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -8627,6 +8939,8 @@ baseSpAttack: 80
 baseSpDefense: 65
 type0: 10
 type1: 10
+ability0: 66
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -8679,6 +8993,8 @@ baseSpAttack: 109
 baseSpDefense: 85
 type0: 10
 type1: 10
+ability0: 66
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -8747,6 +9063,8 @@ baseSpAttack: 44
 baseSpDefense: 48
 type0: 11
 type1: 11
+ability0: 67
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -8813,6 +9131,8 @@ baseSpAttack: 59
 baseSpDefense: 63
 type0: 11
 type1: 11
+ability0: 67
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -8881,6 +9201,8 @@ baseSpAttack: 79
 baseSpDefense: 83
 type0: 11
 type1: 11
+ability0: 67
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -8949,6 +9271,8 @@ baseSpAttack: 35
 baseSpDefense: 45
 type0: 0
 type1: 0
+ability0: 50
+ability1: 51
 
 [INFO] GBA Debug: move0: 34
 
@@ -9011,6 +9335,8 @@ baseSpAttack: 45
 baseSpDefense: 55
 type0: 0
 type1: 0
+ability0: 50
+ability1: 51
 
 [INFO] GBA Debug: move0: 34
 
@@ -9073,6 +9399,8 @@ baseSpAttack: 36
 baseSpDefense: 56
 type0: 0
 type1: 2
+ability0: 15
+ability1: 51
 
 [INFO] GBA Debug: move0: 38
 
@@ -9121,6 +9449,8 @@ baseSpAttack: 76
 baseSpDefense: 96
 type0: 0
 type1: 2
+ability0: 15
+ability1: 51
 
 [INFO] GBA Debug: move0: 38
 
@@ -9169,6 +9499,8 @@ baseSpAttack: 40
 baseSpDefense: 80
 type0: 6
 type1: 2
+ability0: 68
+ability1: 48
 
 [INFO] GBA Debug: move0: 5
 
@@ -9225,6 +9557,8 @@ baseSpAttack: 55
 baseSpDefense: 110
 type0: 6
 type1: 2
+ability0: 68
+ability1: 48
 
 [INFO] GBA Debug: move0: 5
 
@@ -9281,6 +9615,8 @@ baseSpAttack: 40
 baseSpDefense: 40
 type0: 6
 type1: 3
+ability0: 68
+ability1: 15
 
 [INFO] GBA Debug: move0: 34
 
@@ -9329,6 +9665,8 @@ baseSpAttack: 60
 baseSpDefense: 60
 type0: 6
 type1: 3
+ability0: 68
+ability1: 15
 
 [INFO] GBA Debug: move0: 34
 
@@ -9377,6 +9715,8 @@ baseSpAttack: 70
 baseSpDefense: 80
 type0: 3
 type1: 2
+ability0: 39
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -9427,6 +9767,8 @@ baseSpAttack: 56
 baseSpDefense: 56
 type0: 11
 type1: 13
+ability0: 10
+ability1: 35
 
 [INFO] GBA Debug: move0: 38
 
@@ -9473,6 +9815,8 @@ baseSpAttack: 76
 baseSpDefense: 76
 type0: 11
 type1: 13
+ability0: 10
+ability1: 35
 
 [INFO] GBA Debug: move0: 38
 
@@ -9519,6 +9863,8 @@ baseSpAttack: 35
 baseSpDefense: 35
 type0: 13
 type1: 13
+ability0: 9
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -9573,6 +9919,8 @@ baseSpAttack: 45
 baseSpDefense: 55
 type0: 0
 type1: 0
+ability0: 56
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -9637,6 +9985,8 @@ baseSpAttack: 40
 baseSpDefense: 20
 type0: 0
 type1: 0
+ability0: 56
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -9695,6 +10045,8 @@ baseSpAttack: 40
 baseSpDefense: 65
 type0: 0
 type1: 0
+ability0: 55
+ability1: 32
 
 [INFO] GBA Debug: move0: 5
 
@@ -9765,6 +10117,8 @@ baseSpAttack: 80
 baseSpDefense: 105
 type0: 0
 type1: 2
+ability0: 55
+ability1: 32
 
 [INFO] GBA Debug: move0: 5
 
@@ -9835,6 +10189,8 @@ baseSpAttack: 70
 baseSpDefense: 45
 type0: 14
 type1: 2
+ability0: 28
+ability1: 48
 
 [INFO] GBA Debug: move0: 38
 
@@ -9885,6 +10241,8 @@ baseSpAttack: 95
 baseSpDefense: 70
 type0: 14
 type1: 2
+ability0: 28
+ability1: 48
 
 [INFO] GBA Debug: move0: 38
 
@@ -9935,6 +10293,8 @@ baseSpAttack: 65
 baseSpDefense: 45
 type0: 13
 type1: 13
+ability0: 9
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -9981,6 +10341,8 @@ baseSpAttack: 80
 baseSpDefense: 60
 type0: 13
 type1: 13
+ability0: 9
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -10041,6 +10403,8 @@ baseSpAttack: 115
 baseSpDefense: 90
 type0: 13
 type1: 13
+ability0: 9
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -10101,6 +10465,8 @@ baseSpAttack: 90
 baseSpDefense: 100
 type0: 12
 type1: 12
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -10141,6 +10507,8 @@ baseSpAttack: 20
 baseSpDefense: 50
 type0: 11
 type1: 11
+ability0: 47
+ability1: 37
 
 [INFO] GBA Debug: move0: 5
 
@@ -10201,6 +10569,8 @@ baseSpAttack: 50
 baseSpDefense: 80
 type0: 11
 type1: 11
+ability0: 47
+ability1: 37
 
 [INFO] GBA Debug: move0: 5
 
@@ -10261,6 +10631,8 @@ baseSpAttack: 30
 baseSpDefense: 65
 type0: 5
 type1: 5
+ability0: 5
+ability1: 69
 
 [INFO] GBA Debug: move0: 5
 
@@ -10329,6 +10701,8 @@ baseSpAttack: 90
 baseSpDefense: 100
 type0: 11
 type1: 11
+ability0: 11
+ability1: 6
 
 [INFO] GBA Debug: move0: 5
 
@@ -10383,6 +10757,8 @@ baseSpAttack: 35
 baseSpDefense: 55
 type0: 12
 type1: 2
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -10433,6 +10809,8 @@ baseSpAttack: 45
 baseSpDefense: 65
 type0: 12
 type1: 2
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -10483,6 +10861,8 @@ baseSpAttack: 55
 baseSpDefense: 85
 type0: 12
 type1: 2
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -10533,6 +10913,8 @@ baseSpAttack: 40
 baseSpDefense: 55
 type0: 0
 type1: 0
+ability0: 50
+ability1: 53
 
 [INFO] GBA Debug: move0: 5
 
@@ -10609,6 +10991,8 @@ baseSpAttack: 30
 baseSpDefense: 30
 type0: 12
 type1: 12
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -10653,6 +11037,8 @@ baseSpAttack: 105
 baseSpDefense: 85
 type0: 12
 type1: 12
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -10699,6 +11085,8 @@ baseSpAttack: 75
 baseSpDefense: 45
 type0: 6
 type1: 2
+ability0: 3
+ability1: 14
 
 [INFO] GBA Debug: move0: 38
 
@@ -10749,6 +11137,8 @@ baseSpAttack: 25
 baseSpDefense: 25
 type0: 11
 type1: 4
+ability0: 6
+ability1: 11
 
 [INFO] GBA Debug: move0: 34
 
@@ -10807,6 +11197,8 @@ baseSpAttack: 65
 baseSpDefense: 65
 type0: 11
 type1: 4
+ability0: 6
+ability1: 11
 
 [INFO] GBA Debug: move0: 5
 
@@ -10873,6 +11265,8 @@ baseSpAttack: 130
 baseSpDefense: 95
 type0: 14
 type1: 14
+ability0: 28
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -10927,6 +11321,8 @@ baseSpAttack: 60
 baseSpDefense: 130
 type0: 17
 type1: 17
+ability0: 28
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -10985,6 +11381,8 @@ baseSpAttack: 85
 baseSpDefense: 42
 type0: 17
 type1: 2
+ability0: 15
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -11039,6 +11437,8 @@ baseSpAttack: 100
 baseSpDefense: 110
 type0: 11
 type1: 14
+ability0: 12
+ability1: 20
 
 [INFO] GBA Debug: move0: 5
 
@@ -11111,6 +11511,8 @@ baseSpAttack: 85
 baseSpDefense: 85
 type0: 7
 type1: 7
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -11167,6 +11569,8 @@ baseSpAttack: 72
 baseSpDefense: 48
 type0: 14
 type1: 14
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 237
 
@@ -11181,6 +11585,8 @@ baseSpAttack: 33
 baseSpDefense: 58
 type0: 14
 type1: 14
+ability0: 23
+ability1: 0
 
 [INFO] GBA Debug: move0: 68
 
@@ -11201,6 +11607,8 @@ baseSpAttack: 90
 baseSpDefense: 65
 type0: 0
 type1: 14
+ability0: 39
+ability1: 48
 
 [INFO] GBA Debug: move0: 34
 
@@ -11259,6 +11667,8 @@ baseSpAttack: 35
 baseSpDefense: 35
 type0: 6
 type1: 6
+ability0: 5
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -11311,6 +11721,8 @@ baseSpAttack: 60
 baseSpDefense: 60
 type0: 6
 type1: 8
+ability0: 5
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -11363,6 +11775,8 @@ baseSpAttack: 65
 baseSpDefense: 65
 type0: 0
 type1: 0
+ability0: 32
+ability1: 50
 
 [INFO] GBA Debug: move0: 34
 
@@ -11423,6 +11837,8 @@ baseSpAttack: 35
 baseSpDefense: 65
 type0: 4
 type1: 2
+ability0: 52
+ability1: 8
 
 [INFO] GBA Debug: move0: 14
 
@@ -11477,6 +11893,8 @@ baseSpAttack: 55
 baseSpDefense: 65
 type0: 8
 type1: 4
+ability0: 69
+ability1: 5
 
 [INFO] GBA Debug: move0: 34
 
@@ -11535,6 +11953,8 @@ baseSpAttack: 40
 baseSpDefense: 40
 type0: 0
 type1: 0
+ability0: 22
+ability1: 50
 
 [INFO] GBA Debug: move0: 5
 
@@ -11607,6 +12027,8 @@ baseSpAttack: 60
 baseSpDefense: 60
 type0: 0
 type1: 0
+ability0: 22
+ability1: 22
 
 [INFO] GBA Debug: move0: 5
 
@@ -11681,6 +12103,8 @@ baseSpAttack: 55
 baseSpDefense: 55
 type0: 11
 type1: 3
+ability0: 38
+ability1: 33
 
 [INFO] GBA Debug: move0: 14
 
@@ -11737,6 +12161,8 @@ baseSpAttack: 55
 baseSpDefense: 80
 type0: 6
 type1: 8
+ability0: 68
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -11789,6 +12215,8 @@ baseSpAttack: 10
 baseSpDefense: 230
 type0: 6
 type1: 5
+ability0: 5
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -11839,6 +12267,8 @@ baseSpAttack: 40
 baseSpDefense: 95
 type0: 6
 type1: 1
+ability0: 68
+ability1: 62
 
 [INFO] GBA Debug: move0: 14
 
@@ -11893,6 +12323,8 @@ baseSpAttack: 35
 baseSpDefense: 75
 type0: 17
 type1: 15
+ability0: 39
+ability1: 51
 
 [INFO] GBA Debug: move0: 14
 
@@ -11963,6 +12395,8 @@ baseSpAttack: 50
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 53
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -12039,6 +12473,8 @@ baseSpAttack: 75
 baseSpDefense: 75
 type0: 0
 type1: 0
+ability0: 62
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -12117,6 +12553,8 @@ baseSpAttack: 70
 baseSpDefense: 40
 type0: 10
 type1: 10
+ability0: 40
+ability1: 49
 
 [INFO] GBA Debug: move0: 34
 
@@ -12167,6 +12605,8 @@ baseSpAttack: 80
 baseSpDefense: 80
 type0: 10
 type1: 5
+ability0: 40
+ability1: 49
 
 [INFO] GBA Debug: move0: 34
 
@@ -12217,6 +12657,8 @@ baseSpAttack: 30
 baseSpDefense: 30
 type0: 15
 type1: 4
+ability0: 12
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -12267,6 +12709,8 @@ baseSpAttack: 60
 baseSpDefense: 60
 type0: 15
 type1: 4
+ability0: 12
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -12319,6 +12763,8 @@ baseSpAttack: 65
 baseSpDefense: 85
 type0: 11
 type1: 5
+ability0: 55
+ability1: 30
 
 [INFO] GBA Debug: move0: 34
 
@@ -12377,6 +12823,8 @@ baseSpAttack: 65
 baseSpDefense: 35
 type0: 11
 type1: 11
+ability0: 55
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -12427,6 +12875,8 @@ baseSpAttack: 105
 baseSpDefense: 75
 type0: 11
 type1: 11
+ability0: 21
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -12481,6 +12931,8 @@ baseSpAttack: 65
 baseSpDefense: 45
 type0: 15
 type1: 2
+ability0: 72
+ability1: 55
 
 [INFO] GBA Debug: move0: 5
 
@@ -12525,6 +12977,8 @@ baseSpAttack: 80
 baseSpDefense: 140
 type0: 11
 type1: 2
+ability0: 33
+ability1: 11
 
 [INFO] GBA Debug: move0: 34
 
@@ -12577,6 +13031,8 @@ baseSpAttack: 40
 baseSpDefense: 70
 type0: 8
 type1: 2
+ability0: 51
+ability1: 5
 
 [INFO] GBA Debug: move0: 38
 
@@ -12629,6 +13085,8 @@ baseSpAttack: 80
 baseSpDefense: 50
 type0: 17
 type1: 10
+ability0: 48
+ability1: 18
 
 [INFO] GBA Debug: move0: 34
 
@@ -12685,6 +13143,8 @@ baseSpAttack: 110
 baseSpDefense: 80
 type0: 17
 type1: 10
+ability0: 48
+ability1: 18
 
 [INFO] GBA Debug: move0: 34
 
@@ -12741,6 +13201,8 @@ baseSpAttack: 95
 baseSpDefense: 95
 type0: 11
 type1: 16
+ability0: 33
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -12789,6 +13251,8 @@ baseSpAttack: 40
 baseSpDefense: 40
 type0: 4
 type1: 4
+ability0: 53
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -12835,6 +13299,8 @@ baseSpAttack: 60
 baseSpDefense: 60
 type0: 4
 type1: 4
+ability0: 5
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -12887,6 +13353,8 @@ baseSpAttack: 105
 baseSpDefense: 95
 type0: 0
 type1: 0
+ability0: 36
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -12945,6 +13413,8 @@ baseSpAttack: 85
 baseSpDefense: 65
 type0: 0
 type1: 0
+ability0: 22
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -13001,6 +13471,8 @@ baseSpAttack: 20
 baseSpDefense: 45
 type0: 0
 type1: 0
+ability0: 20
+ability1: 0
 
 [INFO] GBA Debug: move0: 166
 
@@ -13015,6 +13487,8 @@ baseSpAttack: 35
 baseSpDefense: 35
 type0: 1
 type1: 1
+ability0: 62
+ability1: 0
 
 [INFO] GBA Debug: move0: 25
 
@@ -13057,6 +13531,8 @@ baseSpAttack: 35
 baseSpDefense: 110
 type0: 1
 type1: 1
+ability0: 22
+ability1: 0
 
 [INFO] GBA Debug: move0: 25
 
@@ -13117,6 +13593,8 @@ baseSpAttack: 85
 baseSpDefense: 65
 type0: 15
 type1: 14
+ability0: 12
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -13189,6 +13667,8 @@ baseSpAttack: 65
 baseSpDefense: 55
 type0: 13
 type1: 13
+ability0: 9
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -13251,6 +13731,8 @@ baseSpAttack: 70
 baseSpDefense: 55
 type0: 10
 type1: 10
+ability0: 49
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -13311,6 +13793,8 @@ baseSpAttack: 40
 baseSpDefense: 70
 type0: 0
 type1: 0
+ability0: 47
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -13383,6 +13867,8 @@ baseSpAttack: 75
 baseSpDefense: 135
 type0: 0
 type1: 0
+ability0: 30
+ability1: 32
 
 [INFO] GBA Debug: move0: 5
 
@@ -13455,6 +13941,8 @@ baseSpAttack: 115
 baseSpDefense: 100
 type0: 13
 type1: 13
+ability0: 46
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -13511,6 +13999,8 @@ baseSpAttack: 90
 baseSpDefense: 75
 type0: 10
 type1: 10
+ability0: 46
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -13563,6 +14053,8 @@ baseSpAttack: 90
 baseSpDefense: 115
 type0: 11
 type1: 11
+ability0: 46
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -13619,6 +14111,8 @@ baseSpAttack: 45
 baseSpDefense: 50
 type0: 5
 type1: 4
+ability0: 62
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -13669,6 +14163,8 @@ baseSpAttack: 65
 baseSpDefense: 70
 type0: 5
 type1: 4
+ability0: 61
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -13719,6 +14215,8 @@ baseSpAttack: 95
 baseSpDefense: 100
 type0: 5
 type1: 17
+ability0: 45
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -13785,6 +14283,8 @@ baseSpAttack: 90
 baseSpDefense: 154
 type0: 14
 type1: 2
+ability0: 46
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -13833,7 +14333,7 @@ type1: 2
 [INFO] GBA Debug: move22: 248
 
 [INFO] GBA Debug: 
-speciesName: HO?OH
+speciesName: HO-OH
 id: 250
 baseHP: 106
 baseAttack: 130
@@ -13843,6 +14343,8 @@ baseSpAttack: 110
 baseSpDefense: 154
 type0: 10
 type1: 2
+ability0: 46
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -13897,6 +14399,8 @@ baseSpAttack: 100
 baseSpDefense: 100
 type0: 14
 type1: 12
+ability0: 30
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -13955,6 +14459,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -13969,6 +14475,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -13983,6 +14491,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -13997,6 +14507,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14011,6 +14523,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14025,6 +14539,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14039,6 +14555,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14053,6 +14571,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14067,6 +14587,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14081,6 +14603,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14095,6 +14619,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14109,6 +14635,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14123,6 +14651,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14137,6 +14667,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14151,6 +14683,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14165,6 +14699,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14179,6 +14715,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14193,6 +14731,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14207,6 +14747,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14221,6 +14763,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14235,6 +14779,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14249,6 +14795,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14263,6 +14811,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14277,6 +14827,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14291,6 +14843,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 0
 type1: 0
+ability0: 0
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -14305,6 +14859,8 @@ baseSpAttack: 65
 baseSpDefense: 55
 type0: 12
 type1: 12
+ability0: 65
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -14375,6 +14931,8 @@ baseSpAttack: 85
 baseSpDefense: 65
 type0: 12
 type1: 12
+ability0: 65
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -14445,6 +15003,8 @@ baseSpAttack: 105
 baseSpDefense: 85
 type0: 12
 type1: 12
+ability0: 65
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -14515,6 +15075,8 @@ baseSpAttack: 70
 baseSpDefense: 50
 type0: 10
 type1: 10
+ability0: 66
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -14581,6 +15143,8 @@ baseSpAttack: 85
 baseSpDefense: 60
 type0: 10
 type1: 1
+ability0: 66
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -14657,6 +15221,8 @@ baseSpAttack: 110
 baseSpDefense: 70
 type0: 10
 type1: 1
+ability0: 66
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -14735,6 +15301,8 @@ baseSpAttack: 50
 baseSpDefense: 50
 type0: 11
 type1: 11
+ability0: 67
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -14793,6 +15361,8 @@ baseSpAttack: 60
 baseSpDefense: 70
 type0: 11
 type1: 4
+ability0: 67
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -14867,6 +15437,8 @@ baseSpAttack: 85
 baseSpDefense: 90
 type0: 11
 type1: 4
+ability0: 67
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -14941,6 +15513,8 @@ baseSpAttack: 30
 baseSpDefense: 30
 type0: 17
 type1: 17
+ability0: 50
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -14997,6 +15571,8 @@ baseSpAttack: 60
 baseSpDefense: 60
 type0: 17
 type1: 17
+ability0: 22
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -15053,6 +15629,8 @@ baseSpAttack: 30
 baseSpDefense: 41
 type0: 0
 type1: 0
+ability0: 53
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -15119,6 +15697,8 @@ baseSpAttack: 50
 baseSpDefense: 61
 type0: 0
 type1: 0
+ability0: 53
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -15185,6 +15765,8 @@ baseSpAttack: 20
 baseSpDefense: 30
 type0: 6
 type1: 6
+ability0: 19
+ability1: 0
 
 [INFO] GBA Debug: move0: 33
 
@@ -15203,6 +15785,8 @@ baseSpAttack: 25
 baseSpDefense: 25
 type0: 6
 type1: 6
+ability0: 61
+ability1: 0
 
 [INFO] GBA Debug: move0: 106
 
@@ -15217,6 +15801,8 @@ baseSpAttack: 90
 baseSpDefense: 50
 type0: 6
 type1: 2
+ability0: 68
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -15263,6 +15849,8 @@ baseSpAttack: 25
 baseSpDefense: 25
 type0: 6
 type1: 6
+ability0: 61
+ability1: 0
 
 [INFO] GBA Debug: move0: 106
 
@@ -15277,6 +15865,8 @@ baseSpAttack: 50
 baseSpDefense: 90
 type0: 6
 type1: 3
+ability0: 19
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -15323,6 +15913,8 @@ baseSpAttack: 40
 baseSpDefense: 50
 type0: 11
 type1: 12
+ability0: 33
+ability1: 44
 
 [INFO] GBA Debug: move0: 14
 
@@ -15369,6 +15961,8 @@ baseSpAttack: 60
 baseSpDefense: 70
 type0: 11
 type1: 12
+ability0: 33
+ability1: 44
 
 [INFO] GBA Debug: move0: 14
 
@@ -15431,6 +16025,8 @@ baseSpAttack: 90
 baseSpDefense: 100
 type0: 11
 type1: 12
+ability0: 33
+ability1: 44
 
 [INFO] GBA Debug: move0: 5
 
@@ -15491,6 +16087,8 @@ baseSpAttack: 30
 baseSpDefense: 30
 type0: 12
 type1: 12
+ability0: 34
+ability1: 48
 
 [INFO] GBA Debug: move0: 14
 
@@ -15539,6 +16137,8 @@ baseSpAttack: 60
 baseSpDefense: 40
 type0: 12
 type1: 17
+ability0: 34
+ability1: 48
 
 [INFO] GBA Debug: move0: 14
 
@@ -15603,6 +16203,8 @@ baseSpAttack: 90
 baseSpDefense: 60
 type0: 12
 type1: 17
+ability0: 34
+ability1: 48
 
 [INFO] GBA Debug: move0: 14
 
@@ -15657,6 +16259,8 @@ baseSpAttack: 30
 baseSpDefense: 30
 type0: 6
 type1: 4
+ability0: 14
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -15705,6 +16309,8 @@ baseSpAttack: 50
 baseSpDefense: 50
 type0: 6
 type1: 2
+ability0: 3
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -15761,6 +16367,8 @@ baseSpAttack: 30
 baseSpDefense: 30
 type0: 6
 type1: 7
+ability0: 25
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -15813,6 +16421,8 @@ baseSpAttack: 30
 baseSpDefense: 30
 type0: 0
 type1: 2
+ability0: 62
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -15863,6 +16473,8 @@ baseSpAttack: 50
 baseSpDefense: 50
 type0: 0
 type1: 2
+ability0: 62
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -15913,6 +16525,8 @@ baseSpAttack: 40
 baseSpDefense: 60
 type0: 12
 type1: 12
+ability0: 27
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -15963,6 +16577,8 @@ baseSpAttack: 60
 baseSpDefense: 60
 type0: 12
 type1: 1
+ability0: 27
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -16027,6 +16643,8 @@ baseSpAttack: 60
 baseSpDefense: 60
 type0: 0
 type1: 0
+ability0: 20
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -16107,6 +16725,8 @@ baseSpAttack: 55
 baseSpDefense: 30
 type0: 11
 type1: 2
+ability0: 51
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -16155,6 +16775,8 @@ baseSpAttack: 85
 baseSpDefense: 70
 type0: 11
 type1: 2
+ability0: 51
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -16209,6 +16831,8 @@ baseSpAttack: 50
 baseSpDefense: 52
 type0: 6
 type1: 11
+ability0: 33
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -16257,6 +16881,8 @@ baseSpAttack: 80
 baseSpDefense: 82
 type0: 6
 type1: 2
+ability0: 22
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -16307,6 +16933,8 @@ baseSpAttack: 70
 baseSpDefense: 35
 type0: 11
 type1: 11
+ability0: 41
+ability1: 12
 
 [INFO] GBA Debug: move0: 34
 
@@ -16363,6 +16991,8 @@ baseSpAttack: 90
 baseSpDefense: 45
 type0: 11
 type1: 11
+ability0: 41
+ability1: 12
 
 [INFO] GBA Debug: move0: 34
 
@@ -16419,6 +17049,8 @@ baseSpAttack: 35
 baseSpDefense: 35
 type0: 0
 type1: 0
+ability0: 56
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -16485,6 +17117,8 @@ baseSpAttack: 55
 baseSpDefense: 55
 type0: 0
 type1: 0
+ability0: 56
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -16537,6 +17171,8 @@ baseSpAttack: 60
 baseSpDefense: 120
 type0: 0
 type1: 0
+ability0: 16
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -16625,6 +17261,8 @@ baseSpAttack: 40
 baseSpDefense: 70
 type0: 4
 type1: 14
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -16679,6 +17317,8 @@ baseSpAttack: 70
 baseSpDefense: 120
 type0: 4
 type1: 14
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -16737,6 +17377,8 @@ baseSpAttack: 45
 baseSpDefense: 90
 type0: 5
 type1: 5
+ability0: 5
+ability1: 42
 
 [INFO] GBA Debug: move0: 34
 
@@ -16801,6 +17443,8 @@ baseSpAttack: 85
 baseSpDefense: 70
 type0: 10
 type1: 10
+ability0: 73
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -16857,6 +17501,8 @@ baseSpAttack: 65
 baseSpDefense: 65
 type0: 17
 type1: 7
+ability0: 51
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -16937,6 +17583,8 @@ baseSpAttack: 46
 baseSpDefense: 41
 type0: 11
 type1: 4
+ability0: 12
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -16985,6 +17633,8 @@ baseSpAttack: 76
 baseSpDefense: 71
 type0: 11
 type1: 4
+ability0: 12
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -17037,6 +17687,8 @@ baseSpAttack: 40
 baseSpDefense: 65
 type0: 11
 type1: 11
+ability0: 33
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -17087,6 +17739,8 @@ baseSpAttack: 50
 baseSpDefense: 35
 type0: 11
 type1: 11
+ability0: 52
+ability1: 75
 
 [INFO] GBA Debug: move0: 14
 
@@ -17145,6 +17799,8 @@ baseSpAttack: 90
 baseSpDefense: 55
 type0: 11
 type1: 17
+ability0: 52
+ability1: 75
 
 [INFO] GBA Debug: move0: 14
 
@@ -17205,6 +17861,8 @@ baseSpAttack: 10
 baseSpDefense: 55
 type0: 11
 type1: 11
+ability0: 33
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -17241,6 +17899,8 @@ baseSpAttack: 100
 baseSpDefense: 125
 type0: 11
 type1: 11
+ability0: 63
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -17299,6 +17959,8 @@ baseSpAttack: 65
 baseSpDefense: 20
 type0: 11
 type1: 17
+ability0: 24
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -17351,6 +18013,8 @@ baseSpAttack: 95
 baseSpDefense: 40
 type0: 11
 type1: 17
+ability0: 24
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -17407,6 +18071,8 @@ baseSpAttack: 45
 baseSpDefense: 45
 type0: 4
 type1: 4
+ability0: 52
+ability1: 71
 
 [INFO] GBA Debug: move0: 34
 
@@ -17455,6 +18121,8 @@ baseSpAttack: 50
 baseSpDefense: 50
 type0: 4
 type1: 16
+ability0: 26
+ability1: 26
 
 [INFO] GBA Debug: move0: 34
 
@@ -17507,6 +18175,8 @@ baseSpAttack: 80
 baseSpDefense: 80
 type0: 4
 type1: 16
+ability0: 26
+ability1: 26
 
 [INFO] GBA Debug: move0: 34
 
@@ -17563,6 +18233,8 @@ baseSpAttack: 20
 baseSpDefense: 30
 type0: 1
 type1: 1
+ability0: 47
+ability1: 62
 
 [INFO] GBA Debug: move0: 5
 
@@ -17635,6 +18307,8 @@ baseSpAttack: 40
 baseSpDefense: 60
 type0: 1
 type1: 1
+ability0: 47
+ability1: 62
 
 [INFO] GBA Debug: move0: 5
 
@@ -17707,6 +18381,8 @@ baseSpAttack: 65
 baseSpDefense: 40
 type0: 13
 type1: 13
+ability0: 9
+ability1: 31
 
 [INFO] GBA Debug: move0: 34
 
@@ -17761,6 +18437,8 @@ baseSpAttack: 105
 baseSpDefense: 60
 type0: 13
 type1: 13
+ability0: 9
+ability1: 31
 
 [INFO] GBA Debug: move0: 34
 
@@ -17815,6 +18493,8 @@ baseSpAttack: 65
 baseSpDefense: 45
 type0: 10
 type1: 4
+ability0: 12
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -17869,6 +18549,8 @@ baseSpAttack: 105
 baseSpDefense: 75
 type0: 10
 type1: 4
+ability0: 40
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -17927,6 +18609,8 @@ baseSpAttack: 55
 baseSpDefense: 50
 type0: 15
 type1: 11
+ability0: 47
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -17985,6 +18669,8 @@ baseSpAttack: 75
 baseSpDefense: 70
 type0: 15
 type1: 11
+ability0: 47
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -18043,6 +18729,8 @@ baseSpAttack: 95
 baseSpDefense: 90
 type0: 15
 type1: 11
+ability0: 47
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -18101,6 +18789,8 @@ baseSpAttack: 85
 baseSpDefense: 40
 type0: 12
 type1: 12
+ability0: 8
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -18171,6 +18861,8 @@ baseSpAttack: 115
 baseSpDefense: 60
 type0: 12
 type1: 17
+ability0: 8
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -18243,6 +18935,8 @@ baseSpAttack: 50
 baseSpDefense: 50
 type0: 15
 type1: 15
+ability0: 39
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -18293,6 +18987,8 @@ baseSpAttack: 80
 baseSpDefense: 80
 type0: 15
 type1: 15
+ability0: 39
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -18351,6 +19047,8 @@ baseSpAttack: 95
 baseSpDefense: 85
 type0: 5
 type1: 14
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -18411,6 +19109,8 @@ baseSpAttack: 55
 baseSpDefense: 65
 type0: 5
 type1: 14
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -18469,6 +19169,8 @@ baseSpAttack: 20
 baseSpDefense: 40
 type0: 0
 type1: 0
+ability0: 47
+ability1: 37
 
 [INFO] GBA Debug: move0: 34
 
@@ -18519,6 +19221,8 @@ baseSpAttack: 70
 baseSpDefense: 80
 type0: 14
 type1: 14
+ability0: 47
+ability1: 20
 
 [INFO] GBA Debug: move0: 34
 
@@ -18573,6 +19277,8 @@ baseSpAttack: 90
 baseSpDefense: 110
 type0: 14
 type1: 14
+ability0: 47
+ability1: 20
 
 [INFO] GBA Debug: move0: 5
 
@@ -18645,6 +19351,8 @@ baseSpAttack: 85
 baseSpDefense: 75
 type0: 13
 type1: 13
+ability0: 57
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -18717,6 +19425,8 @@ baseSpAttack: 75
 baseSpDefense: 85
 type0: 13
 type1: 13
+ability0: 58
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -18789,6 +19499,8 @@ baseSpAttack: 55
 baseSpDefense: 55
 type0: 8
 type1: 8
+ability0: 52
+ability1: 22
 
 [INFO] GBA Debug: move0: 5
 
@@ -18865,6 +19577,8 @@ baseSpAttack: 40
 baseSpDefense: 55
 type0: 1
 type1: 14
+ability0: 74
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -18939,6 +19653,8 @@ baseSpAttack: 60
 baseSpDefense: 75
 type0: 1
 type1: 14
+ability0: 74
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -19015,6 +19731,8 @@ baseSpAttack: 40
 baseSpDefense: 75
 type0: 0
 type1: 2
+ability0: 30
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -19073,6 +19791,8 @@ baseSpAttack: 70
 baseSpDefense: 105
 type0: 16
 type1: 2
+ability0: 30
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -19135,6 +19855,8 @@ baseSpAttack: 23
 baseSpDefense: 48
 type0: 14
 type1: 14
+ability0: 23
+ability1: 0
 
 [INFO] GBA Debug: move0: 150
 
@@ -19161,6 +19883,8 @@ baseSpAttack: 30
 baseSpDefense: 90
 type0: 7
 type1: 7
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -19217,6 +19941,8 @@ baseSpAttack: 60
 baseSpDefense: 130
 type0: 7
 type1: 7
+ability0: 46
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -19299,6 +20025,8 @@ baseSpAttack: 100
 baseSpDefense: 80
 type0: 12
 type1: 3
+ability0: 30
+ability1: 38
 
 [INFO] GBA Debug: move0: 14
 
@@ -19367,6 +20095,8 @@ baseSpAttack: 35
 baseSpDefense: 35
 type0: 0
 type1: 0
+ability0: 54
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -19435,6 +20165,8 @@ baseSpAttack: 55
 baseSpDefense: 55
 type0: 0
 type1: 0
+ability0: 72
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -19503,6 +20235,8 @@ baseSpAttack: 95
 baseSpDefense: 65
 type0: 0
 type1: 0
+ability0: 54
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -19571,6 +20305,8 @@ baseSpAttack: 43
 baseSpDefense: 53
 type0: 3
 type1: 3
+ability0: 64
+ability1: 60
 
 [INFO] GBA Debug: move0: 34
 
@@ -19641,6 +20377,8 @@ baseSpAttack: 73
 baseSpDefense: 83
 type0: 3
 type1: 3
+ability0: 64
+ability1: 60
 
 [INFO] GBA Debug: move0: 34
 
@@ -19711,6 +20449,8 @@ baseSpAttack: 72
 baseSpDefense: 87
 type0: 12
 type1: 2
+ability0: 34
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -19765,6 +20505,8 @@ baseSpAttack: 51
 baseSpDefense: 23
 type0: 0
 type1: 0
+ability0: 43
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -19839,6 +20581,8 @@ baseSpAttack: 71
 baseSpDefense: 43
 type0: 0
 type1: 0
+ability0: 43
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -19915,6 +20659,8 @@ baseSpAttack: 91
 baseSpDefense: 63
 type0: 0
 type1: 0
+ability0: 43
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -19993,6 +20739,8 @@ baseSpAttack: 74
 baseSpDefense: 55
 type0: 11
 type1: 11
+ability0: 75
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -20031,6 +20779,8 @@ baseSpAttack: 94
 baseSpDefense: 75
 type0: 11
 type1: 11
+ability0: 33
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -20081,6 +20831,8 @@ baseSpAttack: 114
 baseSpDefense: 75
 type0: 11
 type1: 11
+ability0: 33
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -20131,6 +20883,8 @@ baseSpAttack: 75
 baseSpDefense: 60
 type0: 17
 type1: 17
+ability0: 46
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -20199,6 +20953,8 @@ baseSpAttack: 63
 baseSpDefense: 33
 type0: 7
 type1: 7
+ability0: 15
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -20255,6 +21011,8 @@ baseSpAttack: 83
 baseSpDefense: 63
 type0: 7
 type1: 7
+ability0: 15
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -20315,6 +21073,8 @@ baseSpAttack: 100
 baseSpDefense: 60
 type0: 3
 type1: 3
+ability0: 61
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -20367,6 +21127,8 @@ baseSpAttack: 60
 baseSpDefense: 60
 type0: 0
 type1: 0
+ability0: 17
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -20447,6 +21209,8 @@ baseSpAttack: 45
 baseSpDefense: 65
 type0: 11
 type1: 5
+ability0: 33
+ability1: 69
 
 [INFO] GBA Debug: move0: 34
 
@@ -20503,6 +21267,8 @@ baseSpAttack: 40
 baseSpDefense: 40
 type0: 8
 type1: 5
+ability0: 5
+ability1: 69
 
 [INFO] GBA Debug: move0: 34
 
@@ -20561,6 +21327,8 @@ baseSpAttack: 50
 baseSpDefense: 50
 type0: 8
 type1: 5
+ability0: 5
+ability1: 69
 
 [INFO] GBA Debug: move0: 34
 
@@ -20619,6 +21387,8 @@ baseSpAttack: 60
 baseSpDefense: 60
 type0: 8
 type1: 5
+ability0: 5
+ability1: 69
 
 [INFO] GBA Debug: move0: 5
 
@@ -20697,6 +21467,8 @@ baseSpAttack: 70
 baseSpDefense: 70
 type0: 0
 type1: 0
+ability0: 59
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -20751,6 +21523,8 @@ baseSpAttack: 47
 baseSpDefense: 75
 type0: 6
 type1: 6
+ability0: 35
+ability1: 68
 
 [INFO] GBA Debug: move0: 5
 
@@ -20821,6 +21595,8 @@ baseSpAttack: 73
 baseSpDefense: 75
 type0: 6
 type1: 6
+ability0: 12
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -20893,6 +21669,8 @@ baseSpAttack: 61
 baseSpDefense: 87
 type0: 5
 type1: 12
+ability0: 21
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -20947,6 +21725,8 @@ baseSpAttack: 81
 baseSpDefense: 107
 type0: 5
 type1: 12
+ability0: 21
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -21001,6 +21781,8 @@ baseSpAttack: 40
 baseSpDefense: 50
 type0: 5
 type1: 6
+ability0: 4
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -21055,6 +21837,8 @@ baseSpAttack: 70
 baseSpDefense: 80
 type0: 5
 type1: 6
+ability0: 4
+ability1: 0
 
 [INFO] GBA Debug: move0: 14
 
@@ -21111,6 +21895,8 @@ baseSpAttack: 45
 baseSpDefense: 35
 type0: 14
 type1: 14
+ability0: 28
+ability1: 36
 
 [INFO] GBA Debug: move0: 34
 
@@ -21175,6 +21961,8 @@ baseSpAttack: 65
 baseSpDefense: 55
 type0: 14
 type1: 14
+ability0: 28
+ability1: 36
 
 [INFO] GBA Debug: move0: 34
 
@@ -21239,6 +22027,8 @@ baseSpAttack: 125
 baseSpDefense: 115
 type0: 14
 type1: 14
+ability0: 28
+ability1: 36
 
 [INFO] GBA Debug: move0: 34
 
@@ -21303,6 +22093,8 @@ baseSpAttack: 40
 baseSpDefense: 30
 type0: 16
 type1: 16
+ability0: 69
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -21357,6 +22149,8 @@ baseSpAttack: 60
 baseSpDefense: 50
 type0: 16
 type1: 16
+ability0: 69
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -21417,6 +22211,8 @@ baseSpAttack: 110
 baseSpDefense: 80
 type0: 16
 type1: 2
+ability0: 22
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -21481,6 +22277,8 @@ baseSpAttack: 35
 baseSpDefense: 60
 type0: 8
 type1: 14
+ability0: 29
+ability1: 0
 
 [INFO] GBA Debug: move0: 36
 
@@ -21495,6 +22293,8 @@ baseSpAttack: 55
 baseSpDefense: 80
 type0: 8
 type1: 14
+ability0: 29
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -21567,6 +22367,8 @@ baseSpAttack: 95
 baseSpDefense: 90
 type0: 8
 type1: 14
+ability0: 29
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -21639,6 +22441,8 @@ baseSpAttack: 50
 baseSpDefense: 100
 type0: 5
 type1: 5
+ability0: 29
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -21713,6 +22517,8 @@ baseSpAttack: 100
 baseSpDefense: 200
 type0: 15
 type1: 15
+ability0: 29
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -21785,6 +22591,8 @@ baseSpAttack: 75
 baseSpDefense: 150
 type0: 8
 type1: 8
+ability0: 29
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -21859,6 +22667,8 @@ baseSpAttack: 150
 baseSpDefense: 140
 type0: 11
 type1: 11
+ability0: 2
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -21919,6 +22729,8 @@ baseSpAttack: 100
 baseSpDefense: 90
 type0: 4
 type1: 4
+ability0: 70
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -22001,6 +22813,8 @@ baseSpAttack: 150
 baseSpDefense: 90
 type0: 16
 type1: 2
+ability0: 77
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -22065,6 +22879,8 @@ baseSpAttack: 110
 baseSpDefense: 130
 type0: 16
 type1: 14
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -22129,6 +22945,8 @@ baseSpAttack: 130
 baseSpDefense: 110
 type0: 16
 type1: 14
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -22193,6 +23011,8 @@ baseSpAttack: 100
 baseSpDefense: 100
 type0: 8
 type1: 14
+ability0: 32
+ability1: 0
 
 [INFO] GBA Debug: move0: 34
 
@@ -22263,6 +23083,8 @@ baseSpAttack: 150
 baseSpDefense: 50
 type0: 14
 type1: 14
+ability0: 46
+ability1: 0
 
 [INFO] GBA Debug: move0: 5
 
@@ -22343,6 +23165,8 @@ baseSpAttack: 95
 baseSpDefense: 80
 type0: 14
 type1: 14
+ability0: 26
+ability1: 0
 
 [INFO] GBA Debug: move0: 38
 
@@ -22390,6 +23214,3 @@ type1: 14
 
 [INFO] GBA Debug: move22: 94
 
-[WARN] Debugger: Connection lost
-[INFO] GBA Debug: Should not be here
-[WARN] Debugger: Connection lost

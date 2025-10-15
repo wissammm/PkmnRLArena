@@ -181,3 +181,7 @@ class PkmnTeamFactory:
             if not self.is_pkmn_valid(pkmn):
                 return False
         return True
+    
+    def generate_batch_of_teams(self, batch_size: int, size_of_team :int = 1) -> npt.NDArray:
+        teams = [self.create_random_team(size_of_team=size_of_team) for _ in range(batch_size)]
+        return np.array(teams)
