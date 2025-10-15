@@ -1,15 +1,15 @@
-from pkmn_rl_arena.env.pkmn_team_factory import DataSize
 from .action import ActionManager, ACTION_SPACE_SIZE
 from .battle_core import BattleCore
 from .battle_state import TurnType
 from .observation import Observation, ObservationFactory, ObsIdx
 from .pkmn_team_factory import PkmnTeamFactory
+from .rendering import GameRendering
 from .reward.manager import RewardManager
 from .reward.functions import reward_functions
 from .save_state import SaveStateManager
-from pkmn_rl_arena.paths import PATHS
-from pkmn_rl_arena.env.rendering import GameRendering
 
+from pkmn_rl_arena.paths import PATHS
+from pkmn_rl_arena.data.pkmn_params import GenParamsSize
 from pkmn_rl_arena.logging import log
 
 from collections.abc import Callable
@@ -154,15 +154,15 @@ class BattleArena(ParallelEnv):
                 teams[agent] = self.team_factory.create_random_team(size_of_team=team_size)
                 continue
 
-            if len(team) % DataSize.PKMN != 0:
+            if len(team) % GenParamsSize.PKMN != 0:
                 raise ValueError(
                     f"Pkmn team creation : Incorrect param count for {agent}\'s team"
-                    f"\nA pkmn takes {DataSize.PKMN} params to be created, but received  {len(team)} params."
-                    f"\nWhich accounts for : {int(len(team) / DataSize.PKMN)} pkmns and {len(team) % DataSize.PKMN} leftover params."
+                    f"\nA pkmn takes {GenParamsSize.PKMN} params to be created, but received  {len(team)} params."
+                    f"\nWhich accounts for : {int(len(team) / GenParamsSize.PKMN)} pkmns and {len(team) % GenParamsSize.PKMN} leftover params."
                 )
 
-            while len(team) / DataSize.PKMN < DataSize.PARTY_SIZE:
-                team.extend([0, 0, 0, 0, 0, 0, 0, 0])
+            while len(team) / GenParamsSize.PKMN < GenParamsSize.PARTY_SIZE:
+                team.extend([0, 0, 0, 0, 0, 0, 0, 0])  # Empty pkmn slot
             if not self.team_factory.is_team_valid(np.array(team)):
                 raise ValueError('Invalid reset param : "team".')
 

@@ -4,19 +4,19 @@ from pkmn_rl_arena import log
 from pkmn_rl_arena.env.battle_core import BattleCore
 from pkmn_rl_arena.env.battle_state import BattleState
 from pkmn_rl_arena.env.battle_arena import BattleArena
-from pkmn_rl_arena.env.pkmn_team_factory import DataSize
 from pkmn_rl_arena.data import pokemon_data
 from pkmn_rl_arena.env.turn_type import TurnType
 
+from pkmn_rl_arena.data.pkmn_params import GenParamsSize
 
 from pettingzoo.test import parallel_api_test
-import numpy as np
 import picologging as logging
 
 import copy
 import random
 import unittest
 
+import numpy as np
 
 class TestArena(unittest.TestCase):
     def setUp(self):
@@ -185,7 +185,7 @@ class TestResetOptions(unittest.TestCase):
             gba_read_team_df = pokemon_data.to_pandas_team_dump_data(gba_read_team_data)
 
             for i in range(6):
-                start = i * DataSize.PKMN
+                start = i * GenParamsSize.PKMN
                 self.assertEqual(
                     gba_read_team_df.iloc[i]["id"],
                     ground_truth_team_params[start],
@@ -264,7 +264,7 @@ class TestResetOptions(unittest.TestCase):
                 empty_slots = team_df[team_df["id"] == 0]
                 self.assertEqual(
                     len(empty_slots), 
-                    DataSize.PARTY_SIZE - team_size,
+                    GenParamsSize.PARTY_SIZE - team_size,
                     f"Expected {6 - team_size} empty slots in {agent}'s team, got {len(empty_slots)}"
                 )
                     
@@ -273,8 +273,8 @@ class TestResetOptions(unittest.TestCase):
                 self.assertIsInstance(obs, np.ndarray)
                 self.assertEqual(
                     obs.shape[0], 
-                    DataSize.PARTY_SIZE * ObsIdx.NB_DATA_PKMN,
-                    f"Observation shape should always be 6*NB_DATA_PKMN regardless of team size"
+                    GenParamsSize.PARTY_SIZE * ObsIdx.NB_DATA_PKMN,
+                    f"Observation shape should always be {GenParamsSize.PARTY_SIZE} * NB_DATA_PKMN regardless of team size"
                 )
 
 
