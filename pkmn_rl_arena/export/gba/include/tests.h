@@ -64,7 +64,7 @@ process_data_chunk(const int8_t* data, int size, int global_offset, volatile u32
     volatile u32 hash = 0;
 
     for (int i = 0; i < size; i++) {
-        int idx = global_offset + i;  // ✅ Use global index consistently
+        int idx = global_offset + i;  
 
         sum += (u32)data[i] * (idx + 1);
         hash = ((hash << 3) + hash) + (u32)data[i] + idx;
@@ -422,6 +422,9 @@ test_optimized_double_buffering()
     return total_result & 0xFF;
 }
 
+IN_EWRAM int ewram_var = 1234;
+IN_IWRAM int iwram_var = 5678;
+
 // All tests
 static inline int all_tests()
 {
@@ -431,6 +434,8 @@ static inline int all_tests()
     u32 best_result = 0;
 
     iprintf("Running GBA memory transfer benchmarks...\n");
+    iprintf("ewram_var: %p\n", &ewram_var);
+    iprintf("iwram_var: %p\n", &iwram_var);
 
     start_time = timer_start(3);
     result = test_load_from_rom();

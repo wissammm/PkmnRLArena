@@ -66,7 +66,18 @@
         "battle_moves.h": "c",
         "text.h": "c",
         "battle_anim.h": "c",
-        "map_types.h": "c"
+        "map_types.h": "c",
+        "cstdint": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "span": "cpp",
+        "valarray": "cpp",
+        "deque": "cpp",
+        "forward_list": "cpp",
+        "list": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "vector": "cpp"
     },
     "terminal.integrated.shell.linux": "/bin/bash",
     "files.watcherExclude": {
