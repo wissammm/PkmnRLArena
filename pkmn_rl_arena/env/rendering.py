@@ -16,29 +16,7 @@ from typing import Dict
 from numpy import typing as npt
 
 from rich.live import Live
-
-TYPES_ID = {
-    255: "NONE",
-    0: "NORM",
-    1: "FIGHT",
-    2: "FLY",
-    3: "PSN",
-    4: "GRND",
-    5: "ROCK",
-    6: "BUG",
-    7: "GHOST",
-    8: "STEEL",
-    9: "MYSTERY",
-    10: "FIRE",
-    11: "WTR",
-    12: "GRASS",
-    13: "ELEK",
-    14: "PSY",
-    15: "ICE",
-    16: "DRAGON",
-    17: "DARK",
-    18: "NUMBER_OF_MON_TYPES",
-}
+from pkmn_rl_arena.policy.types import TYPES_ID
 
 
 class GameRendering:
