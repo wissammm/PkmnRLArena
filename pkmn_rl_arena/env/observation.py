@@ -52,7 +52,7 @@ class Observation:
         normalized_team = []
         
         MAX_SPECIES = 411
-        MAX_TYPE = 14
+        MAX_TYPE = 17
         MAX_STAT = 550
         MAX_HP = 550
         MAX_MOVE_ID = 354
