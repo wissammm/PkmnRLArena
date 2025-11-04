@@ -31,4 +31,5 @@ tests/test_export_data/include/forward.h
 tests/test_export_data/source/forward.c
 
 examples/gba
+target
 
