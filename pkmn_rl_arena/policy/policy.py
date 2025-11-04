@@ -1,4 +1,8 @@
 class Policy:
-    """From two observations, evaluate an action for obs1"""
+    """From observations, selects an action"""
+
+    #Defensive 
+    #Offensive
+    #Random
     pass
     

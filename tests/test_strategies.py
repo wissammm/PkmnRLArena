@@ -302,5 +302,326 @@ class TestDefensiveSwitchStrategy(unittest.TestCase):
         )
 
 
+class TestShouldSwitchToPreserve(unittest.TestCase):
+    def setUp(self):
+        log.setLevel(logging.DEBUG)
+        core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
+        self.arena = BattleArena(core)
+
+    def tearDown(self):
+        self.arena.close()
+
+    def test_should_switch_when_low_hp_and_disadvantaged(self):
+        """
+        Test that strategy suggests switching when:
+        - Active Pokemon has low HP (< 30%)
+        - Opponent has type advantage
+        - Better matchup available
+        """
+        options = {
+            "save_state": "boot_state",
+            "teams": {
+                # Grass type with low HP (weak to Fire)
+                "player": [
+                    1,       # Bulbasaur (Grass/Poison) - ACTIVE, low HP
+                    50,
+                    33,      # TACKLE
+                    0,
+                    0,
+                    0,
+                    20,      # 20% HP - low!
+                    0,
+                    7,       # Squirtle (Water) - BENCH, resists Fire
+                    50,
+                    33,      # TACKLE
+                    0,
+                    0,
+                    0,
+                    100,
+                    0,
+                ],
+                # Fire type opponent
+                "enemy": [
+                    4,       # Charmander (Fire type)
+                    50,
+                    52,      # EMBER (Fire move)
+                    0,
+                    0,
+                    0,
+                    100,
+                    0,
+                ],
+            },
+        }
+
+        self.arena.reset(options=options)
+        obs = self.arena.observation_factory.from_game()
+        
+        should_switch = Strategies.should_switch_to_preserve_pokemon(obs, "player")
+        
+        log.debug(f"Should switch to preserve: {should_switch}")
+        
+        self.assertTrue(
+            should_switch,
+            "Should switch when active Pokemon is low HP and at type disadvantage with better option available"
+        )
+
+    def test_should_not_switch_when_high_hp(self):
+        """
+        Test that strategy doesn't suggest switching when Pokemon has high HP.
+        """
+        options = {
+            "save_state": "boot_state",
+            "teams": {
+                # Grass type with high HP
+                "player": [
+                    1,       # Bulbasaur (Grass/Poison) - ACTIVE, high HP
+                    50,
+                    33,      # TACKLE
+                    0,
+                    0,
+                    0,
+                    80,      # 80% HP - still healthy!
+                    0,
+                    7,       # Squirtle (Water) - BENCH
+                    50,
+                    33,      # TACKLE
+                    0,
+                    0,
+                    0,
+                    100,
+                    0,
+                ],
+                # Fire type opponent
+                "enemy": [
+                    4,       # Charmander (Fire type)
+                    50,
+                    52,      # EMBER (Fire move)
+                    0,
+                    0,
+                    0,
+                    100,
+                    0,
+                ],
+            },
+        }
+
+        self.arena.reset(options=options)
+        obs = self.arena.observation_factory.from_game()
+        
+        should_switch = Strategies.should_switch_to_preserve_pokemon(obs, "player")
+        
+        log.debug(f"Should switch with high HP: {should_switch}")
+        
+        self.assertFalse(
+            should_switch,
+            "Should NOT switch when active Pokemon still has high HP (>30%)"
+        )
+
+
+class TestSetupMoveStrategy(unittest.TestCase):
+    def setUp(self):
+        log.setLevel(logging.DEBUG)
+        core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
+        self.arena = BattleArena(core)
+
+    def tearDown(self):
+        self.arena.close()
+
+    def test_setup_move_when_safe(self):
+        """
+        Test that setup moves are suggested when it's safe:
+        - Our HP > 70%
+        - Opponent HP < 30%
+        """
+        options = {
+            "save_state": "boot_state",
+            "teams": {
+                # Pokemon with Swords Dance (stat boost move)
+                "player": [
+                    47,      # Parasect
+                    50,
+                    14,      # SWORDS DANCE (effect = 50, ATK +2)
+                    34,      # Body SLam
+                    0,
+                    0,
+                    100,     # Full HP
+                    0,
+                ],
+                # Low HP opponent
+                "enemy": [
+                    16,      # Pidgey
+                    20,      # Low level
+                    33,      # TACKLE
+                    0,
+                    0,
+                    0,
+                    19,      # 19% HP - weak!
+                    0,
+                ],
+            },
+        }
+
+        self.arena.reset(options=options)
+        obs = self.arena.observation_factory.from_game()
+        
+        setup_moves = Strategies.get_setup_move_indices(obs, "player")
+        
+        log.debug(f"Setup move indices: {setup_moves}")
+        
+        self.assertGreater(
+            len(setup_moves),
+            0,
+            "Should suggest setup moves when we have high HP and opponent has low HP"
+        )
+
+    def test_no_setup_when_unsafe(self):
+        """
+        Test that setup moves are NOT suggested when unsafe:
+        - Opponent HP > 30% (healthy)
+        """
+        options = {
+            "save_state": "boot_state",
+            "teams": {
+                # Pokemon with Swords Dance
+                "player": [
+                    47,      # Parasect
+                    50,
+                    14,      # SWORDS DANCE
+                    34,      # TACKLE
+                    0,
+                    0,
+                    100,
+                    0,
+                ],
+                # Healthy opponent
+                "enemy": [
+                    143,     # Snorlax
+                    50,
+                    34,      # TACKLE
+                    0,
+                    0,
+                    0,
+                    100,     # Full HP - dangerous!
+                    0,
+                ],
+            },
+        }
+
+        self.arena.reset(options=options)
+        obs = self.arena.observation_factory.from_game()
+        
+        setup_moves = Strategies.get_setup_move_indices(obs, "player")
+        
+        log.debug(f"Setup moves when unsafe: {setup_moves}")
+        
+        self.assertEqual(
+            len(setup_moves),
+            0,
+            "Should NOT suggest setup moves when opponent is healthy"
+        )
+
+
+class TestStatusMoveStrategy(unittest.TestCase):
+    def setUp(self):
+        log.setLevel(logging.DEBUG)
+        core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
+        self.arena = BattleArena(core)
+
+    def tearDown(self):
+        self.arena.close()
+
+    def test_status_move_against_healthy_opponent(self):
+        """
+        Test that status moves are suggested against healthy opponent without status.
+        """
+        options = {
+            "save_state": "boot_state",
+            "teams": {
+                # Pokemon with Thunder Wave (paralyze status move)
+                "player": [
+                    25,      # Pikachu
+                    50,
+                    86,      # THUNDER WAVE (effect = 67, paralyze)
+                    84,      # THUNDERSHOCK
+                    0,
+                    0,
+                    100,
+                    0,
+                ],
+                # Healthy opponent without status
+                "enemy": [
+                    143,     # Snorlax
+                    50,
+                    34,      # TACKLE
+                    0,
+                    0,
+                    0,
+                    100,     # Full HP
+                    0,
+                ],
+            },
+        }
+
+        self.arena.reset(options=options)
+        obs = self.arena.observation_factory.from_game()
+        
+        status_moves = Strategies.get_status_move_indices(obs, "player")
+        
+        log.debug(f"Status move indices: {status_moves}")
+        
+        self.assertGreater(
+            len(status_moves),
+            0,
+            "Should suggest status moves against healthy opponent"
+        )
+
+    def test_no_status_move_against_low_hp_opponent(self):
+        """
+        Test that status moves are NOT suggested when opponent HP is low.
+        Better to just KO them instead.
+        """
+        options = {
+            "save_state": "boot_state",
+            "teams": {
+                # Pokemon with Thunder Wave
+                "player": [
+                    25,      # Pikachu
+                    50,
+                    86,      # THUNDER WAVE
+                    84,      # THUNDERSHOCK
+                    0,
+                    0,
+                    100,
+                    0,
+                ],
+                # Low HP opponent
+                "enemy": [
+                    16,      # Pidgey
+                    20,
+                    33,      # TACKLE
+                    0,
+                    0,
+                    0,
+                    30,      # 30% HP - low
+                    0,
+                ],
+            },
+        }
+
+        self.arena.reset(options=options)
+        obs = self.arena.observation_factory.from_game()
+        
+        status_moves = Strategies.get_status_move_indices(obs, "player")
+        
+        log.debug(f"Status moves against low HP: {status_moves}")
+        
+        self.assertEqual(
+            len(status_moves),
+            0,
+            "Should NOT suggest status moves when opponent HP is low (<70%)"
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
