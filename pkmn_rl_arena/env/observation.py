@@ -261,6 +261,7 @@ class Observation:
             for pkmn in pokemon_data:
                 result[agent].append(int(pkmn[ObsIdx.RAW_DATA["HP"]]) == 0)
         return result
+
     def who_won(self) -> str | None:
         for agent, has_won in {
             agent: not all( ko == 1 for ko in pkmn_ko) for agent, pkmn_ko in self.pkmn_ko().items()
