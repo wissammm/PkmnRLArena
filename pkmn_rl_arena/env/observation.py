@@ -1,293 +1,32 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 from dataclasses import dataclass
+import numpy as np
 from numpy import typing as npt
+import pandas as pd
 from pkmn_rl_arena.paths import PATHS
 from pkmn_rl_arena.env.pkmn_team_factory import DataSize 
 
 from pkmn_rl_arena.env.battle_core import BattleCore
 from pkmn_rl_arena.env.pkmn_team_factory import PkmnTeamFactory
 
-import numpy as np
-import pandas as pd
-
 AgentObs = npt.NDArray[int]
 
-
-
-@dataclass
-class Observation:
-    """
-    This class is a wrapper around the observation type Dict[str, Agent]
-    It mainly serves as an index helper.
-
-    The functions here are placeholders to fill.
-
-    str : either "player" or "ennemy"
-    Agent :
-    """
-
-    _o: Dict[str, AgentObs]
-
-    def agent(self, a: str) -> npt.NDArray[int]:
-        if a not in self._o.keys():
-            raise ValueError(
-                f"Invalid agent name, must be in {self.o.keys()}, got {a}."
-            )
-        return self._o[a]
-
-    def get_agent_data(self, agent: str) -> AgentObs:
-        """Get the full observation array for an agent"""
-        if agent not in self._o:
-            raise ValueError(f"Invalid agent name, must be in {self._o.keys()}, got {agent}.")
-        return self._o[agent]
-    
-    def get_normalized_agent_data(self, agent: str) -> AgentObs:
-        """Get the full observation array for an agent, normalized to [0,1]"""
-        if agent not in self._o:
-            raise ValueError(f"Invalid agent name, must be in {self._o.keys()}, got {agent}.")
-        
-        raw_data = self._o[agent].copy().astype(float)
-        
-        pokemon_data = np.split(raw_data, DataSize.PARTY_SIZE)
-        normalized_team = []
-        
-        MAX_SPECIES = 411
-        MAX_TYPE = 17
-        MAX_STAT = 550
-        MAX_HP = 550
-        MAX_MOVE_ID = 354
-        MAX_POWER = 256
-        MAX_ACCURACY = 100
-        MAX_PP = 40
-        MAX_LEVEL = 100
-        MAX_FRIENDSHIP = 255
-        
-        for pkmn in pokemon_data:
-            normalized_pkmn = pkmn.copy()
-            normalized_pkmn[ObsIdx.RAW_DATA["species"]] /= MAX_SPECIES
-            for i in range(ObsIdx.RAW_DATA["stats_begin"], ObsIdx.RAW_DATA["stats_end"]):
-                normalized_pkmn[i] /= MAX_STAT
-            normalized_pkmn[ObsIdx.RAW_DATA["type_1"]] /= MAX_TYPE
-            normalized_pkmn[ObsIdx.RAW_DATA["type_2"]] /= MAX_TYPE
-            normalized_pkmn[ObsIdx.RAW_DATA["ability"]]
-            normalized_pkmn[ObsIdx.RAW_DATA["HP"]] /= MAX_HP
-            normalized_pkmn[ObsIdx.RAW_DATA["max_HP"]] /= MAX_HP
-            normalized_pkmn[ObsIdx.RAW_DATA["level"]] /= MAX_LEVEL
-            normalized_pkmn[ObsIdx.RAW_DATA["friendship"]] /= MAX_FRIENDSHIP
-            # Normalize move data
-            for i in range(ObsIdx.MAX_PKMN_MOVES):
-                move_start = ObsIdx.RAW_DATA["moves_begin"] + (i * ObsIdx.RAW_DATA["move_slot_stride"])
-                
-                normalized_pkmn[move_start + ObsIdx.RAW_DATA["move_id_offset"]] /= MAX_MOVE_ID
-                normalized_pkmn[move_start + ObsIdx.RAW_DATA["pp_offset"]] /= MAX_PP
-                normalized_pkmn[move_start + ObsIdx.RAW_DATA["power_offset"]] /= MAX_POWER
-                normalized_pkmn[move_start + ObsIdx.RAW_DATA["type_offset"]] /= MAX_TYPE
-                normalized_pkmn[move_start + ObsIdx.RAW_DATA["accuracy_offset"]] /= MAX_ACCURACY
-                
-                # Normalize priority (-7 to 7, so shift to 0-14 first)
-                priority = normalized_pkmn[move_start + ObsIdx.RAW_DATA["priority_offset"]]
-                normalized_pkmn[move_start + ObsIdx.RAW_DATA["priority_offset"]] = (priority + 7) / 14
-                
-                normalized_pkmn[move_start + ObsIdx.RAW_DATA["secondaryEffectChance_offset"]] /= 100
-                
-                normalized_pkmn[move_start + ObsIdx.RAW_DATA["target_offset"]] /= 10
-                
-            
-            normalized_team.append(normalized_pkmn)
-
-        return np.concatenate(normalized_team)
-    
-    def get_reduced_agent_data(self, agent: str) -> AgentObs:
-        """
-        Return a reduced version of the observation array for an agent.
-        - Removes useless identifiers (species, move_id, personality, etc.)
-        - Keeps only meaningful numerical + categorical features.
-
-        Returns:
-            np.ndarray: Flattened vector of selected features for the entire team.
-        """
-        if agent not in self._o:
-            raise ValueError(f"Invalid agent name, must be in {self._o.keys()}, got {agent}.")
-        
-        raw_data = self._o[agent]
-        pokemon_data = np.split(raw_data, DataSize.PARTY_SIZE)
-        reduced_team = []
-
-        for pkmn in pokemon_data:
-            reduced = []
-
-            reduced.append(pkmn[ObsIdx.RAW_DATA["is_active"]]) 
-            reduced.extend(pkmn[ObsIdx.RAW_DATA["stats_begin"]:ObsIdx.RAW_DATA["stats_end"]])
-
-            #Embedding for that 
-            reduced.append(pkmn[ObsIdx.RAW_DATA["ability"]])
-            reduced.append(pkmn[ObsIdx.RAW_DATA["type_1"]])
-            reduced.append(pkmn[ObsIdx.RAW_DATA["type_2"]])
-
-
-            reduced.append(pkmn[ObsIdx.RAW_DATA["HP"]])
-            reduced.append(pkmn[ObsIdx.RAW_DATA["max_HP"]])
-            reduced.append(pkmn[ObsIdx.RAW_DATA["level"]])
-            reduced.append(pkmn[ObsIdx.RAW_DATA["friendship"]])
-
-            # Embedding for that 
-            reduced.append(pkmn[ObsIdx.RAW_DATA["held_item"]])
-            reduced.append(pkmn[ObsIdx.RAW_DATA["status"]])
-
-            for i in range(ObsIdx.MAX_PKMN_MOVES):
-                move_start = ObsIdx.RAW_DATA["moves_begin"] + (i * ObsIdx.RAW_DATA["move_slot_stride"])
-                move = []
-
-                move.append(pkmn[move_start + ObsIdx.RAW_DATA["pp_offset"]])
-                move.append(pkmn[move_start + ObsIdx.RAW_DATA["power_offset"]])
-                move.append(pkmn[move_start + ObsIdx.RAW_DATA["accuracy_offset"]])
-                move.append(pkmn[move_start + ObsIdx.RAW_DATA["priority_offset"]])
-                move.append(pkmn[move_start + ObsIdx.RAW_DATA["secondaryEffectChance_offset"]])
-
-                # Embedding for that 
-                move.append(pkmn[move_start + ObsIdx.RAW_DATA["effect_offset"]])
-                move.append(pkmn[move_start + ObsIdx.RAW_DATA["type_offset"]])
-
-                # Usefull ? 
-                move.append(pkmn[move_start + ObsIdx.RAW_DATA["target_offset"]])
-                move.append(pkmn[move_start + ObsIdx.RAW_DATA["flags_offset"]])
-
-                reduced.extend(move)
-
-            reduced_team.append(np.array(reduced, dtype=float))
-
-        return np.concatenate(reduced_team)
-
-
-    def active_pkmn(self) -> Dict[str, int]:
-        """
-        Return active pkmn idx for each agent
-        """
-        result = {}
-        for agent in self._o:
-            agent_data = self._o[agent]
-            pokemon_data = np.split(agent_data, 6)
-            
-            for i, pkmn in enumerate(pokemon_data):
-                if pkmn[ObsIdx.RAW_DATA["is_active"]] == 1:
-                    result[agent] = i
-                    break
-            
-            if agent not in result:
-                result[agent] = None
-                
-        return result
-    def get_pp(self) -> Dict[str, List[int]]:
-        """
-        Return current PP values for all moves of the active Pokémon in each team
-        """
-        result = {"player": [], "enemy": []}
-        
-        for agent in self._o:
-            agent_data = self._o[agent]
-            pokemon_data = np.split(agent_data, 6)
-            
-            active_pkmn = None
-            for pkmn in pokemon_data:
-                if pkmn[ObsIdx.RAW_DATA["is_active"]] == 1:
-                    active_pkmn = pkmn
-                    break
-            
-            if active_pkmn is not None:
-                for i in range(ObsIdx.MAX_PKMN_MOVES):
-                    move_start = ObsIdx.RAW_DATA["moves_begin"] + (i * ObsIdx.RAW_DATA["move_slot_stride"])
-                    pp = active_pkmn[move_start + ObsIdx.RAW_DATA["pp_offset"]]
-                    result[agent].append(pp)
-            else:
-                result[agent] = [0] * ObsIdx.MAX_PKMN_MOVES  # No active Pokémon, return 0 PP for all moves
-                
-        return result
-
-    
-    def hp(self) -> Dict[str, List[int]]:
-        """
-        Return current HP values for all Pokémon in each team
-        """
-        result = {"player": [], "enemy": []}
-        
-        for agent in self._o:
-            agent_data = self._o[agent]
-            pokemon_data = np.split(agent_data, 6)
-            for pkmn in pokemon_data:
-                result[agent].append(int(pkmn[ObsIdx.RAW_DATA["HP"]]))
-
-        return result
-
-    def lvl(self) -> Dict[str, List[int]]:
-        result = {"player": [], "enemy": []}
-
-        for agent, data in self._o.items():
-            pokemon_data = np.split(data, DataSize.PARTY_SIZE)
-
-            for pkmn in pokemon_data:
-                result[agent].append(int(pkmn[ObsIdx.RAW_DATA["level"]]))
-
-        return result
-
-    def stats(self) -> Dict[str, List[List[int]]]:
-        """
-        Return current stat values for all Pokémon in each team
-        Returns a dictionary with agents as keys, and values a stat array for each pkmn
-        Each stat array contains [ATK, DEF, SPEED, SPATK, SPDEF]
-        """
-        result = {"player": [], "enemy": []}
-        
-        for agent in self._o:
-            agent_data = self._o[agent]
-            pokemon_data = np.split(agent_data, DataSize.PARTY_SIZE)
-            
-            for pkmn in pokemon_data:
-                stats = pkmn[ObsIdx.RAW_DATA["stats_begin"]:ObsIdx.RAW_DATA["stats_end"]].tolist()
-                result[agent].append(stats)
-                
-        return result
-
-    def pkmn_ko(self) -> Dict[str, List[bool]]:
-        """
-        Returns for each agent a list of booleans indicating if each Pokémon is KO'd
-        A Pokémon is KO'd if its HP is 0
-        """
-        result = {"player": [], "enemy": []}
-        
-        for agent in self._o:
-            agent_data = self._o[agent]
-            pokemon_data = np.split(agent_data, DataSize.PARTY_SIZE)
-            
-            for pkmn in pokemon_data:
-                result[agent].append(int(pkmn[ObsIdx.RAW_DATA["HP"]]) == 0)
-        return result
-
-    def who_won(self) -> str | None:
-        for agent, has_won in {
-            agent: not all( ko == 1 for ko in pkmn_ko) for agent, pkmn_ko in self.pkmn_ko().items()
-        }.items():
-            if has_won:
-                return agent
-        return None
-
-        
 @dataclass(frozen=True)
 class ObsIdx:
 
     MAX_PKMN_MOVES = 4
     NB_STATS_PER_PKMN = 5  # ATK, DEF, SPEED, SPATK, SPDEF
-    MOVE_ATTRIBUTES_PER_MOVE = 10  # id, pp, effect, power, type, accuracy, pp, priority, secondaryEffectChance, target, flags
+    MOVE_ATTRIBUTES_PER_MOVE = 10  # id, pp, effect, power, type, accuracy, priority, secondaryEffectChance, target, flags
     NB_DATA_PKMN = 20 + (MAX_PKMN_MOVES * MOVE_ATTRIBUTES_PER_MOVE)  # 20 base fields + move data
     OBS_SIZE = 6 * NB_DATA_PKMN  
     RAW_DATA = {
        "species": 0,
         "is_active": 1,
 
-        # Stats [2..6] => Python slice end is exclusive, so use 7
-        "stats_begin": 2,   # ATK, DEF, SPEED, SPATK, SPDEF
-        "stats_end": 7,     # exclusive
+        "stats_begin": 2,
+        "stats_end": 7,  
 
-        "ability": 7,       # ability num
+        "ability": 7,
         "type_1": 8,
         "type_2": 9,
 
@@ -299,16 +38,10 @@ class ObsIdx:
         "pp_bonuses": 15,
         "personality": 16,
         "status": 17,
-        "status_2": 18,     # reserved in dump
-        "status_3": 19,     # reserved in dump
-
-        # Move data with all attributes from moves_data.csv
-        # For each move, we store:
-        # [move_id, pp, effect, power, type, accuracy, priority, secondaryEffectChance, target, flags]
+        "status_2": 18,
+        "status_3": 19,
         "moves_begin": 20,
-        "moves_end": 20 + (MAX_PKMN_MOVES * MOVE_ATTRIBUTES_PER_MOVE),  # exclusive
-        
-        # Attribute offsets within each move's data block
+        "moves_end": 20 + (MAX_PKMN_MOVES * MOVE_ATTRIBUTES_PER_MOVE),
         "move_id_offset": 0,
         "pp_offset": 1,
         "effect_offset": 2,
@@ -320,112 +53,302 @@ class ObsIdx:
         "target_offset": 8,
         "flags_offset": 9,
         
-        # Each move occupies MOVE_ATTRIBUTES_PER_MOVE slots
         "move_slot_stride": MOVE_ATTRIBUTES_PER_MOVE,
     }
+
+@dataclass
+class Observation:
+    """
+    This class is a wrapper around the observation type Dict[str, Agent]
+    It mainly serves as an index helper.
+    """
+
+    _o: Dict[str, AgentObs]
+
+    def agent(self, a: str) -> npt.NDArray[int]:
+        return self._o[a]
+
+    def get_agent_data(self, agent: str) -> AgentObs:
+        return self._o[agent]
     
+    def get_normalized_agent_data(self, agent: str) -> AgentObs:
+        if agent not in self._o:
+            raise ValueError(f"Invalid agent name, must be in {self._o.keys()}, got {agent}.")
+            
+        raw_data = self._o[agent].astype(float)
+        pokemon_data = raw_data.reshape((DataSize.PARTY_SIZE, ObsIdx.NB_DATA_PKMN))
+        
+        # Constants for normalization
+        MAX_SPECIES = 411
+        MAX_STAT = 550
+        MAX_HP = 550
+        MAX_LEVEL = 100
+        MAX_FRIENDSHIP = 255
+        MAX_ITEM = 500
+        MAX_ABILITY = 100
+        MAX_TYPE = 18
+        MAX_MOVE_ID = 354
+        MAX_PP = 40
+        MAX_POWER = 255
+        MAX_ACCURACY = 100
+        
+        # Normalize Base Fields
+        pokemon_data[:, ObsIdx.RAW_DATA["species"]] /= MAX_SPECIES
+        # is_active is already 0/1
+        pokemon_data[:, ObsIdx.RAW_DATA["stats_begin"]:ObsIdx.RAW_DATA["stats_end"]] /= MAX_STAT
+        pokemon_data[:, ObsIdx.RAW_DATA["ability"]] /= MAX_ABILITY
+        pokemon_data[:, ObsIdx.RAW_DATA["type_1"]] /= MAX_TYPE
+        pokemon_data[:, ObsIdx.RAW_DATA["type_2"]] /= MAX_TYPE
+        pokemon_data[:, ObsIdx.RAW_DATA["HP"]] /= MAX_HP
+        pokemon_data[:, ObsIdx.RAW_DATA["max_HP"]] /= MAX_HP
+        pokemon_data[:, ObsIdx.RAW_DATA["level"]] /= MAX_LEVEL
+        pokemon_data[:, ObsIdx.RAW_DATA["friendship"]] /= MAX_FRIENDSHIP
+        pokemon_data[:, ObsIdx.RAW_DATA["held_item"]] /= MAX_ITEM
+        pokemon_data[:, ObsIdx.RAW_DATA["pp_bonuses"]] /= 255.0
+        
+        # Personality: Random noise, set to 0 for normalized obs
+        pokemon_data[:, ObsIdx.RAW_DATA["personality"]] = 0.0
+        
+        # Status: Bitfield. Normalize by max uint32 to keep in [0,1]
+        pokemon_data[:, ObsIdx.RAW_DATA["status"]] /= 4294967295.0
+        pokemon_data[:, ObsIdx.RAW_DATA["status_2"]] /= 4294967295.0
+        pokemon_data[:, ObsIdx.RAW_DATA["status_3"]] /= 4294967295.0
+
+        # Normalize Moves
+        moves_data = pokemon_data[:, ObsIdx.RAW_DATA["moves_begin"]:].reshape((DataSize.PARTY_SIZE, ObsIdx.MAX_PKMN_MOVES, ObsIdx.MOVE_ATTRIBUTES_PER_MOVE))
+        
+        moves_data[:, :, ObsIdx.RAW_DATA["move_id_offset"]] /= MAX_MOVE_ID
+        moves_data[:, :, ObsIdx.RAW_DATA["pp_offset"]] /= MAX_PP
+        moves_data[:, :, ObsIdx.RAW_DATA["power_offset"]] /= MAX_POWER
+        moves_data[:, :, ObsIdx.RAW_DATA["type_offset"]] /= MAX_TYPE
+        moves_data[:, :, ObsIdx.RAW_DATA["accuracy_offset"]] /= MAX_ACCURACY
+        
+        # Priority: -7 to 7 -> 0 to 1
+        moves_data[:, :, ObsIdx.RAW_DATA["priority_offset"]] = (moves_data[:, :, ObsIdx.RAW_DATA["priority_offset"]] + 7) / 14
+        
+        moves_data[:, :, ObsIdx.RAW_DATA["secondaryEffectChance_offset"]] /= 100
+        moves_data[:, :, ObsIdx.RAW_DATA["target_offset"]] /= 10
+        
+        return pokemon_data.flatten()
+    
+    def get_reduced_agent_data(self, agent: str) -> AgentObs:
+        if agent not in self._o:
+            raise ValueError(f"Invalid agent name, must be in {self._o.keys()}, got {agent}.")
+        
+        raw_data = self._o[agent].astype(float)
+        pokemon_data = raw_data.reshape((DataSize.PARTY_SIZE, ObsIdx.NB_DATA_PKMN))
+        
+        base_indices = [
+            ObsIdx.RAW_DATA["is_active"],
+            *range(ObsIdx.RAW_DATA["stats_begin"], ObsIdx.RAW_DATA["stats_end"]),
+            ObsIdx.RAW_DATA["ability"],
+            ObsIdx.RAW_DATA["type_1"],
+            ObsIdx.RAW_DATA["type_2"],
+            ObsIdx.RAW_DATA["HP"],
+            ObsIdx.RAW_DATA["max_HP"],
+            ObsIdx.RAW_DATA["level"],
+            ObsIdx.RAW_DATA["friendship"],
+            ObsIdx.RAW_DATA["held_item"],
+            ObsIdx.RAW_DATA["status"]
+        ]
+        
+        move_offsets = [
+            ObsIdx.RAW_DATA["pp_offset"],
+            ObsIdx.RAW_DATA["power_offset"],
+            ObsIdx.RAW_DATA["accuracy_offset"],
+            ObsIdx.RAW_DATA["priority_offset"],
+            ObsIdx.RAW_DATA["secondaryEffectChance_offset"],
+            ObsIdx.RAW_DATA["effect_offset"],
+            ObsIdx.RAW_DATA["type_offset"],
+            ObsIdx.RAW_DATA["target_offset"],
+            ObsIdx.RAW_DATA["flags_offset"]
+        ]
+        
+        reduced_team = []
+        for i in range(DataSize.PARTY_SIZE):
+            pkmn = pokemon_data[i]
+            reduced_pkmn = pkmn[base_indices]
+            moves_part = pkmn[ObsIdx.RAW_DATA["moves_begin"]:].reshape((ObsIdx.MAX_PKMN_MOVES, ObsIdx.MOVE_ATTRIBUTES_PER_MOVE))
+            reduced_moves = moves_part[:, move_offsets].flatten()
+            reduced_team.append(np.concatenate([reduced_pkmn, reduced_moves]))
+            
+        return np.concatenate(reduced_team)
+
+    def get_embedding_data(self, agent: str) -> Dict[str, AgentObs]:
+        if agent not in self._o:
+            raise ValueError(f"Invalid agent name, must be in {self._o.keys()}, got {agent}.")
+        
+        raw_data = self._o[agent].astype(float)
+        pokemon_data = raw_data.reshape((DataSize.PARTY_SIZE, ObsIdx.NB_DATA_PKMN))
+        
+        MAX_STAT = 550
+        MAX_HP = 550
+        MAX_POWER = 256
+        MAX_ACCURACY = 100
+        MAX_PP = 40
+        MAX_LEVEL = 100
+        MAX_FRIENDSHIP = 255
+
+        cat_base_indices = [
+            ObsIdx.RAW_DATA["species"],
+            ObsIdx.RAW_DATA["ability"],
+            ObsIdx.RAW_DATA["type_1"],
+            ObsIdx.RAW_DATA["type_2"],
+            ObsIdx.RAW_DATA["held_item"],
+            ObsIdx.RAW_DATA["status"]
+        ]
+        
+        cat_move_offsets = [
+            ObsIdx.RAW_DATA["move_id_offset"],
+            ObsIdx.RAW_DATA["effect_offset"],
+            ObsIdx.RAW_DATA["type_offset"],
+            ObsIdx.RAW_DATA["target_offset"],
+            ObsIdx.RAW_DATA["flags_offset"]
+        ]
+
+        continuous_data_list = []
+        categorical_data_list = []
+
+        for i in range(DataSize.PARTY_SIZE):
+            pkmn = pokemon_data[i]
+            categorical_data_list.append(pkmn[cat_base_indices].astype(int))
+            
+            c_active = pkmn[ObsIdx.RAW_DATA["is_active"]]
+            c_stats = pkmn[ObsIdx.RAW_DATA["stats_begin"]:ObsIdx.RAW_DATA["stats_end"]] / MAX_STAT
+            c_hp = pkmn[ObsIdx.RAW_DATA["HP"]] / MAX_HP
+            c_max_hp = pkmn[ObsIdx.RAW_DATA["max_HP"]] / MAX_HP
+            c_lvl = pkmn[ObsIdx.RAW_DATA["level"]] / MAX_LEVEL
+            c_friend = pkmn[ObsIdx.RAW_DATA["friendship"]] / MAX_FRIENDSHIP
+            
+            continuous_data_list.extend([c_active])
+            continuous_data_list.append(c_stats)
+            continuous_data_list.extend([c_hp, c_max_hp, c_lvl, c_friend])
+
+            moves_part = pkmn[ObsIdx.RAW_DATA["moves_begin"]:].reshape((ObsIdx.MAX_PKMN_MOVES, ObsIdx.MOVE_ATTRIBUTES_PER_MOVE))
+            categorical_data_list.append(moves_part[:, cat_move_offsets].flatten().astype(int))
+            
+            m_pp = moves_part[:, ObsIdx.RAW_DATA["pp_offset"]] / MAX_PP
+            m_power = moves_part[:, ObsIdx.RAW_DATA["power_offset"]] / MAX_POWER
+            m_acc = moves_part[:, ObsIdx.RAW_DATA["accuracy_offset"]] / MAX_ACCURACY
+            m_prio = (moves_part[:, ObsIdx.RAW_DATA["priority_offset"]] + 7) / 14
+            m_sec = moves_part[:, ObsIdx.RAW_DATA["secondaryEffectChance_offset"]] / 100
+            
+            m_cont_stacked = np.stack([m_pp, m_power, m_acc, m_prio, m_sec], axis=1).flatten()
+            continuous_data_list.append(m_cont_stacked)
+            
+        return {
+            "categorical": np.concatenate(categorical_data_list),
+            "continuous": np.concatenate([np.atleast_1d(x) for x in continuous_data_list])
+        }
+
+    def active_pkmn(self) -> Dict[str, int]:
+        res = {}
+        for agent in ["player", "enemy"]:
+            raw = self._o[agent].reshape((DataSize.PARTY_SIZE, ObsIdx.NB_DATA_PKMN))
+            actives = np.where(raw[:, ObsIdx.RAW_DATA["is_active"]] == 1)[0]
+            res[agent] = actives[0] if len(actives) > 0 else 0
+        return res
+
+    def get_pp(self) -> Dict[str, List[int]]:
+        res = {}
+        for agent in ["player", "enemy"]:
+            raw = self._o[agent].reshape((DataSize.PARTY_SIZE, ObsIdx.NB_DATA_PKMN))
+            # Extract PPs for all moves of active pokemon
+            active_idx = self.active_pkmn()[agent]
+            moves = raw[active_idx, ObsIdx.RAW_DATA["moves_begin"]:].reshape((ObsIdx.MAX_PKMN_MOVES, ObsIdx.MOVE_ATTRIBUTES_PER_MOVE))
+            res[agent] = moves[:, ObsIdx.RAW_DATA["pp_offset"]].tolist()
+        return res
+    
+    def hp(self) -> Dict[str, List[int]]:
+        res = {}
+        for agent in ["player", "enemy"]:
+            raw = self._o[agent].reshape((DataSize.PARTY_SIZE, ObsIdx.NB_DATA_PKMN))
+            res[agent] = raw[:, ObsIdx.RAW_DATA["HP"]].astype(int).tolist()
+        return res
+
+    def lvl(self) -> Dict[str, List[int]]:
+        res = {}
+        for agent in ["player", "enemy"]:
+            raw = self._o[agent].reshape((DataSize.PARTY_SIZE, ObsIdx.NB_DATA_PKMN))
+            res[agent] = raw[:, ObsIdx.RAW_DATA["level"]].astype(int).tolist()
+        return res
+
+    def stats(self) -> Dict[str, List[List[int]]]:
+        res = {}
+        for agent in ["player", "enemy"]:
+            raw = self._o[agent].reshape((DataSize.PARTY_SIZE, ObsIdx.NB_DATA_PKMN))
+            res[agent] = raw[:, ObsIdx.RAW_DATA["stats_begin"]:ObsIdx.RAW_DATA["stats_end"]].astype(int).tolist()
+        return res
+
+    def pkmn_ko(self) -> Dict[str, List[bool]]:
+        res = {}
+        hps = self.hp()
+        for agent in ["player", "enemy"]:
+            # A pokemon is KO if HP is 0. Note: Empty slots (species 0) also have HP 0.
+            res[agent] = [h == 0 for h in hps[agent]]
+        return res
+
+    def who_won(self) -> str | None:
+        player_hp = self.hp()["player"]
+        enemy_hp = self.hp()["enemy"]
+        
+        # Check if ANY pokemon has HP > 0
+        player_alive = np.any(np.array(player_hp) > 0)
+        enemy_alive = np.any(np.array(enemy_hp) > 0)
+        
+        if not player_alive:
+            return "enemy"
+        if not enemy_alive:
+            return "player"
+        
+        return None
+
 class ObservationFactory:
-    """
-    Manages extraction and formatting of observations from the battle state.
-
-    Observations are Dict[str,npt.NDarray[int]].
-    ```python
-    obs = {
-        "player" : np.array(size of agent state),
-         "agent" : np.array(size of agent state)
-    }
-    ```
-    """
-
     def __init__(self, battle_core: BattleCore):
         self.battle_core = battle_core
         self.moves_df = pd.read_csv(PATHS["MOVES_CSV"])
+        self._init_move_lookup()
+
+    def _init_move_lookup(self):
+        max_move_id = self.moves_df['id'].max()
+        self.move_lookup = np.zeros((max_move_id + 1, 8), dtype=int)
+        
+        for _, row in self.moves_df.iterrows():
+            mid = int(row['id'])
+            self.move_lookup[mid] = [
+                row['effect'], row['power'], row['type'], row['accuracy'],
+                row['priority'], row['secondaryEffectChance'], row['target'], row['flags']
+            ]
 
     def from_game(self) -> Observation:
-        """
-        For both agents, build an observation vector from raw game data.
-        Steps:
-        1. Extract relevant Pokémon attributes (active flag, stats, ability → status).
-        2. For each move: include id, pp info, and extra move stats.
-        3. Concatenate into a flat observation array for the agent.
-        """
-        # Load move attributes from CSV
-        move_attrs = {}
-        for _, row in self.moves_df.iterrows():
-            move_id = int(row['id'])
-            move_attrs[move_id] = {
-                'effect': int(row['effect']),
-                'power': int(row['power']),
-                'type': int(row['type']),
-                'accuracy': int(row['accuracy']),
-                'pp': int(row['pp']),  # This is max PP from the moves data
-                'priority': int(row['priority']),
-                'secondaryEffectChance': int(row['secondaryEffectChance']),
-                'target': int(row['target']),
-                'flags': int(row['flags'])
-            }
-        
         observations = {}
         for agent in ["player", "enemy"]:
-            raw_team_data = self.battle_core.read_team_data(agent)
-            raw_data_list = np.split(
-                np.array(raw_team_data, dtype=int),
-                indices_or_sections=6,
-            )
+            raw = self.battle_core.read_team_data(agent)
+            raw_np = np.array(raw, dtype=int).reshape((DataSize.PARTY_SIZE, 28))
             
-            team_obs = []
-            for pkmn_data in raw_data_list:
-                pkmn_obs = list(pkmn_data[:20])
-                
-                for i in range(0, ObsIdx.MAX_PKMN_MOVES):
-                    move_idx = 20 + (i * 2)      # 20, 22, 24, 26
-                    pp_idx = move_idx + 1        # 21, 23, 25, 27
-                    
-                    move_id = pkmn_data[move_idx]
-                    current_pp = pkmn_data[pp_idx]
-                    
-                    move_obs = [move_id, current_pp]
-                    
-                    if move_id > 0 and move_id in move_attrs:
-                        attrs = move_attrs[move_id]
-                        move_obs.extend([
-                            attrs['effect'],
-                            attrs['power'],
-                            attrs['type'],
-                            attrs['accuracy'],
-                            attrs['priority'],
-                            attrs['secondaryEffectChance'],
-                            attrs['target'],
-                            attrs['flags']
-                        ])
-                    else:
-                        move_obs.extend([0] * 8)  # 8 additional attributes
-                    
-                    pkmn_obs.extend(move_obs)
-                
-                team_obs.extend(pkmn_obs)
+            obs_full = np.zeros((DataSize.PARTY_SIZE, ObsIdx.NB_DATA_PKMN), dtype=int)
             
-            observations[agent] = np.array(team_obs, dtype=int)
-        
+            # Copy base data (indices 0 to 19)
+            obs_full[:, :20] = raw_np[:, :20]
+            
+            # Process moves (indices 20-23 are IDs, 24-27 are PPs)
+            move_ids = raw_np[:, 20:24]
+            pps = raw_np[:, 24:28]
+            
+            for i in range(ObsIdx.MAX_PKMN_MOVES):
+                base_offset = ObsIdx.RAW_DATA["moves_begin"] + i * ObsIdx.MOVE_ATTRIBUTES_PER_MOVE
+                
+                obs_full[:, base_offset + ObsIdx.RAW_DATA["move_id_offset"]] = move_ids[:, i]
+                obs_full[:, base_offset + ObsIdx.RAW_DATA["pp_offset"]] = pps[:, i]
+                
+                safe_ids = np.clip(move_ids[:, i], 0, self.move_lookup.shape[0] - 1)
+                attrs = self.move_lookup[safe_ids]
+                obs_full[:, base_offset + 2 : base_offset + 10] = attrs
+            
+            observations[agent] = obs_full.flatten()
+            
         return Observation(_o=observations)
 
     def from_diff(o1: Observation, o2: Observation) -> Observation:
         diff_observations = {}
-
-        if set(o1._o.keys()) != set(o2._o.keys()):
-            raise ValueError("Observations must have the same agents")
-        
-        for agent in o1._o:
-            arr1 = o1._o[agent]
-            arr2 = o2._o[agent]
-            
-            if arr1.shape != arr2.shape:
-                raise ValueError(f"Observation arrays for agent {agent} have different shapes")
-            
-            diff = arr2 - arr1
-            
-            diff_observations[agent] = diff
-        
         return Observation(_o=diff_observations)
-    
-    

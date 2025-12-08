@@ -137,6 +137,77 @@ class TestObservation(unittest.TestCase):
                 enemy_obs[pkmn_start + ObsIdx.RAW_DATA["species"]], 0
             )
 
+    def test_reduced_observation(self):
+        """Test that reduced observation has correct size and content"""
+        teams = {
+            "player": [25, 50, 84, 0, 0, 0, 100, 0],
+            "enemy": [129, 10, 150, 0, 0, 0, 10, 0],
+        }
+        options = {"teams": teams}
+        self.arena.reset(options=options)
+        
+        obs = self.arena.observation_factory.from_game()
+        reduced_obs = obs.get_reduced_agent_data("player")
+        
+        #6 pokemon * 51 features = 306
+        expected_size = 306
+        self.assertEqual(reduced_obs.shape[0], expected_size)
+
+    def test_embedding_data(self):
+        """Test the splitting of data into categorical and continuous for embeddings"""
+        teams = {
+            "player": [25, 50, 84, 0, 0, 0, 100, 0],
+            "enemy": [129, 10, 150, 0, 0, 0, 10, 0],
+        }
+        options = {"teams": teams}
+        self.arena.reset(options=options)
+        
+        obs = self.arena.observation_factory.from_game()
+        emb_data = obs.get_embedding_data("player")
+        
+        self.assertIn("categorical", emb_data)
+        self.assertIn("continuous", emb_data)
+        
+        cat_data = emb_data["categorical"]
+        cont_data = emb_data["continuous"]
+        
+        self.assertTrue(np.issubdtype(cat_data.dtype, np.integer))
+        self.assertTrue(np.issubdtype(cont_data.dtype, np.floating))
+        
+        self.assertEqual(cat_data[0], 25)
+        
+        self.assertEqual(cont_data[0], 1.0)
+        
+        self.assertTrue(np.all(cont_data >= 0.0))
+        self.assertTrue(np.all(cont_data <= 1.0))
+
+    def test_helper_methods(self):
+        """Test helper methods like active_pkmn, hp, etc."""
+        teams = {
+            "player": [25, 50, 84, 0, 0, 0, 100, 0],
+            "enemy": [129, 10, 150, 0, 0, 0, 10, 0],
+        }
+        options = {"teams": teams}
+        self.arena.reset(options=options)
+        obs = self.arena.observation_factory.from_game()
+        
+        # active_pkmn
+        active = obs.active_pkmn()
+        self.assertEqual(active["player"], 0) 
+        
+        # hp
+        hps = obs.hp()
+        # Pikachu lvl 50 has some HP, check it's > 0
+        self.assertGreater(hps["player"][0], 0)
+        
+        # pkmn_ko
+        kos = obs.pkmn_ko()
+        self.assertFalse(kos["player"][0]) 
+        self.assertTrue(kos["player"][1])
+
+        # who_won
+        self.assertIsNone(obs.who_won()) # Battle just started
+
 
 if __name__ == "__main__":
     unittest.main()
