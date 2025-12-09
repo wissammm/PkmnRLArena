@@ -13,12 +13,17 @@ AgentObs = npt.NDArray[int]
 
 @dataclass(frozen=True)
 class ObsIdx:
-
+    TEAM_SIZE = 6
     MAX_PKMN_MOVES = 4
     NB_STATS_PER_PKMN = 5  # ATK, DEF, SPEED, SPATK, SPDEF
     MOVE_ATTRIBUTES_PER_MOVE = 10  # id, pp, effect, power, type, accuracy, priority, secondaryEffectChance, target, flags
     NB_DATA_PKMN = 20 + (MAX_PKMN_MOVES * MOVE_ATTRIBUTES_PER_MOVE)  # 20 base fields + move data
     OBS_SIZE = 6 * NB_DATA_PKMN  
+    CATEGORICAL_PER_PKMN = 26
+    CATEGORICAL_SIZE = TEAM_SIZE * CATEGORICAL_PER_PKMN # 156
+    CONTINUOUS_PER_PKMN = 30
+    CONTINUOUS_SIZE = TEAM_SIZE * CONTINUOUS_PER_PKMN # 180
+
     RAW_DATA = {
        "species": 0,
         "is_active": 1,
@@ -91,6 +96,8 @@ class Observation:
         MAX_PP = 40
         MAX_POWER = 255
         MAX_ACCURACY = 100
+        MAX_STATUS_1 = 8
+        MAX_STATUS_2 = 8
         
         # Normalize Base Fields
         pokemon_data[:, ObsIdx.RAW_DATA["species"]] /= MAX_SPECIES
@@ -110,9 +117,9 @@ class Observation:
         pokemon_data[:, ObsIdx.RAW_DATA["personality"]] = 0.0
         
         # Status: Bitfield. Normalize by max uint32 to keep in [0,1]
-        pokemon_data[:, ObsIdx.RAW_DATA["status"]] /= 4294967295.0
-        pokemon_data[:, ObsIdx.RAW_DATA["status_2"]] /= 4294967295.0
-        pokemon_data[:, ObsIdx.RAW_DATA["status_3"]] /= 4294967295.0
+        pokemon_data[:, ObsIdx.RAW_DATA["status"]] /= MAX_STATUS_1
+        pokemon_data[:, ObsIdx.RAW_DATA["status_2"]] /= MAX_STATUS_2
+        pokemon_data[:, ObsIdx.RAW_DATA["status_3"]] /= MAX_STATUS_2
 
         # Normalize Moves
         moves_data = pokemon_data[:, ObsIdx.RAW_DATA["moves_begin"]:].reshape((DataSize.PARTY_SIZE, ObsIdx.MAX_PKMN_MOVES, ObsIdx.MOVE_ATTRIBUTES_PER_MOVE))
