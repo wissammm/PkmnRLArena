@@ -20,7 +20,7 @@ import functools
 import numpy as np
 from numpy import typing as npt
 
-from gymnasium.spaces import Discrete, Box, Dict  
+from gymnasium.spaces import Discrete, Box, Dict  as GymDict
 
 from pettingzoo import ParallelEnv
 
@@ -223,16 +223,8 @@ class BattleArena(ParallelEnv):
         self.core.advance_to_next_turn(count_step=False)
 
         observations = self.observation_factory.from_game()
-        self.observations = {
-            "player": {
-                "observation": observations.get_agent_data("player"),
-                "action_mask": self.action_manager.get_action_mask("player"),
-            },
-            "enemy": {
-                "observation": observations.get_agent_data("enemy"),
-                "action_mask": self.action_manager.get_action_mask("enemy"),
-            },
-        }
+        self.observations = self._get_observations()
+        raw_obs_obj = self.observation_factory.from_game()
 
         self.reward_manager.reset()
         self.reward_manager.add_observation(observations)
@@ -244,7 +236,7 @@ class BattleArena(ParallelEnv):
         # create new rendering
         if self.render_mode != RenderMode.DISABLED:
             self.game_renderer.stop()
-            self.game_renderer.start(observations, self.reward, self.core.state)
+            self.game_renderer.start(raw_obs_obj, self.reward, self.core.state)
 
         return self.observations, self.infos
 
@@ -302,17 +294,8 @@ class BattleArena(ParallelEnv):
 
         # Get observations
         observations = self.observation_factory.from_game()
-        self.observations = {
-            "player": {
-                "observation": observations.get_agent_data("player"),
-                "action_mask": self.action_manager.get_action_mask("player"),
-            },
-            "enemy": {
-                "observation": observations.get_agent_data("enemy"),
-                "action_mask": self.action_manager.get_action_mask("enemy"),
-            },
-        }
-
+        self.observations = self._get_observations()
+        raw_obs_obj = self.observation_factory.from_game()
         self.reward_manager.add_observation(observations)
 
         for agent, obs in self.observations.items():
@@ -324,7 +307,7 @@ class BattleArena(ParallelEnv):
         elif self.max_steps_per_episode < self.core.state.step:
             self.truncations = {agent: True for agent in self.agents}
 
-        self.render(observations, self.rewards)
+        self.render(raw_obs_obj, self.rewards)
 
         self.infos = {}
 
@@ -352,25 +335,26 @@ class BattleArena(ParallelEnv):
 
     def _get_observations(self):
         obs = self.observation_factory.from_game()
-        return {
-            "player": {
-                "observation": obs.o["player"],
-                "action_mask": self.action_manager.get_action_mask("player"),
-            },
-            "enemy": {
-                "observation": obs.o["enemy"],
-                "action_mask": self.action_manager.get_action_mask("enemy"),
-            },
-        }
+        
+        formatted_obs = {}
+        for agent in self.agents:
+            embed_data = obs.get_embedding_data(agent) 
+            
+            formatted_obs[agent] = {
+                "categorical": embed_data["categorical"],
+                "continuous": embed_data["continuous"],
+                "action_mask": self.action_manager.get_action_mask(agent).astype(np.float32) # Ensure float32
+            }
+        return formatted_obs
 
     # Observation space should be defined here.
     # lru_cache allows observation and action spaces to be memoized, reducing clock cycles required to get each agent's space.
     # If your spaces change over time, remove this line (disable caching).
     @functools.lru_cache(maxsize=None)
     def observation_space(self, agent):
-        # gymnasium spaces are defined and documented here: https://gymnasium.farama.org/api/spaces/
-        return Dict({
-            "observation": Box(low=0, high=100000, shape=(ObsIdx.OBS_SIZE,), dtype=int),
+        return GymDict({
+            "categorical": Box(low=0, high=1000, shape=(ObsIdx.CATEGORICAL_SIZE,), dtype=int), 
+            "continuous": Box(low=0, high=1, shape=(ObsIdx.CONTINUOUS_SIZE,), dtype=np.float32), 
             "action_mask": Box(low=0, high=1, shape=(ACTION_SPACE_SIZE,), dtype=np.float32),
         })
     
