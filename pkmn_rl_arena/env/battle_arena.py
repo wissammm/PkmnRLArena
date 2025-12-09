@@ -20,7 +20,7 @@ import functools
 import numpy as np
 from numpy import typing as npt
 
-from gymnasium.spaces import Discrete
+from gymnasium.spaces import Discrete, Box, Dict  
 
 from pettingzoo import ParallelEnv
 
@@ -369,8 +369,11 @@ class BattleArena(ParallelEnv):
     @functools.lru_cache(maxsize=None)
     def observation_space(self, agent):
         # gymnasium spaces are defined and documented here: https://gymnasium.farama.org/api/spaces/
-
-        return Discrete(ObsIdx.OBS_SIZE)
+        return Dict({
+            "observation": Box(low=0, high=100000, shape=(ObsIdx.OBS_SIZE,), dtype=int),
+            "action_mask": Box(low=0, high=1, shape=(ACTION_SPACE_SIZE,), dtype=np.float32),
+        })
+    
 
     # Action space should be defined here.
     # If your spaces change over time, remove this line (disable caching).
