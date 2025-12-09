@@ -72,7 +72,7 @@ class ActionManager:
         # Combine moves and switches into a single list of legal actions
         return valid_moves + valid_switches
 
-    def get_action_mask(self, agent: str) -> npt.NDArray[int]:
+    def get_action_mask(self, agent: str) -> npt.NDArray[np.float32]:
         """
         Creates an action mask for the agent. The mask is here to signal the unauthorized actions
         It returns illegal moves : (PP == 0 & ko  pkmn (forbidden switch))
@@ -82,7 +82,6 @@ class ActionManager:
             [0,1,1,0,1,1,1,0,0,1]
         """
 
-        action_mask = np.zeros(shape=ACTION_SPACE_SIZE)
-        action_mask[self.get_valid_action_ids(agent)] = 1
-
+        action_mask = np.zeros(shape=ACTION_SPACE_SIZE, dtype=np.float32) # Explicit dtype
+        action_mask[self.get_valid_action_ids(agent)] = 1.0
         return action_mask
