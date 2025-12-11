@@ -19,7 +19,7 @@ class ObsIdx:
     MOVE_ATTRIBUTES_PER_MOVE = 10  # id, pp, effect, power, type, accuracy, priority, secondaryEffectChance, target, flags
     NB_DATA_PKMN = 20 + (MAX_PKMN_MOVES * MOVE_ATTRIBUTES_PER_MOVE)  # 20 base fields + move data
     OBS_SIZE = 6 * NB_DATA_PKMN  
-    CATEGORICAL_PER_PKMN = 26
+    CATEGORICAL_PER_PKMN = 27
     CATEGORICAL_SIZE = TEAM_SIZE * CATEGORICAL_PER_PKMN # 156
     CONTINUOUS_PER_PKMN = 30
     CONTINUOUS_SIZE = TEAM_SIZE * CONTINUOUS_PER_PKMN # 180
@@ -156,7 +156,8 @@ class Observation:
             ObsIdx.RAW_DATA["level"],
             ObsIdx.RAW_DATA["friendship"],
             ObsIdx.RAW_DATA["held_item"],
-            ObsIdx.RAW_DATA["status"]
+            ObsIdx.RAW_DATA["status"],
+            ObsIdx.RAW_DATA["status_2"]
         ]
         
         move_offsets = [
@@ -202,7 +203,8 @@ class Observation:
             ObsIdx.RAW_DATA["type_1"],
             ObsIdx.RAW_DATA["type_2"],
             ObsIdx.RAW_DATA["held_item"],
-            ObsIdx.RAW_DATA["status"]
+            ObsIdx.RAW_DATA["status"],
+            ObsIdx.RAW_DATA["status_2"]
         ]
         
         cat_move_offsets = [
