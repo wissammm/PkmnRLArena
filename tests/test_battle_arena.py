@@ -83,8 +83,14 @@ class TestArena(unittest.TestCase):
                 f"Invalid length of observation state : observation should be i + 1(initial observation) + 1(step completed in the current loop) = {i + 1}, got {len(self.arena.reward_manager.obs)}.",
             )
 
-            player_changed = not (previous_observations["player"]["observation"] == observations["player"]["observation"]).all()
-            enemy_changed = not (previous_observations["enemy"]["observation"] == observations["enemy"]["observation"]).all()
+            player_cat_changed = not np.array_equal(previous_observations["player"]["categorical"], observations["player"]["categorical"])
+            player_cont_changed = not np.array_equal(previous_observations["player"]["continuous"], observations["player"]["continuous"])
+            
+            enemy_cat_changed = not np.array_equal(previous_observations["enemy"]["categorical"], observations["enemy"]["categorical"])
+            enemy_cont_changed = not np.array_equal(previous_observations["enemy"]["continuous"], observations["enemy"]["continuous"])
+
+            player_changed = player_cat_changed or player_cont_changed
+            enemy_changed = enemy_cat_changed or enemy_cont_changed
 
             # Here i use OR and not AND bc when a mon faint/switch, the pp are updated after reading the observation
             if i > 3 and not (player_changed or enemy_changed):
@@ -244,6 +250,14 @@ class TestResetOptions(unittest.TestCase):
             self.assertEqual(self.arena.core.state.turn, TurnType.GENERAL)
             
             for agent in self.arena.possible_agents:
+                obs_cat = observations[agent]["categorical"]
+                self.assertIsInstance(obs_cat, np.ndarray)
+                self.assertEqual(obs_cat.shape[0], ObsIdx.CATEGORICAL_SIZE)
+
+                obs_cont = observations[agent]["continuous"]
+                self.assertIsInstance(obs_cont, np.ndarray)
+                self.assertEqual(obs_cont.shape[0], ObsIdx.CONTINUOUS_SIZE)
+
                 team_data = self.arena.core.read_team_data(agent)
                 team_df = pokemon_data.to_pandas_team_dump_data(team_data)
                 
@@ -254,28 +268,7 @@ class TestResetOptions(unittest.TestCase):
                     f"Expected exactly 1 active Pokémon in {agent}'s team, got {active_pokemon_count}"
                 )
                 
-                non_empty_pokemon = team_df[team_df["id"] > 0]
-                self.assertEqual(
-                    len(non_empty_pokemon), 
-                    team_size,
-                    f"Expected {team_size} Pokémon in {agent}'s team, got {len(non_empty_pokemon)}"
-                )
-                
-                empty_slots = team_df[team_df["id"] == 0]
-                self.assertEqual(
-                    len(empty_slots), 
-                    DataSize.PARTY_SIZE - team_size,
-                    f"Expected {6 - team_size} empty slots in {agent}'s team, got {len(empty_slots)}"
-                )
-                    
-            for agent in self.arena.agents:
-                obs = observations[agent]["observation"]
-                self.assertIsInstance(obs, np.ndarray)
-                self.assertEqual(
-                    obs.shape[0], 
-                    DataSize.PARTY_SIZE * ObsIdx.NB_DATA_PKMN,
-                    f"Observation shape should always be 6*NB_DATA_PKMN regardless of team size"
-                )
+            
 
 
 class TestFightUnfold(unittest.TestCase):

@@ -18,8 +18,8 @@ def default_reward(agent: str, observations: list[Observation]) -> float:
         "hp_loss": -0.01,
         "hp_healed": 0.01,
         "hp_damage": 0.02,
-        "status_effect": 0.5,
-        "stat_boost": 0.2,
+        "status_effect": 0.1,
+        "stat_boost": 0.1,
         "stat_decrease": 0.1,
         "ko_enemy": 1.0,
         "ko_self": -1.0,
@@ -56,10 +56,12 @@ def default_reward(agent: str, observations: list[Observation]) -> float:
         elif hp_change > 0:  
             total_reward += reward_coeffs["hp_healed"] * hp_change  # Positive
 
-    for i in range(len(prev_hp[opponent])):
-        hp_change = curr_hp[opponent][i] - prev_hp[opponent][i]
-        if hp_change < 0:  
-            total_reward += reward_coeffs["hp_damage"] * abs(hp_change)
+    for i in range(len(prev_hp[agent])):
+        hp_change = curr_hp[agent][i] - prev_hp[agent][i]
+        if hp_change < 0: 
+            total_reward += reward_coeffs["hp_loss"] * abs(hp_change) 
+        elif hp_change > 0:  
+            total_reward += reward_coeffs["hp_healed"] * hp_change
 
     for i in range(len(curr_ko[agent])):
         if curr_ko[agent][i] and not prev_ko[agent][i]:
