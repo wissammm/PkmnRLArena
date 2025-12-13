@@ -1,8 +1,11 @@
 import unittest
+from unittest.mock import MagicMock
 import torch
 import numpy as np
 from gymnasium.spaces import Box, Dict, Discrete
+from pettingzoo.utils.env import ParallelEnv
 
+from pkmn_rl_arena.training.wrappers.curriculum_wrappers import CurriculumWrapper, TeamBatchWrapper
 from pkmn_rl_arena.training.models.pkmn_model import PokemonTransformerModel, LayoutConfig, EmbedConfig
 from pkmn_rl_arena.env.observation import ObsIdx
 
@@ -97,6 +100,7 @@ class TestPokemonModel(unittest.TestCase):
             self.model(input_dict, state=[], seq_lens=None)
         except IndexError as e:
             self.fail(f"Model crashed with max vocab indices: {e}")
+
 
 if __name__ == "__main__":
     unittest.main()
