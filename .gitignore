@@ -33,3 +33,5 @@ tests/test_export_data/source/forward.c
 examples/gba
 target
 
+ray_results/
+

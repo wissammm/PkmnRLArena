@@ -4,7 +4,7 @@ import numpy as np
 import ray
 from ray import tune
 from ray.rllib.algorithms.ppo import PPOConfig
-from ray.rllib.env.wrappers.pettingzoo_env import PettingZooEnv
+from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from ray.tune.registry import register_env
 from ray.rllib.models import ModelCatalog
 from ray.rllib.algorithms.callbacks import DefaultCallbacks
@@ -20,7 +20,35 @@ from pkmn_rl_arena.training.config import TrainingConfig
 # 1. Register Custom Model
 ModelCatalog.register_custom_model("pkmn_transformer", PokemonTransformerModel)
 
-# 2. Define Env Creator
+class ParallelPettingZooWrapper(MultiAgentEnv):
+    """
+    Adapts a PettingZoo ParallelEnv to RLLib's MultiAgentEnv.
+    RLLib's built-in PettingZooEnv wrapper expects AEC environments, so we use this instead.
+    """
+    def __init__(self, env):
+        self.env = env
+        super().__init__()
+        self.agents = env.possible_agents
+        self._agent_ids = set(self.agents)
+        
+        self.observation_space = env.observation_space(self.agents[0])
+        self.action_space = env.action_space(self.agents[0])
+
+    def reset(self, *, seed=None, options=None):
+        obs, infos = self.env.reset(seed=seed, options=options)
+        return obs, infos
+
+    def step(self, action_dict):
+        obs, rews, terms, truncs, infos = self.env.step(action_dict)
+        
+        terms["__all__"] = all(terms.values())
+        truncs["__all__"] = all(truncs.values())
+        
+        return obs, rews, terms, truncs, infos
+        
+    def __getattr__(self, name):
+        return getattr(self.env, name)
+
 def env_creator(config):
     core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
     env = BattleArena(core)
@@ -34,7 +62,7 @@ def env_creator(config):
         max_size=TrainingConfig.ENV.MAX_TEAM_SIZE,
         check_interval=TrainingConfig.ENV.CURRICULUM_CHECK_INTERVAL
     )
-    return PettingZooEnv(env)
+    return ParallelPettingZooWrapper(env)
 
 register_env("pkmn_battle_env", env_creator)
 
@@ -49,7 +77,6 @@ class LeagueManager:
 
     def get_opponent(self):
         # 80% chance to play against current self (main_policy)
-        # 20% chance to play against past version (if any exist)
         if len(self.past_policies) > 0 and random.random() < 0.2:
             return random.choice(self.past_policies)
         return "main_policy"
@@ -99,13 +126,10 @@ def policy_mapping_fn(agent_id, episode, worker, **kwargs):
 if __name__ == "__main__":
     ray.init()
 
-    # Calculate project root dynamically to avoid KeyError
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 
-    # Initialize Config
     config = (
         PPOConfig()
-        # --- CRITICAL FIX: Disable new API stack to support custom ModelV2 ---
         .api_stack(
             enable_rl_module_and_learner=False,
             enable_env_runner_and_connector_v2=False,
@@ -139,7 +163,6 @@ if __name__ == "__main__":
         )
     )
 
-    # Set PPO Specific Args directly
     config.sgd_minibatch_size = TrainingConfig.PPO.SGD_MINIBATCH_SIZE
     config.num_sgd_iter = TrainingConfig.PPO.NUM_SGD_ITER
 

@@ -341,20 +341,19 @@ class BattleArena(ParallelEnv):
             embed_data = obs.get_embedding_data(agent) 
             
             formatted_obs[agent] = {
-                "categorical": embed_data["categorical"],
-                "continuous": embed_data["continuous"],
-                "action_mask": self.action_manager.get_action_mask(agent).astype(np.float32) # Ensure float32
+                # Ensure types match the Box definition exactly
+                "categorical": embed_data["categorical"].astype(np.int64), # Box(..., dtype=int) usually implies int64 in numpy
+                "continuous": embed_data["continuous"].astype(np.float32),
+                "action_mask": self.action_manager.get_action_mask(agent).astype(np.float32)
             }
         return formatted_obs
 
-    # Observation space should be defined here.
-    # lru_cache allows observation and action spaces to be memoized, reducing clock cycles required to get each agent's space.
-    # If your spaces change over time, remove this line (disable caching).
+
     @functools.lru_cache(maxsize=None)
     def observation_space(self, agent):
         return GymDict({
-            "categorical": Box(low=0, high=1000, shape=(ObsIdx.CATEGORICAL_SIZE,), dtype=int), 
-            "continuous": Box(low=0, high=1, shape=(ObsIdx.CONTINUOUS_SIZE,), dtype=np.float32), 
+            "categorical": Box(low=0, high=ObsIdx.MAX_FLAGS, shape=(ObsIdx.CATEGORICAL_SIZE,), dtype=np.int64),  # 324
+            "continuous": Box(low=0, high=1, shape=(ObsIdx.CONTINUOUS_SIZE,), dtype=np.float32),  # 360
             "action_mask": Box(low=0, high=1, shape=(ACTION_SPACE_SIZE,), dtype=np.float32),
         })
     

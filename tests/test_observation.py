@@ -13,6 +13,7 @@ from pkmn_rl_arena.data import pokemon_data
 from pkmn_rl_arena.env.turn_type import TurnType
 
 from pkmn_rl_arena.env.observation import Observation, ObsIdx
+from pkmn_rl_arena.env.action import ACTION_SPACE_SIZE
 
 
 class TestObservation(unittest.TestCase):
@@ -149,8 +150,8 @@ class TestObservation(unittest.TestCase):
         obs = self.arena.observation_factory.from_game()
         reduced_obs = obs.get_reduced_agent_data("player")
         
-        #6 pokemon * 51 features = 306
-        expected_size = 306
+        # 6 pokemon * 52 features = 312 (16 base + 36 move features per Pokémon)
+        expected_size = 312
         self.assertEqual(reduced_obs.shape[0], expected_size)
 
     def test_embedding_data(self):
@@ -207,6 +208,150 @@ class TestObservation(unittest.TestCase):
 
         # who_won
         self.assertIsNone(obs.who_won()) # Battle just started
+
+    def test_embedding_data_shapes_and_dtypes(self):
+        """Test that get_embedding_data returns exact shapes and dtypes to match observation_space."""
+        teams = {
+            "player": [25, 50, 84, 0, 0, 0, 100, 0],  # Pikachu with one move
+            "enemy": [129, 10, 150, 0, 0, 0, 10, 0],  # Magikarp
+        }
+        options = {"teams": teams}
+        self.arena.reset(options=options)
+        
+        obs = self.arena.observation_factory.from_game()
+        
+        for agent in ["player", "enemy"]:
+            emb_data = obs.get_embedding_data(agent)
+            
+            # Check keys exist
+            self.assertIn("categorical", emb_data)
+            self.assertIn("continuous", emb_data)
+            
+            cat_data = emb_data["categorical"]
+            cont_data = emb_data["continuous"]
+            
+            # Exact shape checks (must match ObsIdx constants and observation_space)
+            self.assertEqual(cat_data.shape, (ObsIdx.CATEGORICAL_SIZE,), 
+                             f"Categorical shape mismatch for {agent}: expected {(ObsIdx.CATEGORICAL_SIZE,)}, got {cat_data.shape}")
+            self.assertEqual(cont_data.shape, (ObsIdx.CONTINUOUS_SIZE,), 
+                             f"Continuous shape mismatch for {agent}: expected {(ObsIdx.CONTINUOUS_SIZE,)}, got {cont_data.shape}")
+            
+            # Dtype checks (must match Box dtypes in observation_space)
+            self.assertTrue(np.issubdtype(cat_data.dtype, np.int64), 
+                            f"Categorical dtype mismatch for {agent}: expected int64-compatible, got {cat_data.dtype}")
+            self.assertTrue(np.issubdtype(cont_data.dtype, np.float32), 
+                            f"Continuous dtype mismatch for {agent}: expected float32-compatible, got {cont_data.dtype}")
+            
+            # Value range checks (categorical should be non-negative ints, continuous 0-1)
+            self.assertTrue(np.all(cat_data >= 0), f"Categorical values for {agent} should be >= 0")
+            self.assertTrue(np.all(cont_data >= 0.0) and np.all(cont_data <= 1.0), 
+                            f"Continuous values for {agent} should be in [0, 1]")
+
+    def test_full_observations_space_compatibility(self):
+        """Test that _get_observations in BattleArena produces dict compatible with observation_space."""
+        teams = {
+            "player": [25, 50, 84, 0, 0, 0, 100, 0],
+            "enemy": [129, 10, 150, 0, 0, 0, 10, 0],
+        }
+        options = {"teams": teams}
+        self.arena.reset(options=options)
+        
+        full_obs = self.arena._get_observations()  # From battle_arena.py
+        
+        for agent in ["player", "enemy"]:
+            agent_obs = full_obs[agent]
+            
+            # Check required keys
+            self.assertIn("categorical", agent_obs)
+            self.assertIn("continuous", agent_obs)
+            self.assertIn("action_mask", agent_obs)
+            
+            # Validate against observation_space (simulate space.contains check)
+            space = self.arena.observation_space(agent)
+            
+            # Categorical: shape and dtype
+            cat_space = space["categorical"]
+            self.assertEqual(agent_obs["categorical"].shape, cat_space.shape, 
+                             f"Categorical shape mismatch for {agent}")
+            self.assertTrue(np.issubdtype(agent_obs["categorical"].dtype, cat_space.dtype), 
+                            f"Categorical dtype mismatch for {agent}")
+            self.assertTrue(np.all(agent_obs["categorical"] >= cat_space.low) and 
+                            np.all(agent_obs["categorical"] <= cat_space.high), 
+                            f"Categorical values out of bounds for {agent}")
+            
+            # Continuous: shape and dtype
+            cont_space = space["continuous"]
+            self.assertEqual(agent_obs["continuous"].shape, cont_space.shape, 
+                             f"Continuous shape mismatch for {agent}")
+            self.assertTrue(np.issubdtype(agent_obs["continuous"].dtype, cont_space.dtype), 
+                            f"Continuous dtype mismatch for {agent}")
+            self.assertTrue(np.all(agent_obs["continuous"] >= cont_space.low) and 
+                            np.all(agent_obs["continuous"] <= cont_space.high), 
+                            f"Continuous values out of bounds for {agent}")
+            
+            # Action mask: shape and dtype
+            mask_space = space["action_mask"]
+            self.assertEqual(agent_obs["action_mask"].shape, mask_space.shape, 
+                             f"Action mask shape mismatch for {agent}")
+            self.assertTrue(np.issubdtype(agent_obs["action_mask"].dtype, mask_space.dtype), 
+                            f"Action mask dtype mismatch for {agent}")
+
+    def test_embedding_data_edge_cases(self):
+        """Test get_embedding_data with edge cases to prevent silent failures."""
+        # Test with minimal team (1 Pokémon)
+        teams_min = {
+            "player": [25, 50, 84, 0, 0, 0, 100, 0],  # 1 Pokémon
+            "enemy": [129, 10, 150, 0, 0, 0, 10, 0],
+        }
+        options = {"teams": teams_min, "team_size": 1}
+        self.arena.reset(options=options)
+        obs = self.arena.observation_factory.from_game()
+        
+        for agent in ["player", "enemy"]:
+            emb_data = obs.get_embedding_data(agent)
+            # Should still produce full shapes (padding with zeros for empty slots)
+            self.assertEqual(emb_data["categorical"].shape, (ObsIdx.CATEGORICAL_SIZE,))
+            self.assertEqual(emb_data["continuous"].shape, (ObsIdx.CONTINUOUS_SIZE,))
+            # Verify no NaN/Inf
+            self.assertFalse(np.any(np.isnan(emb_data["continuous"])))
+            self.assertFalse(np.any(np.isinf(emb_data["continuous"])))
+        
+        # Test with completely invalid observation (all zeros = no Pokémon at all)
+        broken_obs = Observation(_o={
+            "player": np.zeros(ObsIdx.OBS_SIZE, dtype=int),
+            "enemy": np.zeros(ObsIdx.OBS_SIZE, dtype=int),
+        })
+        
+        # This should raise ValueError because no valid Pokémon exist
+        with self.assertRaises(ValueError) as context:
+            broken_obs.get_embedding_data("player")
+        self.assertIn("all Pokémon species IDs are 0", str(context.exception))
+
+
+    def test_action_mask_in_observations(self):
+        """Test that action masks in observations have correct shape and dtype."""
+        teams = {
+            "player": [25, 50, 84, 0, 0, 0, 100, 0],
+            "enemy": [129, 10, 150, 0, 0, 0, 10, 0],
+        }
+        options = {"teams": teams}
+        self.arena.reset(options=options)
+        
+        full_obs = self.arena._get_observations()
+        
+        for agent in ["player", "enemy"]:
+            action_mask = full_obs[agent]["action_mask"]
+            
+            # Shape check (from ACTION_SPACE_SIZE = 10)
+            self.assertEqual(action_mask.shape, (10,), f"Action mask shape mismatch for {agent}")
+            
+            # Dtype check (float32 as per space)
+            self.assertTrue(np.issubdtype(action_mask.dtype, np.float32), 
+                            f"Action mask dtype mismatch for {agent}: expected float32, got {action_mask.dtype}")
+            
+            # Value check (should be 0 or 1, as masks)
+            self.assertTrue(np.all((action_mask == 0) | (action_mask == 1)), 
+                            f"Action mask values for {agent} should be 0 or 1")
 
 
 if __name__ == "__main__":
