@@ -38,9 +38,10 @@ class ActionManager:
             #     )
 
             if not self.is_valid_action(agent, action):
-                log.warning(
+                log.critical(
                     f"Trying to write invalid action : authorized, values {self.get_action_mask(agent)}, got {action}."
                 )
+
                 action_written[agent] = False
                 continue
 

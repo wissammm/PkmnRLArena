@@ -58,13 +58,18 @@ class TestArena(unittest.TestCase):
         previous_observations = observations
         states = [self.arena.core.state]
 
-        for i in range(20):
-            actions = {
-                agent: random.choice(
-                    self.arena.action_manager.get_valid_action_ids(agent)
+        for i in range(50):
+            actions = {}
+            for agent in self.arena.core.get_required_agents():
+                valid_actions = self.arena.action_manager.get_valid_action_ids(agent)
+                action_mask = self.arena.action_manager.get_action_mask(agent)
+                # Invalidate the test if all actions are illegal (mask is all zeros)
+                self.assertFalse(
+                    np.all(action_mask == 0),
+                    f"All actions are illegal for agent '{agent}' at step {i}. Test invalid."
                 )
-                for agent in self.arena.core.get_required_agents()
-            }
+
+                actions[agent] = random.choice(valid_actions)
 
             observations, rewards, terminations, truncations, infos = self.arena.step(
                 actions
