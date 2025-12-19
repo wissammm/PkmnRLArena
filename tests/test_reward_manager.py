@@ -3,7 +3,7 @@ from pkmn_rl_arena.env.action import ActionManager
 from pkmn_rl_arena.env.reward.manager import RewardManager
 from pkmn_rl_arena.env.reward.functions import reward_functions
 from pkmn_rl_arena.env.observation import ObservationFactory
-from pkmn_rl_arena.env.battle_core import BattleCore
+from pkmn_rl_arena.env.battle_core import BattleCore, CoreContext
 from pkmn_rl_arena.paths import PATHS
 
 from pkmn_rl_arena.env.pkmn_team_factory import PkmnTeamFactory
@@ -19,8 +19,9 @@ class TestRewardManager(unittest.TestCase):
 
         # create managers
         self.core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
-        self.action_manager = ActionManager(self.core)
-        self.obs_factory = ObservationFactory(self.core)
+        self.ctxt = CoreContext(self.core)
+        self.action_manager = ActionManager(self.ctxt)
+        self.obs_factory = ObservationFactory(self.ctxt)
 
         self.previous_obs = []
 

@@ -39,10 +39,10 @@ class TestObservation(unittest.TestCase):
 
         options = {"teams": teams}
         observations, infos = self.arena.reset(options=options)
-        self.assertEqual(self.arena.core.state.turn, TurnType.GENERAL)
+        self.assertEqual(self.arena.ctxt.core.state.turn, TurnType.GENERAL)
 
-        player_team_dump = self.arena.core.read_team_data("player")
-        enemy_team_dump = self.arena.core.read_team_data("enemy")
+        player_team_dump = self.arena.ctxt.core.read_team_data("player")
+        enemy_team_dump = self.arena.ctxt.core.read_team_data("enemy")
 
         player_df = pokemon_data.to_pandas_team_dump_data(player_team_dump)
         enemy_df = pokemon_data.to_pandas_team_dump_data(enemy_team_dump)

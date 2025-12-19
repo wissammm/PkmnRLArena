@@ -1,5 +1,5 @@
 from pkmn_rl_arena.logging import log
-from .battle_core import BattleCore
+from .battle_core import CoreContext
 from .battle_state import TurnType
 
 import numpy as np
@@ -19,8 +19,8 @@ class ActionManager:
         "enemy": [TurnType.ENEMY, TurnType.GENERAL],
     }
 
-    def __init__(self, battle_core: BattleCore):
-        self.battle_core = battle_core
+    def __init__(self, core_context: CoreContext):
+        self.ctxt = core_context
         self.action_space_size = 10  # Actions 0-9
 
     def is_valid_action(self, agent, action_id: int) -> bool:
@@ -45,7 +45,7 @@ class ActionManager:
                 action_written[agent] = False
                 continue
 
-            self.battle_core.write_action(agent, actions[agent])
+            self.ctxt.core.write_action(agent, actions[agent])
             action_written[agent] = True
 
         return action_written
@@ -58,11 +58,11 @@ class ActionManager:
         Note : Action space :
             [0,1,2,3,4,5,6,7,8,9]
         """
-        legal_moves = self.battle_core.gba.read_u16_list(
-            self.battle_core.mem_addrs[f"legalMoveActions{agent.capitalize()}"], 4
+        legal_moves = self.ctxt.core.gba.read_u16_list(
+            self.ctxt.core.mem_addrs[f"legalMoveActions{agent.capitalize()}"], 4
         )
-        legal_switches = self.battle_core.gba.read_u16_list(
-            self.battle_core.mem_addrs[f"legalSwitchActions{agent.capitalize()}"], 6
+        legal_switches = self.ctxt.core.gba.read_u16_list(
+            self.ctxt.core.mem_addrs[f"legalSwitchActions{agent.capitalize()}"], 6
         )
 
         valid_moves = [i for i, move in enumerate(legal_moves) if move]

@@ -6,7 +6,7 @@ import pandas as pd
 from pkmn_rl_arena.paths import PATHS
 from pkmn_rl_arena.env.pkmn_team_factory import DataSize 
 
-from pkmn_rl_arena.env.battle_core import BattleCore
+from pkmn_rl_arena.env.battle_core import BattleCore, CoreContext
 from pkmn_rl_arena.env.pkmn_team_factory import PkmnTeamFactory
 
 AgentObs = npt.NDArray[int]
@@ -367,8 +367,8 @@ class Observation:
         return None
 
 class ObservationFactory:
-    def __init__(self, battle_core: BattleCore):
-        self.battle_core = battle_core
+    def __init__(self, core_context: CoreContext):
+        self.ctxt = core_context
         self.moves_df = pd.read_csv(PATHS["MOVES_CSV"])
         self._init_move_lookup()
 
@@ -386,7 +386,7 @@ class ObservationFactory:
     def from_game(self) -> Observation:
         observations = {}
         for agent in ["player", "enemy"]:
-            raw = self.battle_core.read_team_data(agent)
+            raw = self.ctxt.core.read_team_data(agent)
             raw_np = np.array(raw, dtype=int).reshape((DataSize.PARTY_SIZE, 28))
             
             obs_full = np.zeros((DataSize.PARTY_SIZE, ObsIdx.NB_DATA_PKMN), dtype=int)

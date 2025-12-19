@@ -30,7 +30,7 @@ class TestArena(unittest.TestCase):
     def test_reset(self):
         observations, infos = self.arena.reset()
         self.assertEqual(
-            self.arena.core.state, BattleState(id=0, step=0, turn=TurnType.GENERAL)
+            self.arena.ctxt.core.state, BattleState(id=0, step=0, turn=TurnType.GENERAL)
         )
         for agent, value in self.arena.terminations.items():
             self.assertFalse(
@@ -56,11 +56,11 @@ class TestArena(unittest.TestCase):
     def test_step(self):
         observations, infos = self.arena.reset()
         previous_observations = observations
-        states = [self.arena.core.state]
+        states = [self.arena.ctxt.core.state]
 
         for i in range(50):
             actions = {}
-            for agent in self.arena.core.get_required_agents():
+            for agent in self.arena.ctxt.core.get_required_agents():
                 valid_actions = self.arena.action_manager.get_valid_action_ids(agent)
                 action_mask = self.arena.action_manager.get_action_mask(agent)
                 # Invalidate the test if all actions are illegal (mask is all zeros)
@@ -76,11 +76,11 @@ class TestArena(unittest.TestCase):
             )
             log.debug(f"Stepping into turn {i}.")
 
-            states.append(copy.deepcopy(self.arena.core.state))
+            states.append(copy.deepcopy(self.arena.ctxt.core.state))
             self.assertEqual(
-                self.arena.core.state.step,
+                self.arena.ctxt.core.state.step,
                 i + 1,
-                f"Invalid step number, step amount should be {i} (current step) + 1 (step executed in the current loop)  = {i + 2}, got {self.arena.core.state.step}.",
+                f"Invalid step number, step amount should be {i} (current step) + 1 (step executed in the current loop)  = {i + 2}, got {self.arena.ctxt.core.state.step}.",
             )
             self.assertEqual(
                 len(self.arena.reward_manager.obs),
@@ -101,7 +101,7 @@ class TestArena(unittest.TestCase):
             if i > 3 and not (player_changed or enemy_changed):
 
                 log.fatal(
-                    f"No observation was updated for at step {self.arena.core.state.step}, at least one must be updated(if not both). For debugging : previous state : {states[-2]}, Current state : {states[-1]}."
+                    f"No observation was updated for at step {self.arena.ctxt.core.state.step}, at least one must be updated(if not both). For debugging : previous state : {states[-2]}, Current state : {states[-1]}."
                 )
 
                 self.assertFalse(
@@ -159,7 +159,7 @@ class TestResetOptions(unittest.TestCase):
         self.arena.reset(options=options)
         # state id of 0 means that BattleStateFactory.build() hasn't been called & has not created a new state
         self.assertEqual(
-            self.arena.core.state, BattleState(id=0, step=0, turn=TurnType.GENERAL)
+            self.arena.ctxt.core.state, BattleState(id=0, step=0, turn=TurnType.GENERAL)
         )
         return
 
@@ -187,12 +187,12 @@ class TestResetOptions(unittest.TestCase):
             },
         }
         self.arena.reset(options=options)
-        self.assertEqual(self.arena.core.state.turn, TurnType.GENERAL)
+        self.assertEqual(self.arena.ctxt.core.state.turn, TurnType.GENERAL)
 
         for agent in self.arena.possible_agents:
             ground_truth_team_params = options["teams"][agent]
 
-            gba_read_team_data = self.arena.core.read_team_data(agent)
+            gba_read_team_data = self.arena.ctxt.core.read_team_data(agent)
             gba_read_team_df = pokemon_data.to_pandas_team_dump_data(gba_read_team_data)
 
             for i in range(6):
@@ -252,7 +252,7 @@ class TestResetOptions(unittest.TestCase):
             }
             
             observations, infos = self.arena.reset(options=options)
-            self.assertEqual(self.arena.core.state.turn, TurnType.GENERAL)
+            self.assertEqual(self.arena.ctxt.core.state.turn, TurnType.GENERAL)
             
             for agent in self.arena.possible_agents:
                 obs_cat = observations[agent]["categorical"]
@@ -263,7 +263,7 @@ class TestResetOptions(unittest.TestCase):
                 self.assertIsInstance(obs_cont, np.ndarray)
                 self.assertEqual(obs_cont.shape[0], ObsIdx.CONTINUOUS_SIZE)
 
-                team_data = self.arena.core.read_team_data(agent)
+                team_data = self.arena.ctxt.core.read_team_data(agent)
                 team_df = pokemon_data.to_pandas_team_dump_data(team_data)
                 
                 active_pokemon_count = len(team_df[team_df["isActive"] == 1])
@@ -344,7 +344,7 @@ class TestFightUnfold(unittest.TestCase):
             f'should have returned "player" as enemy has no HP left. HP left for each pkmn : {obs.hp()}',
         )
         self.assertEqual(
-            self.arena.core.state.turn,
+            self.arena.ctxt.core.state.turn,
             TurnType.DONE,
             "TurnType should be done as fight is over.",
         )
@@ -393,10 +393,10 @@ class TestFightUnfold(unittest.TestCase):
         actions = {"player": player_action, "enemy": enemy_action}
 
         self.arena.action_manager.write_actions(actions)
-        turn = self.arena.core.advance_to_next_turn()
+        turn = self.arena.ctxt.core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.GENERAL)
 
-        enemy_team_dump_data = self.arena.core.read_team_data("enemy")
+        enemy_team_dump_data = self.arena.ctxt.core.read_team_data("enemy")
 
         enemydf = pokemon_data.to_pandas_team_dump_data(enemy_team_dump_data)
         active_enemy = enemydf[enemydf["isActive"] == 1]
@@ -459,9 +459,9 @@ class TestFightUnfold(unittest.TestCase):
 
         self.arena.action_manager.write_actions(actions)
 
-        self.arena.core.advance_to_next_turn()
+        self.arena.ctxt.core.advance_to_next_turn()
         self.assertEqual(
-            self.arena.core.state, BattleState(id=0, step=1, turn=TurnType.PLAYER)
+            self.arena.ctxt.core.state, BattleState(id=0, step=1, turn=TurnType.PLAYER)
         )
         player_action = 4
         actions = {"player": 4}  # Switch with the [1] mon (Raichu)
@@ -517,17 +517,17 @@ class TestFightUnfold(unittest.TestCase):
         for agent, result in self.arena.action_manager.write_actions(actions).items():
             self.assertTrue(result, "Valid action not written this should not happen.")
 
-        turn = self.arena.core.advance_to_next_turn()
+        turn = self.arena.ctxt.core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.PLAYER)
 
         actions = {"player": 5}  # Switch with the [1] mon (RAICHU)}
         for agent, result in self.arena.action_manager.write_actions(actions).items():
             self.assertTrue(result, "Valid action not written this should not happen.")
 
-        turn = self.arena.core.advance_to_next_turn()
+        turn = self.arena.ctxt.core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.GENERAL)
 
-        player_team_dump_data = self.arena.core.read_team_data("player")
+        player_team_dump_data = self.arena.ctxt.core.read_team_data("player")
         playerdf = pokemon_data.to_pandas_team_dump_data(player_team_dump_data)
         active_player = playerdf[playerdf["isActive"] == 1]
         self.assertEqual(
@@ -570,12 +570,12 @@ class TestFightUnfold(unittest.TestCase):
 
         # reset the arena with the specified teams
         self.arena.reset(options=options)
-        self.assertEqual(self.arena.core.state.turn, TurnType.GENERAL)
+        self.assertEqual(self.arena.ctxt.core.state.turn, TurnType.GENERAL)
 
         # read initial stats
-        player_team_dump_data = self.arena.core.read_team_data("player")
+        player_team_dump_data = self.arena.ctxt.core.read_team_data("player")
         playerdf = pokemon_data.to_pandas_team_dump_data(player_team_dump_data)
-        enemy_team_dump_data = self.arena.core.read_team_data("enemy")
+        enemy_team_dump_data = self.arena.ctxt.core.read_team_data("enemy")
         enemydf = pokemon_data.to_pandas_team_dump_data(enemy_team_dump_data)
 
         active_player = playerdf[playerdf["isActive"] == 1]
@@ -587,16 +587,16 @@ class TestFightUnfold(unittest.TestCase):
         # both use their first move (stat-affecting in this test setup)
         actions = {"player": 0, "enemy": 0}
         self.arena.action_manager.write_actions(actions)
-        turn = self.arena.core.advance_to_next_turn()
+        turn = self.arena.ctxt.core.advance_to_next_turn()
         self.assertEqual(turn, TurnType.GENERAL)
 
         # read stats after the move
-        player_team_dump_data = self.arena.core.read_team_data("player")
+        player_team_dump_data = self.arena.ctxt.core.read_team_data("player")
         playerdf = pokemon_data.to_pandas_team_dump_data(player_team_dump_data)
         active_player = playerdf[playerdf["isActive"] == 1]
         new_player_attack = active_player.iloc[0]["baseAttack"]
 
-        enemy_team_dump_data = self.arena.core.read_team_data("enemy")
+        enemy_team_dump_data = self.arena.ctxt.core.read_team_data("enemy")
         enemydf = pokemon_data.to_pandas_team_dump_data(enemy_team_dump_data)
         active_enemy = enemydf[enemydf["isActive"] == 1]
         new_enemy_attack = active_enemy.iloc[0]["baseAttack"]

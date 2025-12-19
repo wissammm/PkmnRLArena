@@ -5,6 +5,8 @@ import pkmn_rl_arena.data.pokemon_data
 from pkmn_rl_arena.env.turn_type import TurnType
 from pkmn_rl_arena.env.battle_state import BattleState, BattleStateFactory
 
+from pathlib import Path
+
 import rustboyadvance_py
 
 import os
@@ -55,12 +57,12 @@ class BattleCore:
         self.state = BattleState()
         if setup:
             ## all variables initialized here are filled in fctns below
-             
-            # Memory addresses that needs to be stored, they are listed by name as static attr of this class
-            self.mem_addrs = {} 
-            # list of tuples containing all the data required to create a stop address
+
+            # Memory addresses that needs to be stored, they are listed by name as static attr of this class
+            self.mem_addrs = {}
+            # list of tuples containing all the data required to create a stop address
             # see add_stop_addr method to understand the tuple
-            self.stop_addrs  : List[Tuple[int,int,bool,str,int]]= []
+            self.stop_addrs: List[Tuple[int, int, bool, str, int]] = []
             # For each stop address id, associate a TurnType to it
             self.stop_ids = {}
             self.mem_addrs = self.setup_addresses()
@@ -103,9 +105,9 @@ class BattleCore:
         """Add a stop address to the GBA emulator"""
         self.gba.add_stop_addrs(addrs)
 
-    def add_stop_addr(self, addr : int, value : int, is_active : bool, name : str, id : int):
+    def add_stop_addr(self, addr: int, value: int, is_active: bool, name: str, id: int):
         """Add a stop address to the GBA emulator"""
-        self.gba.add_stop_addrs(addr , value , is_active , name , id  )
+        self.gba.add_stop_addrs(addr, value, is_active, name, id)
 
     def run_to_next_stop(self, max_steps=2000000, count_step=True) -> int:
         """
@@ -149,9 +151,7 @@ class BattleCore:
         """Read team data for specified agent"""
         match agent:
             case "player":
-                return self.gba.read_u32_list(
-                    self.mem_addrs["monDataPlayer"], 28 * 6
-                )
+                return self.gba.read_u32_list(self.mem_addrs["monDataPlayer"], 28 * 6)
             case "enemy":
                 return self.gba.read_u32_list(self.mem_addrs["monDataEnemy"], 28 * 6)
             case _:
@@ -182,7 +182,7 @@ class BattleCore:
                 self.gba.write_u16(self.mem_addrs["stopHandleTurnEnd"], 0)
             case _:
                 raise ValueError(f"Unknown turntype : {turn_type}")
-    
+
     def clear_stop_condition_id(self, id: int):
         """Clear stop condition with id to continue execution"""
         if id in self.stop_ids:
@@ -190,7 +190,7 @@ class BattleCore:
             self.gba.write_u16(self.mem_addrs[addr_name], 0)
         else:
             raise ValueError(f"Unknown stop id : {id}")
-    
+
     def clear_all_stop_conditions(self):
         """Clear all stop conditions to continue execution"""
         for addr_name in self.stop_address_names:
@@ -214,7 +214,7 @@ class BattleCore:
         self.gba.save_savestate(save_path)
         return save_path
 
-    def load_savestate(self, name: str, init: bool = False) -> Optional[BattleState]:
+    def load_savestate(self, name: Path, init: bool = False) -> BattleState:
         """Load a saved state
         Args :
             name : str = Save state name.
@@ -222,8 +222,9 @@ class BattleCore:
         """
         save_path = os.path.join(PATHS["SAVE"], name)
         if not os.path.exists(save_path):
-            print(f"Save state {save_path} does not exist.")
-            return None
+            raise FileNotFoundError(
+                f"Failed to load save state its path {save_path} does not exist."
+            )
 
         log.info(f"Loading following save state : {save_path}")
         self.gba.load_savestate(save_path, PATHS["BIOS"], PATHS["ROM"], self.stop_addrs)
@@ -251,3 +252,21 @@ class BattleCore:
                 return ["enemy"]
             case _:
                 return []
+
+
+class CoreContext:
+    """
+    This core coontext aims to be a shared container for battle core.
+    It handles the task of updating & deleting BattleCore.
+    Designed this way because dependency injection isn't the way here as BattleCore is not a configuration but rather a sahred mutable state.
+    """
+
+    def __init__(self, core: BattleCore):
+        self._core = core
+
+    @property
+    def core(self) -> BattleCore:
+        return self._core
+
+    def set_core(self, core: BattleCore):
+        self._core = core

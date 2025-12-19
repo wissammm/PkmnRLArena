@@ -1,6 +1,6 @@
 from pkmn_rl_arena.env.pkmn_team_factory import DataSize
 from .action import ActionManager, ACTION_SPACE_SIZE
-from .battle_core import BattleCore
+from .battle_core import BattleCore, CoreContext
 from .battle_state import TurnType
 from .observation import Observation, ObservationFactory, ObsIdx
 from .pkmn_team_factory import PkmnTeamFactory
@@ -20,7 +20,7 @@ import functools
 import numpy as np
 from numpy import typing as npt
 
-from gymnasium.spaces import Discrete, Box, Dict  as GymDict
+from gymnasium.spaces import Discrete, Box, Dict as GymDict
 
 from pettingzoo import ParallelEnv
 
@@ -64,12 +64,12 @@ class BattleArena(ParallelEnv):
         render_mode: RenderMode = RenderMode.DISABLED,
     ):
         # Initialize core components
-        self.core = battle_core
-        self.observation_factory = ObservationFactory(self.core)
-        self.action_manager = ActionManager(self.core)
+        self.ctxt = CoreContext(battle_core)
+        self.observation_factory = ObservationFactory(self.ctxt)
+        self.action_manager = ActionManager(self.ctxt)
         self.team_factory = PkmnTeamFactory(PATHS["POKEMON_CSV"], PATHS["MOVES_CSV"])
         self.reward_manager = RewardManager(reward_function)
-        self.save_state_manager = SaveStateManager(self.core)
+        self.save_state_manager = SaveStateManager(self.ctxt)
 
         # Environment configuration
         self.possible_agents = ["player", "enemy"]
@@ -90,11 +90,11 @@ class BattleArena(ParallelEnv):
         self.game_renderer = GameRendering(self.team_factory, self.agents)
         self.render_mode = render_mode
 
-        if self.core.state.turn != TurnType.CREATE_TEAM:
+        if self.ctxt.core.state.turn != TurnType.CREATE_TEAM:
             raise RuntimeError(
-                f"Env creation : Upon creating BattleCore and calling advance_to_next_turn(), turntype should be {TurnType.CREATE_TEAM}. Got {self.core.state.turn}."
+                f"Env creation : Upon creating BattleCore and calling advance_to_next_turn(), turntype should be {TurnType.CREATE_TEAM}. Got {self.ctxt.core.state.turn}."
             )
-        log.debug(f"CURRENT STATE = {self.core.state}")
+        log.debug(f"CURRENT STATE = {self.ctxt.core.state}")
         self.save_state_manager.save_state("boot_state")
         log.info(f"Created save_state : {self.save_state_manager.save_states}")
 
@@ -113,37 +113,30 @@ class BattleArena(ParallelEnv):
             log.debug(
                 'No save state name given in options["save_state"], creating a new battle core.'
             )
-            self.core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
-            self.action_manager.battle_core = self.core
-            self.observation_factory.battle_core = self.core
-            self.team_factory.battle_core = self.core
-            self.save_state_manager.battle_core = self.core
+            self.ctxt.set_core(BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"]))
         else:
             returned_state = self.save_state_manager.load_state(options["save_state"])
-            self.core = self.save_state_manager.core
-            self.observation_factory.core = self.save_state_manager.core
-            self.action_manager.core = self.save_state_manager.core
-            self.team_factory.core = self.save_state_manager.core
-            self.reward_manager.core = self.save_state_manager.core
-            self.save_state_manager.core = self.save_state_manager.core
             if returned_state is None:
                 raise RuntimeError(
                     f"Failed to load save state {options.get('save_state')}"
                 )
             if options["save_state"] == "boot_state":
-                assert self.core.state.step == 0, (
-                    f'Loaded "boot_state", expected state\'s step number to be 0, got following state: : {self.core.state}.'
+                assert self.ctxt.core.state.step == 0, (
+                    f'Loaded "boot_state", expected state\'s step number to be 0, got following state: : {self.ctxt.core.state}.'
                 )
-        assert self.core.state.turn == TurnType.CREATE_TEAM, (
-            f"Its required to reset with a state whose turntype value is {TurnType.CREATE_TEAM}, got {self.core.state.turn}."
+        assert self.ctxt.core.state.turn == TurnType.CREATE_TEAM, (
+            f"Its required to reset with a state whose turntype value is {TurnType.CREATE_TEAM}, got {self.ctxt.core.state.turn}."
         )
         return
 
-    def create_teams(self, options: Dict[str, Any], team_size: int = 6) -> Dict[str, list[int]]:
+    def create_teams(
+        self, options: Dict[str, Any], team_size: int = 6
+    ) -> Dict[str, list[int]]:
         if options.get("teams") is None:
             log.debug('No team provided in options["teams"], creating random teams.')
             return {
-                agent: self.team_factory.create_random_team(size_of_team=team_size) for agent in self.agents
+                agent: self.team_factory.create_random_team(size_of_team=team_size)
+                for agent in self.agents
             }
 
         teams = options["teams"]
@@ -151,12 +144,14 @@ class BattleArena(ParallelEnv):
             log.info(f"Creating {agent} team.")
             if team is None:
                 log.info(f"No team provided for {agent}, creating a random one.")
-                teams[agent] = self.team_factory.create_random_team(size_of_team=team_size)
+                teams[agent] = self.team_factory.create_random_team(
+                    size_of_team=team_size
+                )
                 continue
 
             if len(team) % DataSize.PKMN != 0:
                 raise ValueError(
-                    f"Pkmn team creation : Incorrect param count for {agent}\'s team"
+                    f"Pkmn team creation : Incorrect param count for {agent}'s team"
                     f"\nA pkmn takes {DataSize.PKMN} params to be created, but received  {len(team)} params."
                     f"\nWhich accounts for : {int(len(team) / DataSize.PKMN)} pkmns and {len(team) % DataSize.PKMN} leftover params."
                 )
@@ -173,7 +168,11 @@ class BattleArena(ParallelEnv):
     def reset(
         self,
         seed: int | None = None,
-        options: Dict[str, Any] | None = {"save_state": "boot_state", "teams": None, "team_size": 6},
+        options: Dict[str, Any] | None = {
+            "save_state": "boot_state",
+            "teams": None,
+            "team_size": 6,
+        },
     ) -> Tuple[
         Dict[str, Dict[str, npt.NDArray[int]]],  # observations
         Dict[str, Any],  # infos
@@ -203,7 +202,7 @@ class BattleArena(ParallelEnv):
         log.debug(f"Resetting env with options {options}")
 
         team_size = options.get("team_size", 6)
-        
+
         if not 1 <= team_size <= 6:
             raise ValueError(f"Team size must be between 1 and 6, got {team_size}")
 
@@ -219,8 +218,8 @@ class BattleArena(ParallelEnv):
 
         # create new teams
         teams = self.create_teams(options, team_size)
-        self.core.write_team_data(teams)
-        self.core.advance_to_next_turn(count_step=False)
+        self.ctxt.core.write_team_data(teams)
+        self.ctxt.core.advance_to_next_turn(count_step=False)
 
         observations = self.observation_factory.from_game()
         self.observations = self._get_observations()
@@ -236,7 +235,7 @@ class BattleArena(ParallelEnv):
         # create new rendering
         if self.render_mode != RenderMode.DISABLED:
             self.game_renderer.stop()
-            self.game_renderer.start(raw_obs_obj, self.reward, self.core.state)
+            self.game_renderer.start(raw_obs_obj, self.reward, self.ctxt.core.state)
 
         return self.observations, self.infos
 
@@ -290,7 +289,7 @@ class BattleArena(ParallelEnv):
 
         # Write actions
         self.action_manager.write_actions(actions)
-        self.core.advance_to_next_turn()
+        self.ctxt.core.advance_to_next_turn()
 
         # Get observations
         observations = self.observation_factory.from_game()
@@ -302,9 +301,9 @@ class BattleArena(ParallelEnv):
             self.rewards[agent] = self.reward_manager.compute_reward(agent)
             self._cumulative_rewards[agent] += self.rewards[agent]
 
-        if self.core.is_episode_done():
+        if self.ctxt.core.is_episode_done():
             self.terminations = {agent: True for agent in self.agents}
-        elif self.max_steps_per_episode < self.core.state.step:
+        elif self.max_steps_per_episode < self.ctxt.core.state.step:
             self.truncations = {agent: True for agent in self.agents}
 
         self.render(raw_obs_obj, self.rewards)
@@ -331,32 +330,45 @@ class BattleArena(ParallelEnv):
         """
         if self.render_mode == RenderMode.DISABLED:
             return
-        self.game_renderer.refresh(observation, reward, self.core.state)
+        self.game_renderer.refresh(observation, reward, self.ctxt.core.state)
 
     def _get_observations(self):
         obs = self.observation_factory.from_game()
-        
+
         formatted_obs = {}
         for agent in self.agents:
-            embed_data = obs.get_embedding_data(agent) 
-            
+            embed_data = obs.get_embedding_data(agent)
+
             formatted_obs[agent] = {
                 # Ensure types match the Box definition exactly
-                "categorical": embed_data["categorical"].astype(np.int64), # Box(..., dtype=int) usually implies int64 in numpy
+                "categorical": embed_data["categorical"].astype(
+                    np.int64
+                ),  # Box(..., dtype=int) usually implies int64 in numpy
                 "continuous": embed_data["continuous"].astype(np.float32),
-                "action_mask": self.action_manager.get_action_mask(agent).astype(np.float32)
+                "action_mask": self.action_manager.get_action_mask(agent).astype(
+                    np.float32
+                ),
             }
         return formatted_obs
 
-
     @functools.lru_cache(maxsize=None)
     def observation_space(self, agent):
-        return GymDict({
-            "categorical": Box(low=0, high=ObsIdx.MAX_FLAGS, shape=(ObsIdx.CATEGORICAL_SIZE,), dtype=np.int64),  # 324
-            "continuous": Box(low=0, high=1, shape=(ObsIdx.CONTINUOUS_SIZE,), dtype=np.float32),  # 360
-            "action_mask": Box(low=0, high=1, shape=(ACTION_SPACE_SIZE,), dtype=np.float32),
-        })
-    
+        return GymDict(
+            {
+                "categorical": Box(
+                    low=0,
+                    high=ObsIdx.MAX_FLAGS,
+                    shape=(ObsIdx.CATEGORICAL_SIZE,),
+                    dtype=np.int64,
+                ),  # 324
+                "continuous": Box(
+                    low=0, high=1, shape=(ObsIdx.CONTINUOUS_SIZE,), dtype=np.float32
+                ),  # 360
+                "action_mask": Box(
+                    low=0, high=1, shape=(ACTION_SPACE_SIZE,), dtype=np.float32
+                ),
+            }
+        )
 
     # Action space should be defined here.
     # If your spaces change over time, remove this line (disable caching).

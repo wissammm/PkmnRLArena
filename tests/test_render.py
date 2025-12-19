@@ -121,19 +121,19 @@ class TestRendering(unittest.TestCase):
         }
 
         observations, infos = self.arena.reset(seed=None, options=options)
-        self.assertEqual(self.arena.core.state.turn, TurnType.GENERAL)
+        self.assertEqual(self.arena.ctxt.core.state.turn, TurnType.GENERAL)
 
         for i in range(80):
             actions = {
                 agent: random.choice(
                     self.arena.action_manager.get_valid_action_ids(agent)
                 )
-                for agent in self.arena.core.get_required_agents()
+                for agent in self.arena.ctxt.core.get_required_agents()
             }
 
             observations, rewards, terminations, truncations, infos = self.arena.step(
                 actions
             )
             sleep(0.2)
-            if self.arena.core.state.turn == TurnType.DONE:
+            if self.arena.ctxt.core.state.turn == TurnType.DONE:
                 break

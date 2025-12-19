@@ -1,5 +1,4 @@
 from pkmn_rl_arena.paths import PATHS
-from .battle_core import BattleCore
 from pkmn_rl_arena import log
 
 import ast

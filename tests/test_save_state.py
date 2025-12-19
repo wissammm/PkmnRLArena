@@ -1,4 +1,4 @@
-from pkmn_rl_arena.env.battle_core import BattleCore
+from pkmn_rl_arena.env.battle_core import BattleCore, CoreContext
 from pkmn_rl_arena.env.battle_state import TurnType, BattleStateFactory, BattleState
 
 from pkmn_rl_arena.env.save_state import SaveStateManager
@@ -30,10 +30,10 @@ class TestSaveState(unittest.TestCase):
         log.setLevel(logging.DEBUG)
 
         self.core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
-        self.assertEqual(self.core.state.turn, TurnType.CREATE_TEAM)
-
-        self.save_manager = SaveStateManager(self.core)
-        self.action_manager = ActionManager(self.core)
+        self.ctxt = CoreContext(self.core)
+        self.assertEqual(self.ctxt.core.state.turn, TurnType.CREATE_TEAM)
+        self.save_manager = SaveStateManager(self.ctxt)
+        self.action_manager = ActionManager(self.ctxt)
 
         team_factory = PkmnTeamFactory()
         teams = {
@@ -41,10 +41,10 @@ class TestSaveState(unittest.TestCase):
             "enemy": team_factory.create_random_team(),
         }
 
-        self.core.write_team_data(teams)
-        self.core.advance_to_next_turn(count_step=False)
-        log.debug(f"state : {self.core.state}")
-        self.assertEqual(self.core.state.turn, TurnType.GENERAL)
+        self.ctxt.core.write_team_data(teams)
+        self.ctxt.core.advance_to_next_turn(count_step=False)
+        log.debug(f"state : {self.ctxt.core.state}")
+        self.assertEqual(self.ctxt.core.state.turn, TurnType.GENERAL)
 
     def tearDown(self):
         self.save_manager.remove_save_states()
@@ -56,7 +56,7 @@ class TestSaveState(unittest.TestCase):
         for save_name, nb_turn_to_advance in TestSaveState.save_load_cases:
             log.debug(f"test : {save_name}, nb turn to advance : {nb_turn_to_advance}")
 
-            ground_truth = copy.deepcopy(self.core.state)
+            ground_truth = copy.deepcopy(self.ctxt.core.state)
 
             save_path = self.save_manager.save_state(save_name)
             save_path_state = BattleStateFactory.from_save_path(save_path)
@@ -65,13 +65,13 @@ class TestSaveState(unittest.TestCase):
 
             # skip turns with random moves to simulate battle
             for i in range(nb_turn_to_advance):
-                advance_turn(self.core, self.action_manager)
+                advance_turn(self.ctxt.core, self.action_manager)
 
-            self.assertEqual(self.core.state.step, nb_turn_to_advance + total_step_run)
+            self.assertEqual(self.ctxt.core.state.step, nb_turn_to_advance + total_step_run)
 
             returned_state = self.save_manager.load_state(save_name)
 
             self.assertEqual(ground_truth, returned_state)
-            self.assertEqual(ground_truth, self.core.state)
+            self.assertEqual(ground_truth, self.ctxt.core.state)
 
-            total_step_run += self.core.state.step
+            total_step_run += self.ctxt.core.state.step
