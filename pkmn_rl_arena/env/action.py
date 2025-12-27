@@ -30,22 +30,28 @@ class ActionManager:
     def write_actions(self, actions: Dict[str, int]) -> Dict[str, bool]:
         """Write actions based on turn type"""
         action_written = {agent: False for agent in actions.keys()}
+
+        current_turn = self.ctxt.core.get_current_turn()
+        required_agents = self.ctxt.core.get_required_agents()
+        log.debug(f"write_actions: current_turn={current_turn}, required_agents={required_agents}, incoming={actions}")
+
         for agent, action in actions.items():
-            # if self.battle_core.state.turn not in ActionManager.allowed_turntype[agent]:
-            #     raise ValueError(
-            #         f"Error : write_actions : invalid turntype ({self.battle_core.state.turn}), for current agent ({agent})."
-            #         f"Expected to be in {ActionManager.allowed_turntype[agent]}"
-            #     )
-
-            if not self.is_valid_action(agent, action):
-                log.critical(
-                    f"Trying to write invalid action : authorized, values {self.get_action_mask(agent)}, got {action}."
-                )
-
-                action_written[agent] = False
+            if agent not in required_agents:
+                log.warning(f"write_actions: skipping {agent} (not required this turn)")
                 continue
 
-            self.ctxt.core.write_action(agent, actions[agent])
+            mask = self.get_action_mask(agent)
+            log.debug(f"write_actions: action_mask for {agent} = {mask}")
+
+            if not self.is_valid_action(agent, int(action)):
+                log.critical(
+                    f"Trying to write invalid action : authorized, values {mask}, got {action}."
+                )
+                raise ValueError(
+                    f"Error : write_actions : invalid action ({action}), for current agent ({agent})."
+                )
+
+            self.ctxt.core.write_action(agent, int(action))
             action_written[agent] = True
 
         return action_written

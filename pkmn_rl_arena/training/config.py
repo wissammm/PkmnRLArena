@@ -4,7 +4,7 @@ from dataclasses import dataclass
 class EnvConfig:
     """Configuration for the Environment and Wrappers"""
     TEAM_BATCH_SIZE: int = 100     
-    WIN_RATE_THRESHOLD: float = 0.70 
+    WIN_RATE_THRESHOLD: float = 0.70
     CURRICULUM_CHECK_INTERVAL: int = 1000 
     MIN_TEAM_SIZE: int = 1
     MAX_TEAM_SIZE: int = 6
