@@ -72,7 +72,7 @@ docker run -it --rm pokemon-rl /bin/bash
 
 **Clone the repository & its submodules**
 ```bash
-git clone https://github.com/wissammm/rl_new_pokemon_ai.git  --recurse-submodule 
+git clone --recurse-submodules https://github.com/wissammm/PkmnRLArena.git
 ```
 
 1. Install system packages
