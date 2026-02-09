@@ -87,8 +87,20 @@ class ActionManager:
             [0,1,2,3,4,5,6,7,8,9]
         Example for an action mask :
             [0,1,1,0,1,1,1,0,0,1]
+
+        When all PP is depleted and no switches are available, the game engine
+        automatically uses Struggle. In that case we mark action 0 as legal so
+        the agent always has at least one valid action.
         """
 
+        valid_ids = self.get_valid_action_ids(agent)
         action_mask = np.zeros(shape=ACTION_SPACE_SIZE, dtype=np.float32) # Explicit dtype
-        action_mask[self.get_valid_action_ids(agent)] = 1.0
+        action_mask[valid_ids] = 1.0
+
+        # Safety: the game forces Struggle when no move has PP left,
+        # so the agent must always have at least one legal action.
+        if not np.any(action_mask):
+            log.warning(f"No legal actions for '{agent}' — forcing action 0 (Struggle)")
+            action_mask[0] = 1.0
+
         return action_mask
