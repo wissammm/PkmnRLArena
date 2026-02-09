@@ -464,12 +464,9 @@ class TestFightUnfold(unittest.TestCase):
             self.arena.ctxt.core.state, BattleState(id=0, step=1, turn=TurnType.PLAYER)
         )
         player_action = 4
-        actions = {"player": 4}  # Switch with the [1] mon (Raichu)
-        written_actions = self.arena.action_manager.write_actions(actions)
-        self.assertFalse(
-            written_actions["player"],
-            "Invalid action written successfully! This should not happen.",
-        )
+        actions = {"player": 4}  # Switch to slot 0 (the fainted Squirtle itself — invalid)
+        with self.assertRaises(ValueError):
+            self.arena.action_manager.write_actions(actions)
 
     def test_switch_pokemon_when_one_fainted_player(self):
         options = {
@@ -611,6 +608,80 @@ class TestFightUnfold(unittest.TestCase):
             new_enemy_attack,
             initial_enemy_attack,
             "Enemy's attack stat should be lower after using a stat-lowering move",
+        )
+
+    def test_struggle_after_pp_depletion(self):
+        """
+        Both Dustox (294) with only LIGHT SCREEN (113, power=0, pp=30).
+        Since LIGHT SCREEN does 0 damage, neither Pokémon can faint from it.
+        After 30 uses, PP is depleted and the Pokémon must use STRUGGLE (power=50, 1/4 recoil).
+        
+        Verifies:
+        1. The action mask always has at least one valid action at every step.
+        2. At least one Pokémon faints within 60 steps (Struggle + recoil damage).
+        """
+        options = {
+            "save_state": "boot_state",
+            "teams": {
+                "player": [
+                    294,   # Dustox
+                    50,    # level 50
+                    113,   # LIGHT SCREEN
+                    0,
+                    0,
+                    0,
+                    100,   # 100% HP
+                    0,     # no item
+                ],
+                "enemy": [
+                    294,   # Dustox
+                    50,    # level 50
+                    113,   # LIGHT SCREEN
+                    0,
+                    0,
+                    0,
+                    100,   # 100% HP
+                    0,     # no item
+                ],
+            },
+        }
+
+        self.arena.reset(options=options)
+
+        someone_fainted = False
+        for step in range(60):
+            # Verify action mask has at least one valid action for both agents
+            for agent in self.arena.ctxt.core.get_required_agents():
+                action_mask = self.arena.action_manager.get_action_mask(agent)
+                self.assertTrue(
+                    np.any(action_mask > 0),
+                    f"Action mask is all zeros for '{agent}' at step {step}. "
+                    f"The game must always provide at least one legal action. Mask: {action_mask}"
+                )
+
+            actions = {
+                agent: 0 for agent in self.arena.ctxt.core.get_required_agents()
+            }
+            obs, rewards, terminations, truncations, infos = self.arena.step(actions)
+
+            if any(terminations.values()):
+                someone_fainted = True
+                log.info(f"A Pokémon fainted at step {step} via Struggle recoil/damage.")
+                break
+
+        self.assertTrue(
+            someone_fainted,
+            "No Pokémon fainted within 60 steps. Struggle should cause enough "
+            "recoil + damage to KO at least one Dustox after Light Screen PP is depleted."
+        )
+
+        # Verify the battle ended properly
+        obs = self.arena.observation_factory.from_game()
+        winner = obs.who_won()
+        self.assertIn(
+            winner,
+            ["player", "enemy"],
+            f"Expected a winner after Struggle KO, got '{winner}'."
         )
 
     # def test_special_moves():

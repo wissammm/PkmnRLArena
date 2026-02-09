@@ -1,129 +1,119 @@
 import os
-import random
-import numpy as np
+import warnings
 import ray
 from ray import tune
 from ray.rllib.algorithms.ppo import PPOConfig
-from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from ray.tune.registry import register_env
 from ray.rllib.models import ModelCatalog
 from ray.rllib.algorithms.callbacks import DefaultCallbacks
-from ray.rllib.policy.policy import Policy
+from ray.rllib.env.wrappers.pettingzoo_env import PettingZooEnv
 
-from pkmn_rl_arena.env.battle_arena import BattleArena, BattleCore
+from pkmn_rl_arena.env.battle_arena_aec import BattleArenaAEC, BattleCore
 from pkmn_rl_arena.env.pkmn_team_factory import PkmnTeamFactory
 from pkmn_rl_arena.paths import PATHS
-from pkmn_rl_arena.training.wrappers.curriculum_wrappers import CurriculumWrapper, TeamBatchWrapper
+from pkmn_rl_arena.training.wrappers.aec_wrappers import CurriculumWrapperAEC, TeamBatchWrapperAEC
 from pkmn_rl_arena.training.models.pkmn_model import PokemonTransformerModel
+from pkmn_rl_arena.training.league import LeagueManager, RANDOM_POLICY_ID
+from pkmn_rl_arena.training.league.random_policy import MaskedRandomPolicy
 from pkmn_rl_arena.training.config import TrainingConfig
 
 # 1. Register Custom Model
 ModelCatalog.register_custom_model("pkmn_transformer", PokemonTransformerModel)
 
-class ParallelPettingZooWrapper(MultiAgentEnv):
-    """
-    Adapts a PettingZoo ParallelEnv to RLLib's MultiAgentEnv.
-    RLLib's built-in PettingZooEnv wrapper expects AEC environments, so we use this instead.
-    """
-    def __init__(self, env):
-        self.env = env
-        super().__init__()
-        self.agents = env.possible_agents
-        self._agent_ids = set(self.agents)
-        
-        self.observation_space = env.observation_space(self.agents[0])
-        self.action_space = env.action_space(self.agents[0])
+# 2. League (global instance shared by callbacks and policy mapping)
+LEAGUE = LeagueManager(snapshot_interval=50)
 
-    def reset(self, *, seed=None, options=None):
-        obs, infos = self.env.reset(seed=seed, options=options)
-        return obs, infos
 
-    def step(self, action_dict):
-        obs, rews, terms, truncs, infos = self.env.step(action_dict)
-        
-        terms["__all__"] = all(terms.values())
-        truncs["__all__"] = all(truncs.values())
-        
-        return obs, rews, terms, truncs, infos
-        
-    def __getattr__(self, name):
-        return getattr(self.env, name)
-
+# 3. Environment factory ─ AEC pipeline
 def env_creator(config):
     core = BattleCore(PATHS["ROM"], PATHS["BIOS"], PATHS["MAP"])
-    env = BattleArena(core)
     team_factory = PkmnTeamFactory(PATHS["POKEMON_CSV"], PATHS["MOVES_CSV"])
-    
-    env = TeamBatchWrapper(env, team_factory, batch_size=TrainingConfig.ENV.TEAM_BATCH_SIZE)
-    env = CurriculumWrapper(
-        env, 
+
+    # Base AEC env
+    env = BattleArenaAEC(core)
+
+    # Wrap: pre-generated team batches (AEC-compatible)
+    env = TeamBatchWrapperAEC(
+        env, team_factory, batch_size=TrainingConfig.ENV.TEAM_BATCH_SIZE
+    )
+
+    # Wrap: curriculum progression (AEC-compatible)
+    env = CurriculumWrapperAEC(
+        env,
         win_rate_threshold=TrainingConfig.ENV.WIN_RATE_THRESHOLD,
         min_size=TrainingConfig.ENV.MIN_TEAM_SIZE,
         max_size=TrainingConfig.ENV.MAX_TEAM_SIZE,
-        check_interval=TrainingConfig.ENV.CURRICULUM_CHECK_INTERVAL
+        check_interval=TrainingConfig.ENV.CURRICULUM_CHECK_INTERVAL,
     )
-    return ParallelPettingZooWrapper(env)
+
+    # RLlib's built-in AEC → MultiAgentEnv adapter
+    return PettingZooEnv(env)
+
 
 register_env("pkmn_battle_env", env_creator)
 
-# --- LEAGUE & METRICS MANAGER ---
 
-class LeagueManager:
-    def __init__(self):
-        self.past_policies = []
-
-    def add_policy(self, policy_id):
-        self.past_policies.append(policy_id)
-
-    def get_opponent(self):
-        # 80% chance to play against current self (main_policy)
-        if len(self.past_policies) > 0 and random.random() < 0.2:
-            return random.choice(self.past_policies)
-        return "main_policy"
-
-LEAGUE = LeagueManager()
+# --- CALLBACKS ---
 
 class LeagueCallbacks(DefaultCallbacks):
+    """Handles TensorBoard metrics, per-opponent win rates, ELO, and league snapshots."""
+
     def on_episode_end(self, *, worker, base_env, policies, episode, env_index, **kwargs):
-        # --- TENSORBOARD LOGGING ---
         last_info = episode.last_info_for("player") or {}
-        
+
         if "team_size" in last_info:
             episode.custom_metrics["curriculum_team_size"] = last_info["team_size"]
-        
+
         total_reward = episode.agent_rewards.get(("player", "main_policy"), 0)
-        episode.custom_metrics["is_win"] = 1 if total_reward > 0 else 0
+        is_win = 1 if total_reward > 0 else 0
+
+        episode.custom_metrics["is_win"] = is_win
+        episode.custom_metrics["episode_length"] = episode.length
+
+        # --- Per-opponent win rate (the real progress metric) ---
+        enemy_policy = episode.policy_for("enemy")
+        episode.custom_metrics[f"win_vs_{enemy_policy}"] = is_win
+
+        # --- ELO update ---
+        if is_win:
+            LEAGUE.update_elo("main_policy", enemy_policy)
+        else:
+            LEAGUE.update_elo(enemy_policy, "main_policy")
+
+        episode.custom_metrics["elo_main_policy"] = LEAGUE.elo_ratings.get("main_policy", 1500.0)
+        episode.custom_metrics["elo_vs_random_gap"] = (
+            LEAGUE.elo_ratings.get("main_policy", 1500.0)
+            - LEAGUE.elo_ratings.get(RANDOM_POLICY_ID, 1000.0)
+        )
 
     def on_train_result(self, *, algorithm, result, **kwargs):
-        # --- LEAGUE SNAPSHOTTING ---
         iteration = result["training_iteration"]
-        
-        if iteration > 0 and iteration % 50 == 0:
-            new_policy_id = f"policy_v{iteration}"
-            print(f"--- LEAGUE: Snapshotting main_policy to {new_policy_id} ---")
-            
-            main_weights = algorithm.get_weights("main_policy")
-            
-            new_policy = algorithm.add_policy(
+
+        if LEAGUE.should_snapshot(iteration):
+            new_policy_id = LEAGUE.get_snapshot_id(iteration)
+            print(f"--- LEAGUE: Snapshotting main_policy → {new_policy_id} ---")
+
+            main_weights = algorithm.get_weights(["main_policy"])
+
+            algorithm.add_policy(
                 policy_id=new_policy_id,
                 policy_cls=type(algorithm.get_policy("main_policy")),
                 policy_mapping_fn=None,
             )
-            
-            algorithm.set_weights({new_policy_id: main_weights})
-            LEAGUE.add_policy(new_policy_id)
-            
-            policies_to_train = result["config"]["policies_to_train"]
-            if new_policy_id in policies_to_train:
-                policies_to_train.remove(new_policy_id)
 
-# 3. Policy Mapping Function
+            algorithm.set_weights({new_policy_id: main_weights["main_policy"]})
+            LEAGUE.add_policy(new_policy_id)
+
+
+# 4. Policy Mapping Function
 def policy_mapping_fn(agent_id, episode, worker, **kwargs):
     if agent_id == "player":
         return "main_policy"
     return LEAGUE.get_opponent()
 
+
 if __name__ == "__main__":
+    warnings.filterwarnings("ignore", message=".*_get_slice_indices.*has been deprecated.*")
     ray.init()
 
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
@@ -146,20 +136,37 @@ if __name__ == "__main__":
             num_cpus_per_env_runner=TrainingConfig.RESOURCES.NUM_CPUS_PER_WORKER,
             rollout_fragment_length=TrainingConfig.PPO.ROLLOUT_FRAGMENT_LENGTH,
         )
-        # Generic Training Args
         .training(
             train_batch_size=TrainingConfig.PPO.TRAIN_BATCH_SIZE,
             lr=TrainingConfig.PPO.LR,
             gamma=TrainingConfig.PPO.GAMMA,
-            model={
-                "custom_model": "pkmn_transformer",
-                "custom_model_config": {},
-            },
         )
         .multi_agent(
-            policies={"main_policy"}, 
+            policies={
+                "main_policy": (
+                    None,  # use default PPO policy class
+                    None,  # infer obs space
+                    None,  # infer act space
+                    {
+                        "model": {
+                            "custom_model": "pkmn_transformer",
+                            "custom_model_config": {},
+                        },
+                    },
+                ),
+                RANDOM_POLICY_ID: (
+                    MaskedRandomPolicy,  # custom policy class that respects masks
+                    None,  # infer obs space
+                    None,  # infer act space
+                    {
+                        "model": {
+                            "_disable_preprocessor_api": True,
+                        },
+                    },
+                ),
+            },
             policy_mapping_fn=policy_mapping_fn,
-            policies_to_train=["main_policy"],
+            policies_to_train=["main_policy"],  # never train random
         )
     )
 
@@ -172,5 +179,5 @@ if __name__ == "__main__":
         config=config.to_dict(),
         stop={"training_iteration": TrainingConfig.RUN.STOP_ITERATIONS},
         checkpoint_freq=TrainingConfig.RUN.CHECKPOINT_FREQ,
-        storage_path=os.path.join(project_root, TrainingConfig.RUN.STORAGE_PATH_SUFFIX)
+        storage_path=os.path.join(project_root, TrainingConfig.RUN.STORAGE_PATH_SUFFIX),
     )

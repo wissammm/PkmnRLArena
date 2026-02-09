@@ -1,4 +1,6 @@
 from collections.abc import Callable
+
+import numpy as np
 from pkmn_rl_arena.env.observation import Observation
 
 from .functions import reward_functions
@@ -9,6 +11,7 @@ class RewardManager:
         self,
         reward_func: Callable[[str, list[Observation]], float] = reward_functions[0],
         previous_observations: list[Observation] = [],
+        clip_range=(-10.0, 10.0)
     ):
         """
         RewardManager constructor
@@ -24,6 +27,8 @@ class RewardManager:
         self.prev_obs = previous_observations
         self.obs = previous_observations
         self.reward_func = reward_func
+        self.clip_range = clip_range
+        self.reward_stats = {"sum": 0.0, "count": 0}
 
     def reset(self, to_prev_obs=False):
         self.obs = []
@@ -34,4 +39,13 @@ class RewardManager:
         self.obs.append(obs)
 
     def compute_reward(self, agent):
-        return self.reward_func(agent, self.obs)
+        raw_reward = self.reward_func(agent, self.obs)
+        
+        # Clip pour éviter explosions
+        clipped_reward = np.clip(raw_reward, *self.clip_range)
+        
+        # Track stats pour monitoring
+        self.reward_stats["sum"] += clipped_reward
+        self.reward_stats["count"] += 1
+        
+        return clipped_reward

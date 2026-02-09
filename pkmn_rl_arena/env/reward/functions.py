@@ -1,4 +1,4 @@
-from pkmn_rl_arena.env.observation import Observation
+from pkmn_rl_arena.env.observation import ObsIdx, Observation
 
 from collections.abc import Callable
 from typing import Dict
@@ -15,16 +15,16 @@ def default_reward(agent: str, observations: list[Observation]) -> float:
         float: The calculated reward
     """
     reward_coeffs: Dict[str, float] = {
-        "hp_loss": -0.01,
+        "hp_loss_self": -0.01,
         "hp_healed": 0.01,
-        "hp_damage": 0.02,
+        "hp_damage_dealt": 0.02,
         "status_effect": 0.1,
         "stat_boost": 0.1,
         "stat_decrease": 0.1,
         "ko_enemy": 1.0,
         "ko_self": -1.0,
-        "victory": 5.0,
-        "defeat": -5.0,
+        "victory": 15.0,
+        "defeat": -15.0,
     }
 
     if len(observations) <= 1:
@@ -44,24 +44,25 @@ def default_reward(agent: str, observations: list[Observation]) -> float:
     prev_stats = prev_obs.stats()
     curr_stats = current_obs.stats()
 
-    NB_DATA_PKMN = 60 
+    NB_DATA_PKMN = ObsIdx.NB_DATA_PKMN
     STATUS_IDX = 17
     STATS_BEGIN = 2
     STATS_END = 7
 
-    for i in range(len(prev_hp[agent])):
-        hp_change = curr_hp[agent][i] - prev_hp[agent][i]
-        if hp_change < 0: 
-            total_reward += reward_coeffs["hp_loss"] * hp_change  # Negative
-        elif hp_change > 0:  
-            total_reward += reward_coeffs["hp_healed"] * hp_change  # Positive
 
     for i in range(len(prev_hp[agent])):
         hp_change = curr_hp[agent][i] - prev_hp[agent][i]
-        if hp_change < 0: 
-            total_reward += reward_coeffs["hp_loss"] * abs(hp_change) 
-        elif hp_change > 0:  
+        if hp_change < 0:
+            total_reward += reward_coeffs["hp_loss_self"] * abs(hp_change)
+        elif hp_change > 0:
             total_reward += reward_coeffs["hp_healed"] * hp_change
+
+    # --- HP damage dealt to opponent ---
+    for i in range(len(prev_hp[opponent])):
+        hp_change = curr_hp[opponent][i] - prev_hp[opponent][i]
+        if hp_change < 0:  # Opponent lost HP
+            damage_dealt = abs(hp_change)
+            total_reward += reward_coeffs["hp_damage_dealt"] * damage_dealt
 
     for i in range(len(curr_ko[agent])):
         if curr_ko[agent][i] and not prev_ko[agent][i]:
@@ -85,16 +86,16 @@ def default_reward(agent: str, observations: list[Observation]) -> float:
             elif stat_change < 0:
                 total_reward += reward_coeffs["stat_decrease"]  # Reward if opponent decreases
 
-    for i in range(6):  
+    for i in range(6):
         agent_status_prev = prev_obs._o[agent][i * NB_DATA_PKMN + STATUS_IDX]
         agent_status_curr = current_obs._o[agent][i * NB_DATA_PKMN + STATUS_IDX]
         if agent_status_prev == 0 and agent_status_curr != 0:
-            total_reward -= reward_coeffs["status_effect"]  
+            total_reward -= reward_coeffs["status_effect"]  # -0.1
 
         opp_status_prev = prev_obs._o[opponent][i * NB_DATA_PKMN + STATUS_IDX]
         opp_status_curr = current_obs._o[opponent][i * NB_DATA_PKMN + STATUS_IDX]
         if opp_status_prev == 0 and opp_status_curr != 0:
-            total_reward += reward_coeffs["status_effect"]
+            total_reward += reward_coeffs["status_effect"]  # +0.1
 
     if all(curr_ko[opponent]):
         total_reward += reward_coeffs["victory"]
