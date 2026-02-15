@@ -7,7 +7,7 @@ authors = [
     { name = "Grégoire Kubler", email = "greg_is_kub@pm.me" }
 ]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"  # Changed from >=3.12 to >=3.11
 dependencies = [
     "numpy",
     "pandas",
@@ -24,6 +24,8 @@ dependencies = [
     "rustboyadvance-py",
     "pillow>=12.0.0",
     "tensorboard>=2.20.0",
+    "matplotlib>=3.10.6",
+    "setuptools>=82.0.0",
 ]
 
 [build-system]
@@ -42,5 +44,11 @@ dev = [
 ]
 
 # This tells uv where to find the other project
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu124"
+explicit = true
+
 [tool.uv.sources]
 rustboyadvance-py = { path = "rustboyadvance-ng-for-rl/platform/rustboyadvance-py", editable = true }
+torch = { index = "pytorch" }
