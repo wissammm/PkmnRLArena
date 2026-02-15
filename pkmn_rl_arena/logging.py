@@ -13,11 +13,9 @@ COLORS = {
 
 class ColoredFormatter(logging.Formatter):
     def format(self, record):
-        # Fixed width for aligned priorities
         padded_level = f"{record.levelname:<8}"
         color = COLORS.get(record.levelname, COLORS["RESET"])
-        # # Short timestamp: yymmdd_hmm
-        # timestamp = datetime.datetime.fromtimestamp(record.created).strftime("%y%m%d_%H%M")
+      
         return f"{color}{padded_level}{COLORS['RESET']}[{record.module}::{record.funcName}]  {record.getMessage()}"
 
 def setup_colored_logging(level=logging.DEBUG):

@@ -5,6 +5,9 @@ import time
 from pkmn_rl_arena.paths import PATHS
 from pkmn_rl_arena.env.battle_arena_aec import BattleArenaAEC, BattleCore
 
+import picologging as logging
+logging.getLogger().setLevel(logging.WARNING)
+
 STEPS = 50
 
 
@@ -19,10 +22,8 @@ class Benchmark:
         last_time = time.time()
         
         for step in range(STEPS):
-            # Get the current agent that needs to act
             current_agent = self.env.agent_selection
             
-            # Get legal actions for current agent
             action_mask = self.env.action_manager.get_action_mask(current_agent)
             legal_actions = [i for i, valid in enumerate(action_mask) if valid > 0]
             
@@ -30,10 +31,8 @@ class Benchmark:
                 print(f"No legal actions available for {current_agent}")
                 break
             
-            # Choose random legal action
             action = random.choice(legal_actions)
             
-            # Step the environment
             self.env.step(action)
             
             now = time.time()
@@ -41,7 +40,6 @@ class Benchmark:
             step_times.append(step_time)
             last_time = now
 
-            # Check if episode is done
             if self.env.terminations[current_agent] or self.env.truncations[current_agent]:
                 print(f"Episode finished at step {step}!")
                 break
