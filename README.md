@@ -121,9 +121,10 @@ uv sync              # installs packages from uv.lock / pyproject.toml
 ```
 
 9. Build & install the Rust emulator Python extension
+fast_forward mode is optimized for pkmn, but avoid all gpu and sound processing
 ```bash
 cd rustboyadvance-ng-for-rl/platform/rustboyadvance-py
-maturin develop --features elf_support --release -j6
+maturin develop --features elf_support,fast_forward --release -j$(nproc)
 cd ../../../
 ```
 
