@@ -30,6 +30,7 @@ class TeamBatchWrapperAEC(BaseWrapper):
 
     def reset(self, seed=None, options=None):
         options = options or {}
+        options.setdefault("save_state", "boot_state")
         requested_size = options.get("team_size", 6)
 
         size_changed = requested_size != self.current_buffer_size
@@ -79,6 +80,7 @@ class CurriculumWrapperAEC(BaseWrapper):
 
     def reset(self, seed=None, options=None):
         options = options or {}
+        options.setdefault("save_state", "boot_state")
         options["team_size"] = self.team_size
         self._episode_player_reward = 0.0
         self.env.reset(seed=seed, options=options)
