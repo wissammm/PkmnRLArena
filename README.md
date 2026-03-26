@@ -2,6 +2,8 @@
   <img src="https://github.com/user-attachments/assets/af723042-4714-4f7d-aeef-c7d77583ab47" alt="github logo">
 </p>
 
+**Project paused, will resume in June 2026**
+
 # PkmnRLArena
 A library for training, deploying, and running multi-agent reinforcement learning (MARL) agents inside the Game Boy Advance (GBA) environment.
 
